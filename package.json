@@ -1,11 +1,10 @@
 {
-  "name": "@dcl/{{project_name}}-site",
+  "name": "@dcl/social-site-site",
   "version": "0.0.1",
-  "description": "Starter template for Decentraland dApps Repositories",
+  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "init": "./start.sh && npm run husky-setup",
     "dev": "vite",
     "start": "vite",
     "prebuild": "node scripts/prebuild.js",
@@ -21,20 +20,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/decentraland/dapps-template.git"
+    "url": "git+ssh://git@github.com/decentraland/social-site.git"
   },
   "author": "Decentraland",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/decentraland/dapps-template/issues"
+    "url": "https://github.com/decentraland/social-site/issues"
   },
-  "homepage": "https://github.com/decentraland/dapps-template#readme",
+  "homepage": "https://github.com/decentraland/social-site#readme",
   "engines": {
     "node": "20.*",
     "npm": "8.* || 9.*"
   },
   "dependencies": {
+    "@dcl/hooks": "^0.0.4",
     "@dcl/ui-env": "^1.5.1",
+    "decentraland-dapps": "^12.25.1",
     "decentraland-ui2": "^0.23.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

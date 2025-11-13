@@ -1,1 +1,6 @@
-{}
+{
+  "AUTH_URL": "/auth",
+  "SOCIAL_SERVICE_URL": "https://social-service.decentraland.zone",
+  "NETWORK": "sepolia",
+  "CHAIN_ID": "11155111"
+}

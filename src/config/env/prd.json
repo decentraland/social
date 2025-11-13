@@ -1,1 +1,6 @@
-{}
+{
+  "AUTH_URL": "/auth",
+  "SOCIAL_SERVICE_URL": "https://social-service.decentraland.org",
+  "NETWORK": "mainnet",
+  "CHAIN_ID": "1"
+}

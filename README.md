@@ -1,4 +1,4 @@
-# Decentraland dApp template
+# Social dApp
 
 ![Decentraland Cover](https://decentraland.org/og.jpg)
 
