@@ -19,6 +19,32 @@ const eventsApi = client.injectEndpoints({
           baseUrl: config.get("EVENTS_API_URL"),
         }
       },
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { communityId } = queryArgs
+        return { communityId }
+      },
+      merge: (currentCache, newItems) => {
+        if (newItems.data.events.length === 0) {
+          return currentCache
+        }
+        return {
+          ...newItems,
+          data: {
+            ...newItems.data,
+            events: [
+              ...(currentCache?.data?.events || []),
+              ...newItems.data.events,
+            ],
+            total: newItems.data.total,
+          },
+        }
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return (
+          currentArg?.offset !== previousArg?.offset ||
+          currentArg?.limit !== previousArg?.limit
+        )
+      },
     }),
   }),
 })

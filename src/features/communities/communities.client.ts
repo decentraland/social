@@ -38,6 +38,31 @@ const communitiesApi = client.injectEndpoints({
         const queryString = params.toString()
         return `/v1/communities/${id}/members${queryString ? `?${queryString}` : ""}`
       },
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { id } = queryArgs
+        return { id }
+      },
+      merge: (currentCache, newItems) => {
+        if (newItems.data.results.length === 0) {
+          return currentCache
+        }
+        return {
+          ...newItems,
+          data: {
+            ...newItems.data,
+            results: [
+              ...(currentCache?.data?.results || []),
+              ...newItems.data.results,
+            ],
+          },
+        }
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return (
+          currentArg?.offset !== previousArg?.offset ||
+          currentArg?.limit !== previousArg?.limit
+        )
+      },
       providesTags: (
         _result: CommunityMembersResponse | undefined,
         _error: unknown,

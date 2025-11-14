@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
 import {
   getAddress,
@@ -7,14 +6,24 @@ import {
 } from "decentraland-dapps/dist/modules/wallet/selectors"
 import { Box, CircularProgress, Typography } from "decentraland-ui2"
 import { useAppSelector } from "../../../app/hooks"
+import { locations } from "../../../modules/locations"
 
 const ConnectAndRedirect = () => {
   const isUserLoggedIn = useAppSelector(isConnected)
   const isUserLoggingIn = useAppSelector(isConnecting)
   const userAddress = useAppSelector(getAddress)
 
-  if (!isUserLoggedIn && !isUserLoggingIn) {
-    return <Navigate to="/sign-in" replace />
+  if (isUserLoggingIn) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    )
   }
 
   if (isUserLoggedIn && userAddress) {
@@ -32,30 +41,7 @@ const ConnectAndRedirect = () => {
     )
   }
 
-  const [shouldRedirect, setShouldRedirect] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldRedirect(true)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  if (shouldRedirect) {
-    return <Navigate to="/sign-in" replace />
-  }
-
-  return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
-      <CircularProgress />
-    </Box>
-  )
+  return <Navigate to={locations.signIn(locations.root())} replace />
 }
 
 export { ConnectAndRedirect }

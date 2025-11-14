@@ -2,7 +2,7 @@
   "AUTH_URL": "/auth",
   "SOCIAL_SERVICE_URL": "https://social-api-staging.decentraland.zone",
   "ASSETS_CDN_URL": "https://assets-cdn.decentraland.zone",
-  "EVENTS_API_URL": "https://events.decentraland.zone",
+  "EVENTS_API_URL": "https://events.decentraland.zone/api",
   "NETWORK": "sepolia",
   "CHAIN_ID": "11155111"
 }

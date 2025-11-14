@@ -18,11 +18,11 @@ import { getErrorMessage } from "./utils/errorUtils"
 import { useAppSelector } from "../../../app/hooks"
 import {
   useGetCommunityByIdQuery,
-  useGetCommunityMembersQuery,
   useJoinCommunityMutation,
   useLeaveCommunityMutation,
 } from "../../../features/communities/communities.client"
-import { useGetCommunityEventsQuery } from "../../../features/events/events.client"
+import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
+import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { PageLayout } from "../../PageLayout"
 import {
   BottomSection,
@@ -55,14 +55,27 @@ function CommunityDetail() {
   const isPrivate = community?.privacy === "private"
   const canViewContent = member || !isPrivate
 
-  const { data: membersData } = useGetCommunityMembersQuery(
-    { id: id || "" },
-    { skip: !id || !canViewContent }
-  )
-  const { data: eventsData } = useGetCommunityEventsQuery(
-    { communityId: id || "" },
-    { skip: !id || !canViewContent }
-  )
+  const {
+    members,
+    isLoading: isLoadingMembers,
+    isFetchingMore: isFetchingMoreMembers,
+    hasMore: hasMoreMembers,
+    loadMore: loadMoreMembers,
+  } = usePaginatedCommunityMembers({
+    communityId: id || "",
+    enabled: !!id && canViewContent,
+  })
+
+  const {
+    events,
+    isLoading: isLoadingEvents,
+    isFetchingMore: isFetchingMoreEvents,
+    hasMore: hasMoreEvents,
+    loadMore: loadMoreEvents,
+  } = usePaginatedCommunityEvents({
+    communityId: id || "",
+    enabled: !!id && canViewContent,
+  })
 
   const displayError = error || (isError ? getErrorMessage(queryError) : null)
 
@@ -176,27 +189,31 @@ function CommunityDetail() {
             <BottomSection>
               <MembersColumn>
                 <MembersList
-                  members={
-                    membersData?.data.members.map((member) => ({
-                      name: member.name || member.address,
-                      role: member.role,
-                      mutualFriends: 0,
-                    })) || []
-                  }
+                  members={members.map((member) => ({
+                    name: member.name || member.memberAddress,
+                    role: member.role,
+                    mutualFriends: 0,
+                  }))}
+                  isLoading={isLoadingMembers}
+                  isFetchingMore={isFetchingMoreMembers}
+                  hasMore={hasMoreMembers}
+                  onLoadMore={loadMoreMembers}
                 />
               </MembersColumn>
 
               <EventsColumn>
                 <EventsList
-                  events={
-                    eventsData?.data.map((event) => ({
-                      id: event.id,
-                      name: event.name,
-                      image: event.image || "",
-                      isLive: event.live || false,
-                      startTime: event.startAt,
-                    })) || []
-                  }
+                  events={events.map((event) => ({
+                    id: event.id,
+                    name: event.name,
+                    image: event.image || "",
+                    isLive: event.live || false,
+                    startTime: event.startAt,
+                  }))}
+                  isLoading={isLoadingEvents}
+                  isFetchingMore={isFetchingMoreEvents}
+                  hasMore={hasMoreEvents}
+                  onLoadMore={loadMoreEvents}
                 />
               </EventsColumn>
             </BottomSection>

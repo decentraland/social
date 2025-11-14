@@ -38,18 +38,23 @@ type LeaveCommunityResponse = {
 }
 
 type CommunityMember = {
-  address: string
-  name?: string
+  communityId: string
+  memberAddress: string
   role: "owner" | "moderator" | "member"
   joinedAt: string
   profilePictureUrl?: string
   hasClaimedName?: boolean
+  name?: string
+  friendshipStatus?: number
 }
 
 type CommunityMembersResponse = {
   data: {
-    members: CommunityMember[]
+    results: CommunityMember[]
     total: number
+    page: number
+    pages: number
+    limit: number
   }
 }
 

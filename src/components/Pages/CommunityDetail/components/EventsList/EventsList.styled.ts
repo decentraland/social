@@ -29,6 +29,25 @@ const EventsGrid = styled(Box)(({ theme }) => ({
   flexWrap: "wrap",
   rowGap: "20px",
   width: "100%",
+  maxHeight: "600px",
+  overflowY: "auto",
+  overflowX: "hidden",
+  scrollBehavior: "smooth",
+  paddingRight: theme.spacing(1),
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+  "&::-webkit-scrollbar-track": {
+    background: "rgba(255, 255, 255, 0.1)",
+    borderRadius: "4px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    background: "rgba(255, 255, 255, 0.3)",
+    borderRadius: "4px",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.4)",
+    },
+  },
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
     flexWrap: "nowrap",
@@ -125,7 +144,23 @@ const EventName = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
+const LoadMoreSentinel = styled(Box)(() => ({
+  width: "100%",
+  minHeight: "20px",
+  flex: "0 0 100%",
+}))
+
+const EmptyState = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: theme.spacing(4),
+  width: "100%",
+  gridColumn: "1 / -1",
+}))
+
 export {
+  EmptyState,
   EventCard,
   EventContent,
   EventImage,
@@ -134,6 +169,7 @@ export {
   EventsGrid,
   EventsSection,
   EventTime,
+  LoadMoreSentinel,
   LiveBadgeContainer,
   LiveBadgeText,
   SectionTitle,

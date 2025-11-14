@@ -17,9 +17,11 @@ type Event = {
 }
 
 type EventsResponse = {
-  data: Event[]
   ok: boolean
-  total?: number
+  data: {
+    events: Event[]
+    total: number
+  }
 }
 
 export type { Event, EventsResponse }

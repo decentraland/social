@@ -22,12 +22,31 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   width: "100%",
 }))
 
-const MemberList = styled(Box)(() => ({
+const MemberList = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   gap: "10px",
   width: "100%",
   alignItems: "stretch",
+  maxHeight: "600px",
+  overflowY: "auto",
+  overflowX: "hidden",
+  scrollBehavior: "smooth",
+  paddingRight: theme.spacing(1),
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+  "&::-webkit-scrollbar-track": {
+    background: "rgba(255, 255, 255, 0.1)",
+    borderRadius: "4px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    background: "rgba(255, 255, 255, 0.3)",
+    borderRadius: "4px",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.4)",
+    },
+  },
 }))
 
 const MemberItem = styled(Box)(() => ({
@@ -106,7 +125,22 @@ const MemberMutualFriends = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
+const LoadMoreSentinel = styled(Box)(() => ({
+  width: "100%",
+  minHeight: "20px",
+}))
+
+const EmptyState = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: theme.spacing(4),
+  width: "100%",
+}))
+
 export {
+  EmptyState,
+  LoadMoreSentinel,
   MemberAvatar,
   MemberAvatarContainer,
   MemberInfo,

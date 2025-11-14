@@ -1,21 +1,29 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { default as SignIn } from "decentraland-dapps/dist/containers/SignInPage"
 import {
   isConnected,
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
-import { Box } from "decentraland-ui2"
-import { useAppSelector } from "../../../app/hooks"
+import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import { config } from "../../../config"
+import { loginRequest } from "../../../modules/identity/action"
+import { PageLayout } from "../../PageLayout"
 
 const SignInPage = () => {
+  const dispatch = useAppDispatch()
   const isConnectedState = useAppSelector(isConnected)
   const isConnectingState = useAppSelector(isConnecting)
   const [searchParams] = useSearchParams()
   const redirectTo = searchParams.get("redirectTo")
   const navigate = useNavigate()
-  const onConnect = () => {}
+
+  const onConnect = useCallback(
+    (providerType: Parameters<typeof loginRequest>[0]) => {
+      dispatch(loginRequest(providerType))
+    },
+    [dispatch]
+  )
 
   useEffect(() => {
     if (!isConnectedState && !isConnectingState) {
@@ -36,14 +44,9 @@ const SignInPage = () => {
   }, [redirectTo, isConnectedState, isConnectingState, navigate])
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="60vh"
-    >
+    <PageLayout>
       <SignIn isConnected={isConnectedState} handleLoginConnect={onConnect} />
-    </Box>
+    </PageLayout>
   )
 }
 
