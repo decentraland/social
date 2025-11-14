@@ -2,6 +2,10 @@ name: Set rollout by path
 
 on: [deployment_status]
 
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
   set-rollout:
     if: ${{ github.event.deployment.task == 'upload-to-cdn' && github.event.deployment_status.state == 'success' }}

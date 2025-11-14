@@ -21,6 +21,10 @@ on:
         required: true
         default: "100"
 
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
   set-manual-by-path-rollout:
     runs-on: ubuntu-latest
