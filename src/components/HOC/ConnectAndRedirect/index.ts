@@ -1,0 +1,1 @@
+export { ConnectAndRedirect } from "./ConnectAndRedirect"

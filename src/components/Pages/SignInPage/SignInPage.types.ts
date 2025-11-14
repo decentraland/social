@@ -3,4 +3,3 @@ export type Props = {
   isConnecting: boolean
   onConnect: () => void
 }
-

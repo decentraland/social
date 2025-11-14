@@ -1,14 +1,14 @@
 /* eslint-disable */
-const fs = require("fs")
-const dotenv = require("dotenv")
+import fs from "fs"
+import { config, parse } from "dotenv"
 
-dotenv.config()
+config()
 
 let ENV_CONTENT = {}
 
 // read files
 if (fs.existsSync(".env")) {
-  Object.assign(ENV_CONTENT, dotenv.parse(fs.readFileSync(".env")))
+  Object.assign(ENV_CONTENT, parse(fs.readFileSync(".env")))
 }
 const packageJson = JSON.parse(fs.readFileSync("./package.json").toString())
 const publicPackageJson = JSON.parse(

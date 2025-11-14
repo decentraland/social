@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       packageVersion:
-        description: "NPM Version of the release (@dcl/social-site-site)"
+        description: "NPM Version of the release (@dcl/social-site)"
         required: true
         default: ""
       deploymentEnvironment:
@@ -36,7 +36,7 @@ jobs:
           sha: ${{ github.sha }}
 
           # CDN information
-          packageName: "@dcl/social-site-site"
+          packageName: "@dcl/social-site"
           packageVersion: ${{ github.event.inputs.packageVersion }}
 
           # Rollout information

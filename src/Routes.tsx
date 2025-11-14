@@ -1,17 +1,14 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import { usePageTracking } from 'decentraland-dapps/dist/hooks/usePageTracking'
-import CommunitiesLanding from './components/Pages/CommunitiesLanding'
-import SignInPage from './components/Pages/SignInPage'
+import { Route, Routes } from "react-router-dom"
+import { ConnectAndRedirect } from "./components/HOC/ConnectAndRedirect"
+import { CommunityDetail } from "./components/Pages/CommunityDetail"
+import { SignInPage } from "./components/Pages/SignInPage"
 
-export default function AppRoutes() {
-  usePageTracking()
-
+export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<CommunitiesLanding />} />
+      <Route path="/communities/:id" element={<CommunityDetail />} />
       <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="*" element={<ConnectAndRedirect />} />
     </Routes>
   )
 }
-
