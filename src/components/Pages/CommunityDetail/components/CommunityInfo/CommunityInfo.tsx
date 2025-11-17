@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { LocalStorageUtils } from "@dcl/single-sign-on-client"
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { JumpIn } from "decentraland-ui2"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
@@ -29,27 +29,20 @@ import type { Community } from "../../../../../features/communities/types"
 
 type CommunityInfoProps = {
   community: Community
-  isConnected: boolean
+  isLoggedIn: boolean
   address?: string
-  isJoining: string | null
+  isPerformingCommunityAction: boolean
   isMember: boolean
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
   onLeave: (communityId: string) => Promise<void>
 }
 
-const JUMP_IN_MODAL_PROPS = {
-  title: "Download Decentraland",
-  description:
-    "To jump into this community, you need to download Decentraland.",
-  buttonLabel: "Download",
-}
-
 export const CommunityInfo = ({
   community,
-  isConnected,
+  isLoggedIn,
   address,
-  isJoining,
+  isPerformingCommunityAction,
   isMember,
   canViewContent,
   onJoin,
@@ -60,21 +53,14 @@ export const CommunityInfo = ({
   const isPrivate = community.privacy === "private"
 
   const handleJoinClick = useCallback(() => {
-    if (!isConnected || !address) {
-      const currentPath = `/communities/${community.id}`
-      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
-      return
-    }
-
-    const identity = LocalStorageUtils.getIdentity(address.toLowerCase())
-    if (!identity) {
+    if (!isLoggedIn || !address) {
       const currentPath = `/communities/${community.id}`
       navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
       return
     }
 
     onJoin(community.id)
-  }, [isConnected, address, navigate, community.id, onJoin])
+  }, [isLoggedIn, address, navigate, community.id, onJoin])
 
   const handleButtonClick = useCallback(() => {
     if (isMember) {
@@ -139,11 +125,11 @@ export const CommunityInfo = ({
               <JoinButton
                 variant="outlined"
                 onClick={handleButtonClick}
-                disabled={isJoining === community.id}
+                disabled={isPerformingCommunityAction}
               >
-                {isJoining === community.id ? "Loading..." : "Leave"}
+                {isPerformingCommunityAction ? "Loading..." : "Leave"}
               </JoinButton>
-            ) : !isConnected ? (
+            ) : !isLoggedIn ? (
               <JoinButton
                 variant="outlined"
                 onClick={() => {
@@ -160,17 +146,25 @@ export const CommunityInfo = ({
                 <JoinButton
                   variant="outlined"
                   onClick={handleJoinClick}
-                  disabled={isJoining === community.id}
+                  disabled={isPerformingCommunityAction}
                 >
-                  {isJoining === community.id
+                  {isPerformingCommunityAction
                     ? "Loading..."
                     : "REQUEST TO JOIN"}
                 </JoinButton>
-                {isConnected && (
+                {isLoggedIn && (
                   <JumpIn
                     variant="button"
                     buttonText="JUMP IN"
-                    modalProps={JUMP_IN_MODAL_PROPS}
+                    modalProps={{
+                      title: t("community_info.jump_in_modal.title"),
+                      description: t(
+                        "community_info.jump_in_modal.description"
+                      ),
+                      buttonLabel: t(
+                        "community_info.jump_in_modal.button_label"
+                      ),
+                    }}
                     buttonProps={{
                       variant: "contained",
                       sx: {
@@ -186,9 +180,9 @@ export const CommunityInfo = ({
               <JoinButton
                 variant="outlined"
                 onClick={handleButtonClick}
-                disabled={isJoining === community.id}
+                disabled={isPerformingCommunityAction}
               >
-                {isJoining === community.id ? "Loading..." : "JOIN"}
+                {isPerformingCommunityAction ? "Loading..." : "JOIN"}
               </JoinButton>
             )}
           </ActionButtons>

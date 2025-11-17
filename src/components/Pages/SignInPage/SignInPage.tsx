@@ -1,29 +1,21 @@
-import { useCallback, useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useEffect } from "react"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { default as SignIn } from "decentraland-dapps/dist/containers/SignInPage"
 import {
   isConnected,
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
-import { useAppDispatch, useAppSelector } from "../../../app/hooks"
+import { useAppSelector } from "../../../app/hooks"
 import { config } from "../../../config"
-import { loginRequest } from "../../../modules/identity/action"
 import { PageLayout } from "../../PageLayout"
 
 const SignInPage = () => {
-  const dispatch = useAppDispatch()
   const isConnectedState = useAppSelector(isConnected)
   const isConnectingState = useAppSelector(isConnecting)
   const [searchParams] = useSearchParams()
+  const { pathname } = useLocation()
   const redirectTo = searchParams.get("redirectTo")
   const navigate = useNavigate()
-
-  const onConnect = useCallback(
-    (providerType: Parameters<typeof loginRequest>[0]) => {
-      dispatch(loginRequest(providerType))
-    },
-    [dispatch]
-  )
 
   useEffect(() => {
     if (!isConnectedState && !isConnectingState) {
@@ -32,20 +24,24 @@ const SignInPage = () => {
       )
         ? "/social"
         : ""
+      const fallbackRedirect = redirectTo || pathname
       window.location.replace(
-        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(`${basename}${redirectTo || "/"}`)}`
+        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(`${basename}${fallbackRedirect}`)}`
       )
       return
     }
 
     if (redirectTo && isConnectedState) {
-      navigate(decodeURIComponent(redirectTo))
+      const decodedRedirect = decodeURIComponent(redirectTo)
+      if (decodedRedirect !== pathname) {
+        navigate(decodedRedirect)
+      }
     }
-  }, [redirectTo, isConnectedState, isConnectingState, navigate])
+  }, [redirectTo, isConnectedState, isConnectingState, navigate, pathname])
 
   return (
     <PageLayout>
-      <SignIn isConnected={isConnectedState} handleLoginConnect={onConnect} />
+      <SignIn isConnected={isConnectedState} />
     </PageLayout>
   )
 }

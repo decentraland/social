@@ -1,4 +1,3 @@
-import { AuthIdentity } from "@dcl/crypto"
 import {
   CommunityMembersResponse,
   CommunityResponse,
@@ -6,16 +5,6 @@ import {
   LeaveCommunityResponse,
 } from "./types"
 import { client } from "../../services/client"
-
-type JoinCommunityRequest = {
-  id: string
-  identity: AuthIdentity
-}
-
-type LeaveCommunityRequest = {
-  id: string
-  identity: AuthIdentity
-}
 
 const communitiesApi = client.injectEndpoints({
   endpoints: (builder) => ({
@@ -69,34 +58,26 @@ const communitiesApi = client.injectEndpoints({
         { id }: { id: string }
       ) => [{ type: "Community", id: `${id}-members` }],
     }),
-    joinCommunity: builder.mutation<
-      JoinCommunityResponse,
-      JoinCommunityRequest
-    >({
-      query: ({ id, identity }: JoinCommunityRequest) => ({
+    joinCommunity: builder.mutation<JoinCommunityResponse, string>({
+      query: (id: string) => ({
         url: `/v1/communities/${id}/join`,
         method: "POST",
-        body: { identity },
       }),
       invalidatesTags: (
         _result: JoinCommunityResponse | undefined,
         _error: unknown,
-        { id }: JoinCommunityRequest
+        id: string
       ) => [{ type: "Community", id }],
     }),
-    leaveCommunity: builder.mutation<
-      LeaveCommunityResponse,
-      LeaveCommunityRequest
-    >({
-      query: ({ id, identity }: LeaveCommunityRequest) => ({
+    leaveCommunity: builder.mutation<LeaveCommunityResponse, string>({
+      query: (id: string) => ({
         url: `/v1/communities/${id}/leave`,
         method: "POST",
-        body: { identity },
       }),
       invalidatesTags: (
         _result: LeaveCommunityResponse | undefined,
         _error: unknown,
-        { id }: LeaveCommunityRequest
+        id: string
       ) => [{ type: "Community", id }],
     }),
   }),

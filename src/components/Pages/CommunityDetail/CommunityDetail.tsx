@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react"
 import { useParams } from "react-router-dom"
-import { LocalStorageUtils } from "@dcl/single-sign-on-client"
 import { getData as getWallet } from "decentraland-dapps/dist/modules/wallet/selectors"
 import {
   Alert,
@@ -23,6 +22,7 @@ import {
 } from "../../../features/communities/communities.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
+import { hasValidIdentity } from "../../../utils/identity"
 import { PageLayout } from "../../PageLayout"
 import {
   BottomSection,
@@ -36,7 +36,6 @@ function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const wallet = useAppSelector(getWallet)
   const [error, setError] = useState<string | null>(null)
-  const [isJoining, setIsJoining] = useState<string | null>(null)
 
   const {
     data,
@@ -44,10 +43,19 @@ function CommunityDetail() {
     error: queryError,
     isError,
   } = useGetCommunityByIdQuery(id || "", { skip: !id })
-  const [joinCommunity] = useJoinCommunityMutation()
-  const [leaveCommunity] = useLeaveCommunityMutation()
+  const [
+    joinCommunity,
+    { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
+  ] = useJoinCommunityMutation()
+  const [
+    leaveCommunity,
+    { isLoading: isLeaving, error: leaveError, reset: resetLeaveMutation },
+  ] = useLeaveCommunityMutation()
 
-  const isConnected = !!wallet
+  const isPerformingCommunityAction = isJoining || isLeaving
+  const mutationError = joinError || leaveError
+
+  const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
   const community = data?.data
 
@@ -77,56 +85,43 @@ function CommunityDetail() {
     enabled: !!id && canViewContent,
   })
 
-  const displayError = error || (isError ? getErrorMessage(queryError) : null)
+  const displayError =
+    error ||
+    (mutationError ? getErrorMessage(mutationError) : null) ||
+    (isError ? getErrorMessage(queryError) : null)
 
   const handleJoinCommunity = useCallback(
     async (communityId: string) => {
-      if (!isConnected || !address) {
-        return
-      }
-
-      const identity = LocalStorageUtils.getIdentity(address.toLowerCase())
-      if (!identity) {
+      if (!isLoggedIn || !address) {
         return
       }
 
       try {
-        setIsJoining(communityId)
-        await joinCommunity({ id: communityId, identity }).unwrap()
+        await joinCommunity(communityId).unwrap()
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to join community"
         )
-      } finally {
-        setIsJoining(null)
       }
     },
-    [isConnected, address, joinCommunity]
+    [isLoggedIn, address, joinCommunity]
   )
 
   const handleLeaveCommunity = useCallback(
     async (communityId: string) => {
-      if (!isConnected || !address) {
-        return
-      }
-
-      const identity = LocalStorageUtils.getIdentity(address.toLowerCase())
-      if (!identity) {
+      if (!isLoggedIn || !address) {
         return
       }
 
       try {
-        setIsJoining(communityId)
-        await leaveCommunity({ id: communityId, identity }).unwrap()
+        await leaveCommunity(communityId).unwrap()
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to leave community"
         )
-      } finally {
-        setIsJoining(null)
       }
     },
-    [isConnected, address, leaveCommunity]
+    [isLoggedIn, address, leaveCommunity]
   )
 
   if (isLoading) {
@@ -144,13 +139,19 @@ function CommunityDetail() {
     )
   }
 
+  const handleErrorClose = useCallback(() => {
+    setError(null)
+    resetJoinMutation()
+    resetLeaveMutation()
+  }, [resetJoinMutation, resetLeaveMutation])
+
   if (displayError) {
     return (
       <ContentContainer>
         <Snackbar
           open={!!displayError}
           autoHideDuration={6000}
-          onClose={() => setError(null)}
+          onClose={handleErrorClose}
         >
           <Alert severity="error">{displayError}</Alert>
         </Snackbar>
@@ -174,9 +175,9 @@ function CommunityDetail() {
         <ContentContainer>
           <CommunityInfo
             community={community}
-            isConnected={isConnected}
+            isLoggedIn={isLoggedIn}
             address={address}
-            isJoining={isJoining}
+            isPerformingCommunityAction={isPerformingCommunityAction}
             isMember={member}
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}

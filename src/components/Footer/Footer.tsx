@@ -1,5 +1,5 @@
-import { Footer as BaseFooter } from "decentraland-dapps/dist/containers"
+import { Footer as BaseFooter } from "decentraland-ui2"
 
-const Footer = () => <BaseFooter locales={["en"]} />
+const Footer = () => <BaseFooter />
 
 export { Footer }

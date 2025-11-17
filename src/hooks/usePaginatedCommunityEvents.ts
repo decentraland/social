@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { usePaginatedQuery } from "./usePaginatedQuery"
 import { useGetCommunityEventsQuery } from "../features/events/events.client"
+import type { EventsResponse } from "../features/events/types"
 
 const DEFAULT_LIMIT = 12
 
@@ -12,65 +13,31 @@ export const usePaginatedCommunityEvents = ({
   communityId,
   enabled = true,
 }: UsePaginatedCommunityEventsOptions) => {
-  const [limit] = useState(DEFAULT_LIMIT)
-  const [currentOffset, setCurrentOffset] = useState(0)
-  const dataRef = useRef<{ total: number; count: number } | null>(null)
-  const isFetchingRef = useRef<boolean>(false)
-
-  useEffect(() => {
-    setCurrentOffset(0)
-    dataRef.current = null
-  }, [communityId])
-
-  const { data, isLoading, isFetching } = useGetCommunityEventsQuery(
-    {
-      communityId,
-      limit,
-      offset: currentOffset,
+  const result = usePaginatedQuery<
+    { communityId: string; limit?: number; offset?: number },
+    EventsResponse,
+    EventsResponse["data"]["events"]
+  >({
+    queryHook: useGetCommunityEventsQuery,
+    queryArg: { communityId },
+    enabled: enabled && !!communityId,
+    defaultLimit: DEFAULT_LIMIT,
+    extractItems: (data) => data.data.events || [],
+    extractTotal: (data) => data.data.total || 0,
+    getHasMore: (data) => {
+      const currentCount = data.data.events?.length || 0
+      const total = data.data.total || 0
+      return currentCount < total
     },
-    {
-      skip: !enabled || !communityId,
-    }
-  )
-
-  useEffect(() => {
-    if (data?.data) {
-      dataRef.current = {
-        total: data.data.total || 0,
-        count: data.data.events?.length || 0,
-      }
-    }
-    isFetchingRef.current = isFetching
-  }, [data, isFetching])
-
-  const total = data?.data?.total || 0
-  const currentCount = data?.data?.events?.length || 0
-  const hasMore = currentCount < total
-
-  const loadMore = useCallback(() => {
-    const currentData = dataRef.current
-    if (
-      !currentData ||
-      currentData.count >= currentData.total ||
-      isFetchingRef.current
-    ) {
-      return
-    }
-    setCurrentOffset((prev) => {
-      const nextOffset = prev + limit
-      if (nextOffset >= currentData.total) {
-        return prev
-      }
-      return nextOffset
-    })
-  }, [limit])
+    resetDependency: communityId,
+  })
 
   return {
-    events: data?.data?.events || [],
-    isLoading: isLoading && currentOffset === 0,
-    isFetchingMore: isFetching && currentOffset > 0,
-    hasMore,
-    loadMore,
-    total,
+    events: result.items,
+    isLoading: result.isLoading,
+    isFetchingMore: result.isFetchingMore,
+    hasMore: result.hasMore,
+    loadMore: result.loadMore,
+    total: result.total,
   }
 }
