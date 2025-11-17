@@ -19,7 +19,7 @@ const InfoSection = styled(Box)(({ theme }) => ({
 const CommunityImage = styled(Box)(({ theme }) => ({
   width: "412px",
   height: "412px",
-  borderRadius: "23.712px",
+  borderRadius: theme.shape.borderRadius,
   overflow: "hidden",
   flexShrink: 0,
   backgroundColor: theme.palette.background.default,
@@ -64,11 +64,10 @@ const PrivacyIcon = styled(Box)(({ theme }) => ({
 }))
 
 const PrivacyBadgeText = styled(Typography)(({ theme }) => ({
+  ...theme.typography.body2,
   fontSize: "15.82px",
-  fontWeight: 400,
   lineHeight: 1,
-  color: "#a09ba8",
-  fontFamily: theme.typography.fontFamily,
+  color: theme.palette.text.secondary,
   textTransform: "capitalize",
 }))
 
@@ -102,14 +101,11 @@ const OwnerAvatar = styled(Avatar)(() => ({
 const OwnerText = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  fontSize: "16px",
-  fontWeight: 400,
-  lineHeight: 1.5,
-  color: "#fcfcfc",
-  fontFamily: theme.typography.fontFamily,
+  ...theme.typography.body2,
+  color: theme.palette.common.white,
   "& .owner-name": {
-    color: "#ff2d55",
-    marginLeft: "4px",
+    color: theme.palette.error.main,
+    marginLeft: theme.spacing(1),
   },
 }))
 
@@ -132,18 +128,29 @@ const JoinButton = styled(Button)(({ theme }) => ({
   minWidth: "184px",
   width: "184px",
   height: "40px",
-  border: "2px solid #fcfcfc",
-  borderRadius: "6px",
+  border: `2px solid ${theme.palette.common.white}`,
+  borderRadius: theme.shape.borderRadius,
   textTransform: "uppercase",
-  fontSize: "14px",
+  ...theme.typography.caption,
   fontWeight: 600,
   lineHeight: 1,
-  color: "#fcfcfc",
-  fontFamily: theme.typography.fontFamily,
+  color: theme.palette.common.white,
   backgroundColor: "transparent",
   "&:hover": {
-    border: "2px solid #fcfcfc",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    border: `2px solid ${theme.palette.common.white}`,
+    backgroundColor: theme.palette.action.hover,
+  },
+  "&:focus-visible": {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2,
+  },
+  "&:active": {
+    transform: "scale(0.98)",
+  },
+  "&:disabled": {
+    backgroundColor: theme.palette.action.disabledBackground,
+    color: theme.palette.action.disabled,
+    cursor: "not-allowed",
   },
 }))
 
@@ -160,11 +167,9 @@ const TitleRow = styled(Box)(({ theme }) => ({
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-  fontSize: "48px",
+  ...theme.typography.h1,
   fontWeight: 600,
-  lineHeight: 1.167,
-  color: "#ffffff",
-  fontFamily: theme.typography.fontFamily,
+  color: theme.palette.common.white,
 }))
 
 const PrivacyMembersRow = styled(Box)(({ theme }) => ({
@@ -174,29 +179,24 @@ const PrivacyMembersRow = styled(Box)(({ theme }) => ({
   flexWrap: "wrap",
 }))
 
-const PrivacyDivider = styled(Box)(() => ({
+const PrivacyDivider = styled(Box)(({ theme }) => ({
   width: "1px",
-  height: "13.18px",
-  backgroundColor: "rgba(255, 255, 255, 0.3)",
+  height: theme.spacing(3.295),
+  backgroundColor: theme.palette.divider,
   flexShrink: 0,
 }))
 
 const PrivacyMembersText = styled(Typography)(({ theme }) => ({
-  fontSize: "16px",
-  fontWeight: 400,
-  lineHeight: 1.75,
-  color: "#fcfcfc",
-  fontFamily: theme.typography.fontFamily,
+  ...theme.typography.body2,
+  color: theme.palette.common.white,
 }))
 
 const Description = styled(Typography)(({ theme }) => ({
-  fontSize: "20px",
+  ...theme.typography.body1,
   fontWeight: 500,
-  lineHeight: 1.6,
-  color: "#ecebed",
+  color: theme.palette.text.secondary,
   whiteSpace: "pre-wrap",
   marginTop: "0px",
-  fontFamily: theme.typography.fontFamily,
 }))
 
 export {

@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppSelector } from "../../../app/hooks"
 import {
@@ -381,26 +382,28 @@ describe("when rendering the community detail page", () => {
           expect(screen.getByTestId("members-list")).toBeInTheDocument()
         })
 
-        it("should call onJoin when join button is clicked", async () => {
+        it("should call onJoin with the community id when join button is clicked", async () => {
+          const user = userEvent.setup()
           mockJoinUnwrap.mockResolvedValue({})
 
           renderCommunityDetail()
 
           const joinButton = screen.getByText("Join")
-          fireEvent.click(joinButton)
+          await user.click(joinButton)
 
           await waitFor(() => {
             expect(mockJoinMutation).toHaveBeenCalledWith("community-1")
           })
         })
 
-        it("should call onLeave when leave button is clicked", async () => {
+        it("should call onLeave with the community id when leave button is clicked", async () => {
+          const user = userEvent.setup()
           mockLeaveUnwrap.mockResolvedValue({})
 
           renderCommunityDetail()
 
           const leaveButton = screen.getByText("Leave")
-          fireEvent.click(leaveButton)
+          await user.click(leaveButton)
 
           await waitFor(() => {
             expect(mockLeaveMutation).toHaveBeenCalledWith("community-1")
@@ -408,14 +411,19 @@ describe("when rendering the community detail page", () => {
         })
 
         describe("and joining the community fails", () => {
-          it("should display an error message", async () => {
-            const error = new Error("Failed to join")
-            mockJoinUnwrap.mockRejectedValue(error)
+          let joinError: Error
 
+          beforeEach(() => {
+            joinError = new Error("Failed to join")
+            mockJoinUnwrap.mockRejectedValue(joinError)
+          })
+
+          it("should display the error message from the failed join attempt", async () => {
+            const user = userEvent.setup()
             renderCommunityDetail()
 
             const joinButton = screen.getByText("Join")
-            fireEvent.click(joinButton)
+            await user.click(joinButton)
 
             await waitFor(() => {
               expect(screen.getByText("Failed to join")).toBeInTheDocument()
@@ -424,14 +432,19 @@ describe("when rendering the community detail page", () => {
         })
 
         describe("and leaving the community fails", () => {
-          it("should display an error message", async () => {
-            const error = new Error("Failed to leave")
-            mockLeaveUnwrap.mockRejectedValue(error)
+          let leaveError: Error
 
+          beforeEach(() => {
+            leaveError = new Error("Failed to leave")
+            mockLeaveUnwrap.mockRejectedValue(leaveError)
+          })
+
+          it("should display the error message from the failed leave attempt", async () => {
+            const user = userEvent.setup()
             renderCommunityDetail()
 
             const leaveButton = screen.getByText("Leave")
-            fireEvent.click(leaveButton)
+            await user.click(leaveButton)
 
             await waitFor(() => {
               expect(screen.getByText("Failed to leave")).toBeInTheDocument()

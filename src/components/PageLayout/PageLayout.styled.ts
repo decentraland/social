@@ -15,8 +15,8 @@ const PageContent = styled(Box)(() => ({
   width: "100%",
 }))
 
-const BackToTopButton = styled(BackToTopButtonBase)(() => ({
-  width: "170px",
+const BackToTopButton = styled(BackToTopButtonBase)(({ theme }) => ({
+  width: theme.spacing(42.5),
 }))
 
 export { PageContainer, PageContent, BackToTopButton }

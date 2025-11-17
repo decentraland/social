@@ -13,7 +13,11 @@ import { EventsList } from "./components/EventsList"
 import { MembersList } from "./components/MembersList"
 import { PrivateMessage } from "./components/PrivateMessage"
 import { isMember } from "./utils/communityUtils"
-import { getErrorMessage } from "./utils/errorUtils"
+import {
+  getErrorMessage,
+  isErrorWithMessage,
+  isFetchBaseQueryError,
+} from "./utils/errorUtils"
 import { useAppSelector } from "../../../app/hooks"
 import {
   useGetCommunityByIdQuery,
@@ -99,9 +103,14 @@ function CommunityDetail() {
       try {
         await joinCommunity(communityId).unwrap()
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to join community"
-        )
+        if (isFetchBaseQueryError(err)) {
+          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || "Failed to join community")
+        } else if (isErrorWithMessage(err)) {
+          setError(err.message)
+        } else {
+          setError("Failed to join community")
+        }
       }
     },
     [isLoggedIn, address, joinCommunity]
@@ -116,9 +125,14 @@ function CommunityDetail() {
       try {
         await leaveCommunity(communityId).unwrap()
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to leave community"
-        )
+        if (isFetchBaseQueryError(err)) {
+          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || "Failed to leave community")
+        } else if (isErrorWithMessage(err)) {
+          setError(err.message)
+        } else {
+          setError("Failed to leave community")
+        }
       }
     },
     [isLoggedIn, address, leaveCommunity]

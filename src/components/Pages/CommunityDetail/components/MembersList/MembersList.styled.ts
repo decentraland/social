@@ -4,7 +4,7 @@ const MembersSection = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
-  gap: "12px",
+  gap: theme.spacing(3),
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -12,11 +12,11 @@ const MembersSection = styled(Box)(({ theme }) => ({
 }))
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "16px",
+  ...theme.typography.body2,
   fontWeight: 600,
   textTransform: "uppercase",
   color: theme.palette.common.white,
-  paddingBottom: "24px",
+  paddingBottom: theme.spacing(6),
   borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
   lineHeight: 1,
   width: "100%",
@@ -25,7 +25,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 const MemberList = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "10px",
+  gap: theme.spacing(2.5),
   width: "100%",
   alignItems: "stretch",
   maxHeight: "600px",
@@ -34,39 +34,39 @@ const MemberList = styled(Box)(({ theme }) => ({
   scrollBehavior: "smooth",
   paddingRight: theme.spacing(1),
   "&::-webkit-scrollbar": {
-    width: "8px",
+    width: theme.spacing(2),
   },
   "&::-webkit-scrollbar-track": {
     background: "rgba(255, 255, 255, 0.1)",
-    borderRadius: "4px",
+    borderRadius: theme.spacing(1),
   },
   "&::-webkit-scrollbar-thumb": {
     background: "rgba(255, 255, 255, 0.3)",
-    borderRadius: "4px",
+    borderRadius: theme.spacing(1),
     "&:hover": {
       background: "rgba(255, 255, 255, 0.4)",
     },
   },
 }))
 
-const MemberItem = styled(Box)(() => ({
+const MemberItem = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "10px",
-  padding: "10px",
+  gap: theme.spacing(2.5),
+  padding: theme.spacing(2.5),
   backgroundColor: "rgba(0, 0, 0, 0.3)",
-  borderRadius: "12px",
+  borderRadius: theme.shape.borderRadius,
   width: "100%",
   boxSizing: "border-box",
 }))
 
-const MemberAvatarContainer = styled(Box)(() => ({
+const MemberAvatarContainer = styled(Box)(({ theme }) => ({
   position: "relative",
-  width: "60px",
-  height: "60px",
+  width: theme.spacing(15),
+  height: theme.spacing(15),
   borderRadius: "50%",
   backgroundColor: "#caff73",
-  border: "3px solid rgba(255, 255, 255, 0.5)",
+  border: `${theme.spacing(0.75)} solid rgba(255, 255, 255, 0.5)`,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -81,53 +81,48 @@ const MemberAvatar = styled(Avatar)(() => ({
   borderRadius: "50%",
 }))
 
-const MemberInfo = styled(Box)(() => ({
+const MemberInfo = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: "2px",
+  gap: theme.spacing(0.5),
   minWidth: 0,
   width: "100%",
 }))
 
 const MemberName = styled(Typography)(({ theme }) => ({
-  fontSize: "16px",
+  ...theme.typography.body2,
   fontWeight: 600,
   lineHeight: "normal",
-  color: "#caff73",
+  color: theme.palette.success.main,
   textTransform: "capitalize",
-  fontFamily: theme.typography.fontFamily,
 }))
 
 const MemberRole = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "flex-start",
   backgroundColor: "rgba(255, 255, 255, 0.1)",
-  borderRadius: "6px",
-  padding: "5px 4px",
-  gap: "4px",
+  borderRadius: theme.shape.borderRadius,
+  padding: `${theme.spacing(1.25)} ${theme.spacing(1)}`,
+  gap: theme.spacing(1),
   width: "fit-content",
-  fontSize: "12px",
-  fontWeight: 400,
+  ...theme.typography.caption,
   lineHeight: "normal",
   color: theme.palette.common.white,
-  fontFamily: theme.typography.fontFamily,
   textTransform: "capitalize",
 }))
 
 const MemberMutualFriends = styled(Typography)(({ theme }) => ({
   alignSelf: "stretch",
-  fontSize: "12px",
-  fontWeight: 400,
+  ...theme.typography.caption,
   lineHeight: "normal",
-  color: "rgba(255, 255, 255, 0.7)",
+  color: theme.palette.text.secondary,
   textTransform: "capitalize",
-  fontFamily: theme.typography.fontFamily,
 }))
 
-const LoadMoreSentinel = styled(Box)(() => ({
+const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   width: "100%",
-  minHeight: "20px",
+  minHeight: theme.spacing(5),
 }))
 
 const EmptyState = styled(Box)(({ theme }) => ({

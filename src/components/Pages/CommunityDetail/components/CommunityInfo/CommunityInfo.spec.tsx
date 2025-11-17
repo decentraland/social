@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
+import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
 import type { Community } from "../../../../../features/communities/types"
 
@@ -65,12 +66,24 @@ describe("when rendering the community info", () => {
   let mockOnJoin: jest.Mock
   let mockOnLeave: jest.Mock
   let mockNavigateFn: jest.Mock
+  let defaultCommunity: Community
 
   beforeEach(() => {
     mockOnJoin = jest.fn()
     mockOnLeave = jest.fn()
     mockNavigateFn = jest.fn()
     mockNavigate.mockReturnValue(mockNavigateFn)
+    defaultCommunity = {
+      id: "community-1",
+      name: "Test Community",
+      description: "Test Description",
+      privacy: "public",
+      visibility: "all",
+      active: true,
+      membersCount: 100,
+      ownerAddress: "0x123",
+      ownerName: "Test Owner",
+    }
   })
 
   afterEach(() => {
@@ -78,112 +91,72 @@ describe("when rendering the community info", () => {
   })
 
   it("should display the community name", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "public",
-      visibility: "all",
-      active: true,
-      membersCount: 100,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
-
-    renderCommunityInfo({ community })
+    renderCommunityInfo({ community: defaultCommunity })
 
     expect(screen.getByText("Test Community")).toBeInTheDocument()
   })
 
-  it("should display the community privacy badge", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "private",
-      visibility: "all",
-      active: true,
-      membersCount: 100,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
+  describe("and the community is private", () => {
+    let privateCommunity: Community
 
-    renderCommunityInfo({ community })
+    beforeEach(() => {
+      privateCommunity = {
+        ...defaultCommunity,
+        privacy: "private",
+      }
+    })
 
-    expect(screen.getByText("private")).toBeInTheDocument()
+    it("should display the privacy badge with private text", () => {
+      renderCommunityInfo({ community: privateCommunity })
+
+      expect(screen.getByText("private")).toBeInTheDocument()
+    })
   })
 
-  it("should display the members count", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "public",
-      visibility: "all",
-      active: true,
-      membersCount: 1500,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
+  describe("and the community has many members", () => {
+    let largeCommunity: Community
 
-    renderCommunityInfo({ community })
+    beforeEach(() => {
+      largeCommunity = {
+        ...defaultCommunity,
+        membersCount: 1500,
+      }
+    })
 
-    expect(screen.getByText(/1.5K Members/)).toBeInTheDocument()
+    it("should display the formatted members count", () => {
+      renderCommunityInfo({ community: largeCommunity })
+
+      expect(screen.getByText(/1.5K Members/)).toBeInTheDocument()
+    })
   })
 
-  it("should display the owner name", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "public",
-      visibility: "all",
-      active: true,
-      membersCount: 100,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
-
-    renderCommunityInfo({ community })
+  it("should display the owner name with By prefix", () => {
+    renderCommunityInfo({ community: defaultCommunity })
 
     expect(screen.getByText(/By/)).toBeInTheDocument()
     expect(screen.getByText("Test Owner")).toBeInTheDocument()
   })
 
-  it("should display the community description when canViewContent is true", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "public",
-      visibility: "all",
-      active: true,
-      membersCount: 100,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
+  describe("and content viewing is enabled", () => {
+    it("should display the community description", () => {
+      renderCommunityInfo({
+        community: defaultCommunity,
+        canViewContent: true,
+      })
 
-    renderCommunityInfo({ community, canViewContent: true })
-
-    expect(screen.getByText("Test Description")).toBeInTheDocument()
+      expect(screen.getByText("Test Description")).toBeInTheDocument()
+    })
   })
 
-  it("should not display the community description when canViewContent is false", () => {
-    const community: Community = {
-      id: "community-1",
-      name: "Test Community",
-      description: "Test Description",
-      privacy: "public",
-      visibility: "all",
-      active: true,
-      membersCount: 100,
-      ownerAddress: "0x123",
-      ownerName: "Test Owner",
-    }
+  describe("and content viewing is disabled", () => {
+    it("should not display the community description", () => {
+      renderCommunityInfo({
+        community: defaultCommunity,
+        canViewContent: false,
+      })
 
-    renderCommunityInfo({ community, canViewContent: false })
-
-    expect(screen.queryByText("Test Description")).not.toBeInTheDocument()
+      expect(screen.queryByText("Test Description")).not.toBeInTheDocument()
+    })
   })
 
   describe("and the user is not logged in", () => {
@@ -209,11 +182,12 @@ describe("when rendering the community info", () => {
       expect(screen.getByText("SIGN IN TO JOIN")).toBeInTheDocument()
     })
 
-    it("should navigate to sign in page when sign in button is clicked", () => {
+    it("should navigate to sign in page when sign in button is clicked", async () => {
+      const user = userEvent.setup()
       renderCommunityInfo({ community, isLoggedIn: false })
 
       const signInButton = screen.getByText("SIGN IN TO JOIN")
-      fireEvent.click(signInButton)
+      await user.click(signInButton)
 
       expect(mockNavigateFn).toHaveBeenCalledWith(
         "/sign-in?redirectTo=" + encodeURIComponent("/communities/community-1")
@@ -267,7 +241,8 @@ describe("when rendering the community info", () => {
           expect(screen.getByText("JOIN")).toBeInTheDocument()
         })
 
-        it("should call onJoin when join button is clicked", () => {
+        it("should call onJoin with the community id when join button is clicked", async () => {
+          const user = userEvent.setup()
           renderCommunityInfo({
             community,
             isLoggedIn: true,
@@ -277,7 +252,7 @@ describe("when rendering the community info", () => {
           })
 
           const joinButton = screen.getByText("JOIN")
-          fireEvent.click(joinButton)
+          await user.click(joinButton)
 
           expect(mockOnJoin).toHaveBeenCalledWith("community-1")
         })
@@ -322,7 +297,8 @@ describe("when rendering the community info", () => {
           expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
         })
 
-        it("should call onJoin when request to join button is clicked", () => {
+        it("should call onJoin with the community id when request to join button is clicked", async () => {
+          const user = userEvent.setup()
           renderCommunityInfo({
             community,
             isLoggedIn: true,
@@ -332,7 +308,7 @@ describe("when rendering the community info", () => {
           })
 
           const requestButton = screen.getByText("REQUEST TO JOIN")
-          fireEvent.click(requestButton)
+          await user.click(requestButton)
 
           expect(mockOnJoin).toHaveBeenCalledWith("community-1")
         })
@@ -391,7 +367,8 @@ describe("when rendering the community info", () => {
         expect(screen.getByText("Leave")).toBeInTheDocument()
       })
 
-      it("should call onLeave when leave button is clicked", () => {
+      it("should call onLeave with the community id when leave button is clicked", async () => {
+        const user = userEvent.setup()
         renderCommunityInfo({
           community: memberCommunity,
           isLoggedIn: true,
@@ -401,7 +378,7 @@ describe("when rendering the community info", () => {
         })
 
         const leaveButton = screen.getByText("Leave")
-        fireEvent.click(leaveButton)
+        await user.click(leaveButton)
 
         expect(mockOnLeave).toHaveBeenCalledWith("community-1")
       })
