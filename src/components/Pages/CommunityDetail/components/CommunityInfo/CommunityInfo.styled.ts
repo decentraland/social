@@ -2,12 +2,12 @@ import { Avatar, Box, Button, Typography, styled } from "decentraland-ui2"
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "60px",
+  gap: theme.spacing(15),
   alignItems: "center",
-  paddingTop: "80px",
-  paddingBottom: "60px",
-  paddingLeft: "120px",
-  paddingRight: "120px",
+  paddingTop: theme.spacing(20),
+  paddingBottom: theme.spacing(15),
+  paddingLeft: theme.spacing(30),
+  paddingRight: theme.spacing(30),
   backgroundColor: "rgba(0, 0, 0, 0.3)",
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
@@ -35,24 +35,24 @@ const CommunityImageContent = styled("img")({
   objectFit: "cover",
 })
 
-const CommunityDetails = styled(Box)(() => ({
+const CommunityDetails = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: "48px",
+  gap: theme.spacing(12),
   minWidth: 0,
 }))
 
-const PrivacyBadgeContainer = styled(Box)(() => ({
+const PrivacyBadgeContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "5.272px",
-  height: "22.992px",
+  gap: theme.spacing(1.318),
+  height: theme.spacing(5.748),
 }))
 
-const PrivacyIcon = styled(Box)(() => ({
-  width: "13.18px",
-  height: "13.18px",
+const PrivacyIcon = styled(Box)(({ theme }) => ({
+  width: theme.spacing(3.295),
+  height: theme.spacing(3.295),
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
@@ -72,19 +72,19 @@ const PrivacyBadgeText = styled(Typography)(({ theme }) => ({
   textTransform: "capitalize",
 }))
 
-const OwnerRow = styled(Box)(() => ({
+const OwnerRow = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "10px",
+  gap: theme.spacing(2.5),
 }))
 
-const OwnerAvatarContainer = styled(Box)(() => ({
+const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
   position: "relative",
-  width: "28px",
-  height: "28px",
+  width: theme.spacing(7),
+  height: theme.spacing(7),
   borderRadius: "50%",
   backgroundColor: "#31C11A",
-  border: "2.286px solid rgba(255, 255, 255, 0.5)",
+  border: `${theme.spacing(0.5715)} solid rgba(255, 255, 255, 0.5)`,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -115,8 +115,8 @@ const OwnerText = styled(Box)(({ theme }) => ({
 
 const ActionButtons = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "16px",
-  paddingTop: "12px",
+  gap: theme.spacing(4),
+  paddingTop: theme.spacing(3),
   paddingBottom: 0,
   paddingLeft: 0,
   paddingRight: 0,
@@ -147,16 +147,16 @@ const JoinButton = styled(Button)(({ theme }) => ({
   },
 }))
 
-const TitleSubtitleContainer = styled(Box)(() => ({
+const TitleSubtitleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "12px",
+  gap: theme.spacing(3),
 }))
 
-const TitleRow = styled(Box)(() => ({
+const TitleRow = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "16px",
+  gap: theme.spacing(4),
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -167,10 +167,10 @@ const Title = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
-const PrivacyMembersRow = styled(Box)(() => ({
+const PrivacyMembersRow = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "4px",
+  gap: theme.spacing(1),
   flexWrap: "wrap",
 }))
 

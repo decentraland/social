@@ -11,10 +11,13 @@ const communitiesApi = client.injectEndpoints({
     getCommunityById: builder.query<CommunityResponse, string>({
       query: (id: string) => `/v1/communities/${id}`,
       providesTags: (
-        _result: CommunityResponse | undefined,
+        result: CommunityResponse | undefined,
         _error: unknown,
         id: string
-      ) => [{ type: "Community", id }],
+      ) =>
+        result
+          ? [{ type: "Communities" as const, id }, "Communities"]
+          : ["Communities"],
     }),
     getCommunityMembers: builder.query<
       CommunityMembersResponse,
@@ -53,10 +56,13 @@ const communitiesApi = client.injectEndpoints({
         )
       },
       providesTags: (
-        _result: CommunityMembersResponse | undefined,
+        result: CommunityMembersResponse | undefined,
         _error: unknown,
         { id }: { id: string }
-      ) => [{ type: "Community", id: `${id}-members` }],
+      ) =>
+        result
+          ? [{ type: "Members" as const, id: `${id}-members` }, "Members"]
+          : ["Members"],
     }),
     joinCommunity: builder.mutation<JoinCommunityResponse, string>({
       query: (id: string) => ({
@@ -67,7 +73,7 @@ const communitiesApi = client.injectEndpoints({
         _result: JoinCommunityResponse | undefined,
         _error: unknown,
         id: string
-      ) => [{ type: "Community", id }],
+      ) => [{ type: "Communities" as const, id }, "Communities"],
     }),
     leaveCommunity: builder.mutation<LeaveCommunityResponse, string>({
       query: (id: string) => ({
@@ -78,7 +84,7 @@ const communitiesApi = client.injectEndpoints({
         _result: LeaveCommunityResponse | undefined,
         _error: unknown,
         id: string
-      ) => [{ type: "Community", id }],
+      ) => [{ type: "Communities" as const, id }, "Communities"],
     }),
   }),
 })

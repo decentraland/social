@@ -45,6 +45,21 @@ const eventsApi = client.injectEndpoints({
           currentArg?.limit !== previousArg?.limit
         )
       },
+      providesTags: (
+        result: EventsResponse | undefined,
+        _error: unknown,
+        { communityId }: { communityId: string }
+      ) =>
+        result
+          ? [
+              ...result.data.events.map((event) => ({
+                type: "Events" as const,
+                id: event.id,
+              })),
+              { type: "Events" as const, id: `community-${communityId}` },
+              "Events",
+            ]
+          : ["Events"],
     }),
   }),
 })

@@ -4,7 +4,7 @@ const EventsSection = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
-  gap: "12px",
+  gap: theme.spacing(3),
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     width: "100%",

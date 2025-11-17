@@ -18,11 +18,11 @@ const ContentContainer = styled(Box)(() => ({
 
 const BottomSection = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "60px",
-  paddingTop: "48px",
-  paddingBottom: "10px",
-  paddingLeft: "120px",
-  paddingRight: "120px",
+  gap: theme.spacing(15),
+  paddingTop: theme.spacing(12),
+  paddingBottom: theme.spacing(2.5),
+  paddingLeft: theme.spacing(30),
+  paddingRight: theme.spacing(30),
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
     padding: theme.spacing(4),
@@ -34,7 +34,7 @@ const BottomSection = styled(Box)(({ theme }) => ({
 const BottomSectionColumn = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "12px",
+  gap: theme.spacing(3),
   minWidth: 0,
   [theme.breakpoints.down("sm")]: {
     width: "100%",
