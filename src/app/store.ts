@@ -1,11 +1,14 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
+import { creditsReducer as credits } from "decentraland-dapps/dist/modules/credits/reducer"
 import { featuresReducer as features } from "decentraland-dapps/dist/modules/features/reducer"
 import { modalReducer as modal } from "decentraland-dapps/dist/modules/modal/reducer"
+import { profileReducer as profile } from "decentraland-dapps/dist/modules/profile/reducer"
 import { createStorageMiddleware } from "decentraland-dapps/dist/modules/storage/middleware"
 import {
   storageReducer as storage,
   storageReducerWrapper,
 } from "decentraland-dapps/dist/modules/storage/reducer"
+import { transactionReducer as transaction } from "decentraland-dapps/dist/modules/transaction/reducer"
 import { en as dappsEn } from "decentraland-dapps/dist/modules/translation/defaults"
 import {
   TranslationState,
@@ -15,7 +18,10 @@ import {
   mergeTranslations,
   setCurrentLocale,
 } from "decentraland-dapps/dist/modules/translation/utils"
-import { walletReducer as wallet } from "decentraland-dapps/dist/modules/wallet/reducer"
+import {
+  walletReducer as wallet,
+  INITIAL_STATE as walletInitialState,
+} from "decentraland-dapps/dist/modules/wallet/reducer"
 import { createWalletSaga } from "decentraland-dapps/dist/modules/wallet/sagas"
 import { flatten } from "flat"
 import createSagasMiddleware from "redux-saga"
@@ -61,9 +67,13 @@ function initStore() {
         modal,
         storage,
         features,
+        profile,
+        credits,
+        transaction,
       })
     ),
     preloadedState: {
+      wallet: walletInitialState,
       translation: {
         data: {
           en: mergedTranslations,

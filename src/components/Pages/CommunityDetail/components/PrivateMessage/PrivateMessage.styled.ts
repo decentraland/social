@@ -5,11 +5,11 @@ const PrivateMessage = styled(Box)(({ theme }) => ({
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  gap: theme.spacing(6),
+  gap: "24px",
   width: "1920px",
   maxWidth: "100%",
   height: "571px",
-  padding: `${theme.spacing(12)} ${theme.spacing(30)} 0 ${theme.spacing(30)}`,
+  padding: "48px 120px 0 120px",
   borderTop: "1px solid rgba(255, 255, 255, 0.3)",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -19,34 +19,37 @@ const PrivateMessage = styled(Box)(({ theme }) => ({
   },
 }))
 
-const PrivateMessageContent = styled(Box)(({ theme }) => ({
+const PrivateMessageContent = styled(Box)(() => ({
   width: "550px",
   height: "159px",
   flexShrink: 0,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  gap: theme.spacing(6),
+  gap: "24px",
 }))
 
 const PrivateMessageTitle = styled(Typography)(({ theme }) => ({
-  color: theme.palette.common.white,
+  color: "#FCFCFC",
   textAlign: "center",
-  ...theme.typography.body1,
+  fontSize: "18px",
   fontWeight: 600,
   lineHeight: "normal",
+  fontFamily: theme.typography.fontFamily,
 }))
 
 const PrivateMessageText = styled(Typography)(({ theme }) => ({
-  color: theme.palette.common.white,
+  color: "#FCFCFC",
   textAlign: "center",
-  ...theme.typography.caption,
+  fontSize: "14px",
+  fontWeight: 400,
   lineHeight: "normal",
+  fontFamily: theme.typography.fontFamily,
 }))
 
-const LockIcon = styled(Box)(({ theme }) => ({
-  width: theme.spacing(25),
-  height: theme.spacing(25),
+const LockIcon = styled(Box)(() => ({
+  width: "100px",
+  height: "100px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

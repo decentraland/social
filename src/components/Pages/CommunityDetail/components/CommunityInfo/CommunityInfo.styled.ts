@@ -2,12 +2,12 @@ import { Avatar, Box, Button, Typography, styled } from "decentraland-ui2"
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: theme.spacing(15),
+  gap: "60px",
   alignItems: "center",
-  paddingTop: theme.spacing(20),
-  paddingBottom: theme.spacing(15),
-  paddingLeft: theme.spacing(30),
-  paddingRight: theme.spacing(30),
+  paddingTop: "80px",
+  paddingBottom: "60px",
+  paddingLeft: "120px",
+  paddingRight: "120px",
   backgroundColor: "rgba(0, 0, 0, 0.3)",
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
@@ -19,7 +19,7 @@ const InfoSection = styled(Box)(({ theme }) => ({
 const CommunityImage = styled(Box)(({ theme }) => ({
   width: "412px",
   height: "412px",
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: "23.712px",
   overflow: "hidden",
   flexShrink: 0,
   backgroundColor: theme.palette.background.default,
@@ -35,24 +35,24 @@ const CommunityImageContent = styled("img")({
   objectFit: "cover",
 })
 
-const CommunityDetails = styled(Box)(({ theme }) => ({
+const CommunityDetails = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: theme.spacing(12),
+  gap: "48px",
   minWidth: 0,
 }))
 
-const PrivacyBadgeContainer = styled(Box)(({ theme }) => ({
+const PrivacyBadgeContainer = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
-  gap: theme.spacing(1.318),
-  height: theme.spacing(5.748),
+  gap: "5.272px",
+  height: "22.992px",
 }))
 
-const PrivacyIcon = styled(Box)(({ theme }) => ({
-  width: theme.spacing(3.295),
-  height: theme.spacing(3.295),
+const PrivacyIcon = styled(Box)(() => ({
+  width: "13.18px",
+  height: "13.18px",
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
@@ -64,26 +64,27 @@ const PrivacyIcon = styled(Box)(({ theme }) => ({
 }))
 
 const PrivacyBadgeText = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body2,
   fontSize: "15.82px",
+  fontWeight: 400,
   lineHeight: 1,
-  color: theme.palette.text.secondary,
+  color: "#a09ba8",
+  fontFamily: theme.typography.fontFamily,
   textTransform: "capitalize",
 }))
 
-const OwnerRow = styled(Box)(({ theme }) => ({
+const OwnerRow = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
-  gap: theme.spacing(2.5),
+  gap: "10px",
 }))
 
-const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
+const OwnerAvatarContainer = styled(Box)(() => ({
   position: "relative",
-  width: theme.spacing(7),
-  height: theme.spacing(7),
+  width: "28px",
+  height: "28px",
   borderRadius: "50%",
   backgroundColor: "#31C11A",
-  border: `${theme.spacing(0.5715)} solid rgba(255, 255, 255, 0.5)`,
+  border: "2.286px solid rgba(255, 255, 255, 0.5)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -101,18 +102,21 @@ const OwnerAvatar = styled(Avatar)(() => ({
 const OwnerText = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  ...theme.typography.body2,
-  color: theme.palette.common.white,
+  fontSize: "16px",
+  fontWeight: 400,
+  lineHeight: 1.5,
+  color: "#fcfcfc",
+  fontFamily: theme.typography.fontFamily,
   "& .owner-name": {
-    color: theme.palette.error.main,
-    marginLeft: theme.spacing(1),
+    color: "#ff2d55",
+    marginLeft: "4px",
   },
 }))
 
 const ActionButtons = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: theme.spacing(4),
-  paddingTop: theme.spacing(3),
+  gap: "16px",
+  paddingTop: "12px",
   paddingBottom: 0,
   paddingLeft: 0,
   paddingRight: 0,
@@ -128,75 +132,71 @@ const JoinButton = styled(Button)(({ theme }) => ({
   minWidth: "184px",
   width: "184px",
   height: "40px",
-  border: `2px solid ${theme.palette.common.white}`,
-  borderRadius: theme.shape.borderRadius,
+  border: "2px solid #fcfcfc",
+  borderRadius: "6px",
   textTransform: "uppercase",
-  ...theme.typography.caption,
+  fontSize: "14px",
   fontWeight: 600,
   lineHeight: 1,
-  color: theme.palette.common.white,
+  color: "#fcfcfc",
+  fontFamily: theme.typography.fontFamily,
   backgroundColor: "transparent",
   "&:hover": {
-    border: `2px solid ${theme.palette.common.white}`,
-    backgroundColor: theme.palette.action.hover,
-  },
-  "&:focus-visible": {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-  },
-  "&:active": {
-    transform: "scale(0.98)",
-  },
-  "&:disabled": {
-    backgroundColor: theme.palette.action.disabledBackground,
-    color: theme.palette.action.disabled,
-    cursor: "not-allowed",
+    border: "2px solid #fcfcfc",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
 }))
 
-const TitleSubtitleContainer = styled(Box)(({ theme }) => ({
+const TitleSubtitleContainer = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
-  gap: theme.spacing(3),
+  gap: "12px",
 }))
 
-const TitleRow = styled(Box)(({ theme }) => ({
+const TitleRow = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
-  gap: theme.spacing(4),
+  gap: "16px",
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-  ...theme.typography.h1,
+  fontSize: "48px",
   fontWeight: 600,
-  color: theme.palette.common.white,
+  lineHeight: 1.167,
+  color: "#ffffff",
+  fontFamily: theme.typography.fontFamily,
 }))
 
-const PrivacyMembersRow = styled(Box)(({ theme }) => ({
+const PrivacyMembersRow = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
-  gap: theme.spacing(1),
+  gap: "4px",
   flexWrap: "wrap",
 }))
 
-const PrivacyDivider = styled(Box)(({ theme }) => ({
+const PrivacyDivider = styled(Box)(() => ({
   width: "1px",
-  height: theme.spacing(3.295),
-  backgroundColor: theme.palette.divider,
+  height: "13.18px",
+  backgroundColor: "rgba(255, 255, 255, 0.3)",
   flexShrink: 0,
 }))
 
 const PrivacyMembersText = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body2,
-  color: theme.palette.common.white,
+  fontSize: "16px",
+  fontWeight: 400,
+  lineHeight: 1.75,
+  color: "#fcfcfc",
+  fontFamily: theme.typography.fontFamily,
 }))
 
 const Description = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body1,
+  fontSize: "20px",
   fontWeight: 500,
-  color: theme.palette.text.secondary,
+  lineHeight: 1.6,
+  color: "#ecebed",
   whiteSpace: "pre-wrap",
   marginTop: "0px",
+  fontFamily: theme.typography.fontFamily,
 }))
 
 export {

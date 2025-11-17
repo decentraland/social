@@ -4,7 +4,7 @@ const EventsSection = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
-  gap: theme.spacing(3),
+  gap: "12px",
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -12,11 +12,11 @@ const EventsSection = styled(Box)(({ theme }) => ({
 }))
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body2,
+  fontSize: "16px",
   fontWeight: 600,
   textTransform: "uppercase",
   color: theme.palette.common.white,
-  paddingBottom: theme.spacing(6),
+  paddingBottom: "24px",
   borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
   lineHeight: 1,
   width: "100%",
@@ -24,10 +24,10 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 
 const EventsGrid = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: theme.spacing(2.25),
+  gap: "9px",
   alignItems: "stretch",
   flexWrap: "wrap",
-  rowGap: theme.spacing(5),
+  rowGap: "20px",
   width: "100%",
   maxHeight: "600px",
   overflowY: "auto",
@@ -35,15 +35,15 @@ const EventsGrid = styled(Box)(({ theme }) => ({
   scrollBehavior: "smooth",
   paddingRight: theme.spacing(1),
   "&::-webkit-scrollbar": {
-    width: theme.spacing(2),
+    width: "8px",
   },
   "&::-webkit-scrollbar-track": {
     background: "rgba(255, 255, 255, 0.1)",
-    borderRadius: theme.spacing(1),
+    borderRadius: "4px",
   },
   "&::-webkit-scrollbar-thumb": {
     background: "rgba(255, 255, 255, 0.3)",
-    borderRadius: theme.spacing(1),
+    borderRadius: "4px",
     "&:hover": {
       background: "rgba(255, 255, 255, 0.4)",
     },
@@ -57,26 +57,14 @@ const EventsGrid = styled(Box)(({ theme }) => ({
 const EventCard = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "flex-start",
-  gap: theme.spacing(3.5),
+  gap: "14px",
   flex: "0 0 calc((100% - 18px) / 3)",
   minWidth: "424px",
   height: "126px",
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: "12px",
   cursor: "pointer",
   position: "relative",
   overflow: "visible",
-  transition: theme.transitions.create(["transform", "opacity"]),
-  "&:hover": {
-    transform: "translateY(-2px)",
-    opacity: 0.9,
-  },
-  "&:focus-visible": {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-  },
-  "&:active": {
-    transform: "translateY(0)",
-  },
   [theme.breakpoints.down("sm")]: {
     width: "100%",
     flex: "none",
@@ -88,48 +76,49 @@ const EventImage = styled("img")(({ theme }) => ({
   width: "180px",
   height: "126px",
   objectFit: "cover",
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: "10px",
   backgroundColor: theme.palette.background.default,
   flexShrink: 0,
 }))
 
-const EventImageContainer = styled(Box)(({ theme }) => ({
+const EventImageContainer = styled(Box)(() => ({
   position: "relative",
   width: "180px",
   height: "126px",
   flexShrink: 0,
   overflow: "hidden",
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: "10px",
 }))
 
-const LiveBadgeContainer = styled(Box)(({ theme }) => ({
+const LiveBadgeContainer = styled(Box)(() => ({
   position: "absolute",
-  top: theme.spacing(2.5),
-  left: theme.spacing(2.5),
+  top: "10px",
+  left: "10px",
   zIndex: 1,
 }))
 
 const LiveBadgeText = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: theme.spacing(1.5),
-  height: theme.spacing(7),
-  backgroundColor: theme.palette.error.dark,
-  color: theme.palette.common.white,
-  padding: `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(1)} ${theme.spacing(1.5)}`,
-  borderRadius: theme.shape.borderRadius,
-  ...theme.typography.caption,
+  gap: "6px",
+  height: "28px",
+  backgroundColor: "#e00000",
+  color: "#fcfcfc",
+  padding: "4px 8px 4px 6px",
+  borderRadius: "8px",
+  fontSize: "14px",
   fontWeight: 600,
   textTransform: "uppercase",
   lineHeight: "normal",
+  fontFamily: theme.typography.fontFamily,
 }))
 
-const EventContent = styled(Box)(({ theme }) => ({
+const EventContent = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "flex-start",
-  gap: theme.spacing(0.5),
+  gap: "2px",
   width: "230px",
   minWidth: "230px",
   height: "126px",
@@ -137,25 +126,27 @@ const EventContent = styled(Box)(({ theme }) => ({
 }))
 
 const EventTime = styled(Typography)(({ theme }) => ({
-  ...theme.typography.caption,
+  fontSize: "14px",
   fontWeight: 600,
   lineHeight: "normal",
-  color: theme.palette.text.secondary,
+  color: "rgba(255, 255, 255, 0.7)",
   textTransform: "uppercase",
   whiteSpace: "nowrap",
+  fontFamily: theme.typography.fontFamily,
 }))
 
 const EventName = styled(Typography)(({ theme }) => ({
-  ...theme.typography.body1,
+  fontSize: "18px",
   fontWeight: 600,
   lineHeight: "normal",
-  color: theme.palette.common.white,
+  color: "#fcfcfc",
   whiteSpace: "pre-wrap",
+  fontFamily: theme.typography.fontFamily,
 }))
 
-const LoadMoreSentinel = styled(Box)(({ theme }) => ({
+const LoadMoreSentinel = styled(Box)(() => ({
   width: "100%",
-  minHeight: theme.spacing(5),
+  minHeight: "20px",
   flex: "0 0 100%",
 }))
 
@@ -178,8 +169,8 @@ export {
   EventsGrid,
   EventsSection,
   EventTime,
+  LoadMoreSentinel,
   LiveBadgeContainer,
   LiveBadgeText,
-  LoadMoreSentinel,
   SectionTitle,
 }

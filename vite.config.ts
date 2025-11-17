@@ -31,5 +31,18 @@ export default defineConfig(({ command, mode }) => {
       include: ["buffer"],
     },
     ...(command === "build" ? { base: envVariables.VITE_BASE_URL } : undefined),
+    server: {
+      open: true,
+      proxy: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "/auth": {
+          target: "https://decentraland.zone",
+          followRedirects: true,
+          changeOrigin: true,
+          secure: false,
+          ws: true,
+        },
+      },
+    },
   }
 })
