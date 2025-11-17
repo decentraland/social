@@ -8,17 +8,50 @@ jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
 }))
 
-jest.mock("decentraland-ui2", () => ({
-  ...jest.requireActual("decentraland-ui2"),
-  JumpIn: ({
-    buttonText,
-    ...props
-  }: {
-    buttonText: string
-  } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button {...props}>{buttonText}</button>
-  ),
-}))
+jest.mock("decentraland-ui2", () => {
+  type StyleObject = Record<string, unknown>
+  type StyleFunction = (props: { theme: unknown }) => StyleObject
+  type Styles = StyleObject | StyleFunction
+
+  const mockStyled = <T extends React.ComponentType<React.ComponentProps<T>>>(
+    component: T
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (_styles: Styles) => {
+      return component
+    }
+  }
+
+  return {
+    Avatar: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+    Button: ({
+      children,
+      ...props
+    }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button {...props}>{children}</button>
+    ),
+    JumpIn: ({
+      buttonText,
+      ...props
+    }: {
+      buttonText: string
+    } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button {...props}>{buttonText}</button>
+    ),
+    Typography: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p {...props}>{children}</p>
+    ),
+    styled: mockStyled,
+  }
+})
 
 jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({
   t: jest.fn((key: string) => key),

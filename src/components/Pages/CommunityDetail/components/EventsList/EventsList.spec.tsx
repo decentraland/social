@@ -1,10 +1,34 @@
 import { render, screen } from "@testing-library/react"
 import { EventsList } from "./EventsList"
 
-jest.mock("decentraland-ui2", () => ({
-  ...jest.requireActual("decentraland-ui2"),
-  CircularProgress: () => <div role="progressbar" />,
-}))
+jest.mock("decentraland-ui2", () => {
+  type StyleObject = Record<string, unknown>
+  type StyleFunction = (props: { theme: unknown }) => StyleObject
+  type Styles = StyleObject | StyleFunction
+
+  const mockStyled = <T extends React.ComponentType<React.ComponentProps<T>>>(
+    component: T
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return (_styles: Styles) => {
+      return component
+    }
+  }
+
+  return {
+    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+    CircularProgress: () => <div role="progressbar" />,
+    Typography: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p {...props}>{children}</p>
+    ),
+    styled: mockStyled,
+  }
+})
 
 jest.mock("../../../../../hooks/useInfiniteScroll", () => ({
   useInfiniteScroll: jest.fn(() => ({ current: null })),
