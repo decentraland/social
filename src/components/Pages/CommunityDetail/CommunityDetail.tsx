@@ -33,6 +33,7 @@ import { hasValidIdentity } from "../../../utils/identity"
 import { PageLayout } from "../../PageLayout"
 import {
   BottomSection,
+  CenteredContainer,
   ContentContainer,
   EventsColumn,
   MembersColumn,
@@ -185,18 +186,12 @@ function CommunityDetail() {
   if (!community) {
     return (
       <ContentContainer>
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="400px"
-        >
+        <CenteredContainer>
           <Typography variant="h4">Community not found</Typography>
           <Typography variant="body1" color="textSecondary">
             The community you are looking for does not exist.
           </Typography>
-        </Box>
+        </CenteredContainer>
       </ContentContainer>
     )
   }
