@@ -21,7 +21,7 @@ const safeSelector = <T,>(selector: (state: unknown) => T, fallback: T) => {
   }
 }
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const { pathname, search } = useLocation()
   const isConnectedState = useAppSelector(safeSelector(isConnected, false))
   const address = useAppSelector(safeSelector(getAddress, null))
@@ -47,7 +47,7 @@ const Navbar = () => {
       : `${basename}${currentRedirectTo}`
 
     window.location.replace(
-      `${config.get("AUTH_URL")}/login?redirectTo=${redirectTo}`
+      `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
     )
   }, [pathname, search])
 
@@ -61,8 +61,6 @@ const Navbar = () => {
       />
     </NavbarErrorBoundary>
   )
-}
+})
 
-const MemoizedNavbar = memo(Navbar)
-
-export { MemoizedNavbar as Navbar }
+export { Navbar }

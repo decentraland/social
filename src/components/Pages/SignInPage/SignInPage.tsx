@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef } from "react"
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { memo, useCallback } from "react"
+import { useLocation } from "react-router-dom"
 import { default as SignIn } from "decentraland-dapps/dist/containers/SignInPage"
 import {
   isConnected,
@@ -20,71 +20,32 @@ const safeSelector = <T,>(selector: (state: unknown) => T, fallback: T) => {
   }
 }
 
-const SignInPage = () => {
+const SignInPage = memo(() => {
   const isConnectedState = useAppSelector(safeSelector(isConnected, false))
   const isConnectingState = useAppSelector(safeSelector(isConnecting, false))
-  const [searchParams] = useSearchParams()
   const { pathname } = useLocation()
-  const redirectTo = searchParams.get("redirectTo")
-  const navigate = useNavigate()
-  const hasNavigatedRef = useRef(false)
-  const hasRedirectedRef = useRef(false)
 
   const handleConnect = useCallback(() => {
-    if (hasRedirectedRef.current) {
-      return
-    }
-    hasRedirectedRef.current = true
-    const basename = /^decentraland.(zone|org|today)$/.test(
-      window.location.host
-    )
-      ? "/social"
-      : ""
-    const fallbackRedirect = redirectTo || pathname
-    window.location.replace(
-      `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(`${basename}${fallbackRedirect}`)}`
-    )
-  }, [redirectTo, pathname])
-
-  useEffect(() => {
-    if (hasNavigatedRef.current || hasRedirectedRef.current) {
-      return
-    }
-
     if (!isConnectedState && !isConnectingState) {
-      handleConnect()
-      return
+      const params = new URLSearchParams(window.location.search)
+      const basename = /^decentraland.(zone|org|today)$/.test(
+        window.location.host
+      )
+        ? "/social"
+        : ""
+      window.location.replace(
+        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(
+          `${basename}${params.get("redirectTo") || pathname}`
+        )}`
+      )
     }
-
-    if (isConnectedState && redirectTo) {
-      hasNavigatedRef.current = true
-      const decodedRedirect = decodeURIComponent(redirectTo)
-      if (decodedRedirect !== pathname) {
-        navigate(decodedRedirect, { replace: true })
-      }
-    }
-  }, [
-    redirectTo,
-    isConnectedState,
-    isConnectingState,
-    navigate,
-    pathname,
-    handleConnect,
-  ])
-
-  if (!isConnectedState && !isConnectingState) {
-    return null
-  }
-
-  if (isConnectedState && redirectTo) {
-    return null
-  }
+  }, [isConnectedState, isConnectingState, pathname])
 
   return (
     <PageLayout>
-      <SignIn isConnected={isConnectedState} />
+      <SignIn isConnected={isConnectedState} onConnect={handleConnect} />
     </PageLayout>
   )
-}
+})
 
 export { SignInPage }
