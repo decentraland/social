@@ -50,6 +50,14 @@ const EventsColumn = styled(BottomSectionColumn)(() => ({
   flex: "2 0 0",
 }))
 
+const CenteredContainer = styled(Box)(() => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "400px",
+}))
+
 export {
   BottomSection,
   BottomSectionColumn,
@@ -57,4 +65,5 @@ export {
   EventsColumn,
   MembersColumn,
   PageContainer,
+  CenteredContainer,
 }

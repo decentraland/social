@@ -2,8 +2,7 @@ import { AuthIdentity } from "@dcl/crypto"
 import { localStorageGetIdentity } from "@dcl/single-sign-on-client"
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { getData as getWallet } from "decentraland-dapps/dist/modules/wallet/selectors"
-import { signedFetchFactory } from "decentraland-crypto-fetch"
-import { store } from "../app/store"
+import signedFetch from "decentraland-crypto-fetch"
 import { config } from "../config"
 import type {
   BaseQueryFn,
@@ -11,34 +10,7 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query"
 
-const createSignedFetch = () => {
-  const signedFetch = signedFetchFactory()
-
-  return async (
-    input: RequestInfo | URL,
-    init?: RequestInit
-  ): Promise<Response> => {
-    const state = store.getState()
-    const wallet = getWallet(state)
-
-    if (wallet?.address) {
-      const identity = localStorageGetIdentity(wallet.address.toLowerCase())
-
-      if (identity) {
-        return signedFetch(input, {
-          ...init,
-          identity: identity as AuthIdentity,
-        })
-      }
-    }
-
-    return signedFetch(input, init)
-  }
-}
-
-const customFetch = createSignedFetch()
-
-const baseQueryWithErrorHandling: BaseQueryFn<
+const baseQuery: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
@@ -48,9 +20,30 @@ const baseQueryWithErrorHandling: BaseQueryFn<
     const customBaseUrl = (fetchArgs as { baseUrl?: string }).baseUrl
     const baseUrl = customBaseUrl || config.get("SOCIAL_SERVICE_URL")
 
+    const signedFetchWrapper = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ): Promise<Response> => {
+      const state = api.getState()
+      const wallet = getWallet(state)
+
+      if (wallet?.address) {
+        const identity = localStorageGetIdentity(wallet.address.toLowerCase())
+
+        if (identity) {
+          return signedFetch(input, {
+            ...init,
+            identity: identity as AuthIdentity,
+          })
+        }
+      }
+
+      return signedFetch(input, init)
+    }
+
     const result = await fetchBaseQuery({
       baseUrl,
-      fetchFn: customFetch,
+      fetchFn: signedFetchWrapper,
       prepareHeaders: (headers) => {
         headers.set("Content-Type", "application/json")
         return headers
@@ -69,4 +62,4 @@ const baseQueryWithErrorHandling: BaseQueryFn<
   }
 }
 
-export const baseQuery = baseQueryWithErrorHandling
+export { baseQuery }

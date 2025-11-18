@@ -1,6 +1,10 @@
 import { useParams } from "react-router-dom"
 import { render, screen, waitFor } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
+import {
+  getData as getWallet,
+  isConnecting,
+} from "decentraland-dapps/dist/modules/wallet/selectors"
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppSelector } from "../../../app/hooks"
 import {
@@ -34,6 +38,7 @@ jest.mock("decentraland-ui2", () => {
       minHeight: _minHeight,
       padding: _padding,
       autoHideDuration: _autoHideDuration,
+      flexDirection: _flexDirection,
       ...rest
     } = props
     void _display
@@ -42,6 +47,7 @@ jest.mock("decentraland-ui2", () => {
     void _minHeight
     void _padding
     void _autoHideDuration
+    void _flexDirection
     return rest
   }
 
@@ -79,6 +85,7 @@ jest.mock("react-router-dom", () => ({
 
 jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
   getData: jest.fn(),
+  isConnecting: jest.fn(),
 }))
 
 jest.mock("../../../features/communities/communities.client", () => ({
@@ -200,7 +207,16 @@ describe("when rendering the community detail page", () => {
     }))
 
     mockUseParams.mockReturnValue({ id: "community-1" })
-    mockUseAppSelector.mockReturnValue(null)
+    // Mock useAppSelector to return different values based on selector
+    mockUseAppSelector.mockImplementation((selector) => {
+      if (selector === isConnecting) {
+        return false // isWalletConnecting should be false
+      }
+      if (selector === getWallet) {
+        return null // wallet should be null by default
+      }
+      return null
+    })
     mockHasValidIdentity.mockReturnValue(false)
     mockUseGetCommunityByIdQuery.mockReturnValue({
       data: undefined,
@@ -348,7 +364,15 @@ describe("when rendering the community detail page", () => {
 
     describe("and the user is not logged in", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockReturnValue(null)
+        mockUseAppSelector.mockImplementation((selector) => {
+          if (selector === isConnecting) {
+            return false
+          }
+          if (selector === getWallet) {
+            return null
+          }
+          return null
+        })
         mockHasValidIdentity.mockReturnValue(false)
       })
 
@@ -366,7 +390,15 @@ describe("when rendering the community detail page", () => {
         wallet = {
           address: "0x456",
         }
-        mockUseAppSelector.mockReturnValue(wallet)
+        mockUseAppSelector.mockImplementation((selector) => {
+          if (selector === isConnecting) {
+            return false
+          }
+          if (selector === getWallet) {
+            return wallet
+          }
+          return null
+        })
         mockHasValidIdentity.mockReturnValue(true)
       })
 
