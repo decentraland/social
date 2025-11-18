@@ -128,24 +128,10 @@ const ActionButtons = styled(Box)(({ theme }) => ({
   },
 }))
 
-const JoinButton = styled(Button)(({ theme }) => ({
-  minWidth: "184px",
+const CTAButton = styled(Button)({
   width: "184px",
   height: "40px",
-  border: "2px solid #fcfcfc",
-  borderRadius: "6px",
-  textTransform: "uppercase",
-  fontSize: "14px",
-  fontWeight: 600,
-  lineHeight: 1,
-  color: "#fcfcfc",
-  fontFamily: theme.typography.fontFamily,
-  backgroundColor: "transparent",
-  "&:hover": {
-    border: "2px solid #fcfcfc",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-}))
+})
 
 const TitleSubtitleContainer = styled(Box)(() => ({
   display: "flex",
@@ -206,7 +192,7 @@ export {
   CommunityImageContent,
   Description,
   InfoSection,
-  JoinButton,
+  CTAButton,
   OwnerAvatar,
   OwnerAvatarContainer,
   OwnerRow,

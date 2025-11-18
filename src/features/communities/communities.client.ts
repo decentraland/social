@@ -2,7 +2,6 @@ import {
   CommunityMembersResponse,
   CommunityResponse,
   JoinCommunityResponse,
-  LeaveCommunityResponse,
 } from "./types"
 import { client } from "../../services/client"
 
@@ -75,17 +74,6 @@ const communitiesApi = client.injectEndpoints({
         id: string
       ) => [{ type: "Communities" as const, id }, "Communities"],
     }),
-    leaveCommunity: builder.mutation<LeaveCommunityResponse, string>({
-      query: (id: string) => ({
-        url: `/v1/communities/${id}/leave`,
-        method: "POST",
-      }),
-      invalidatesTags: (
-        _result: LeaveCommunityResponse | undefined,
-        _error: unknown,
-        id: string
-      ) => [{ type: "Communities" as const, id }, "Communities"],
-    }),
   }),
 })
 
@@ -93,7 +81,6 @@ const {
   useGetCommunityByIdQuery,
   useGetCommunityMembersQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 } = communitiesApi
 
 export {
@@ -101,5 +88,4 @@ export {
   useGetCommunityByIdQuery,
   useGetCommunityMembersQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 }

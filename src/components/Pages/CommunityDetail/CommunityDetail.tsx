@@ -25,7 +25,6 @@ import { useAppSelector } from "../../../app/hooks"
 import {
   useGetCommunityByIdQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 } from "../../../features/communities/communities.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
@@ -59,13 +58,9 @@ function CommunityDetail() {
     joinCommunity,
     { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
   ] = useJoinCommunityMutation()
-  const [
-    leaveCommunity,
-    { isLoading: isLeaving, error: leaveError, reset: resetLeaveMutation },
-  ] = useLeaveCommunityMutation()
 
-  const isPerformingCommunityAction = isJoining || isLeaving
-  const mutationError = joinError || leaveError
+  const isPerformingCommunityAction = isJoining
+  const mutationError = joinError
 
   const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
@@ -126,33 +121,10 @@ function CommunityDetail() {
     [isLoggedIn, address, joinCommunity]
   )
 
-  const handleLeaveCommunity = useCallback(
-    async (communityId: string) => {
-      if (!isLoggedIn || !address) {
-        return
-      }
-
-      try {
-        await leaveCommunity(communityId).unwrap()
-      } catch (err) {
-        if (isFetchBaseQueryError(err)) {
-          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || "Failed to leave community")
-        } else if (isErrorWithMessage(err)) {
-          setError(err.message)
-        } else {
-          setError("Failed to leave community")
-        }
-      }
-    },
-    [isLoggedIn, address, leaveCommunity]
-  )
-
   const handleErrorClose = useCallback(() => {
     setError(null)
     resetJoinMutation()
-    resetLeaveMutation()
-  }, [resetJoinMutation, resetLeaveMutation])
+  }, [resetJoinMutation])
 
   if (isLoading || isWalletConnecting) {
     return (
@@ -208,7 +180,6 @@ function CommunityDetail() {
             isMember={member}
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}
-            onLeave={handleLeaveCommunity}
           />
 
           {!canViewContent && <PrivateMessage />}

@@ -31,6 +31,7 @@ jest.mock("decentraland-ui2", () => {
       padding: _padding,
       modalProps: _modalProps,
       buttonProps: _buttonProps,
+      sx: _sx,
       ...rest
     } = props
     void _display
@@ -40,8 +41,15 @@ jest.mock("decentraland-ui2", () => {
     void _padding
     void _modalProps
     void _buttonProps
+    void _sx
     return rest
   }
+
+  const CheckIcon = () => (
+    <svg data-testid="check-icon">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    </svg>
+  )
 
   return {
     Avatar: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -59,6 +67,13 @@ jest.mock("decentraland-ui2", () => {
     }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
       <button {...props}>{children}</button>
     ),
+    Icon: ({
+      component: Component,
+      ...props
+    }: {
+      component?: React.ComponentType<Record<string, unknown>>
+    } & React.HTMLAttributes<HTMLElement>) =>
+      Component ? <Component {...props} /> : <span {...props} />,
     JumpIn: ({
       buttonText,
       ...props
@@ -74,6 +89,9 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    muiIcons: {
+      Check: CheckIcon,
+    },
     styled: mockStyled,
   }
 })
@@ -114,7 +132,6 @@ function renderCommunityInfo(
       isMember={false}
       canViewContent={true}
       onJoin={jest.fn()}
-      onLeave={jest.fn()}
       {...props}
     />
   )
@@ -122,13 +139,11 @@ function renderCommunityInfo(
 
 describe("when rendering the community info", () => {
   let mockOnJoin: jest.Mock
-  let mockOnLeave: jest.Mock
   let mockNavigateFn: jest.Mock
   let defaultCommunity: Community
 
   beforeEach(() => {
     mockOnJoin = jest.fn()
-    mockOnLeave = jest.fn()
     mockNavigateFn = jest.fn()
     mockNavigate.mockReturnValue(mockNavigateFn)
     defaultCommunity = {
@@ -414,7 +429,7 @@ describe("when rendering the community info", () => {
         }
       })
 
-      it("should display leave button", () => {
+      it("should display joined button with check icon", () => {
         renderCommunityInfo({
           community: memberCommunity,
           isLoggedIn: true,
@@ -422,36 +437,20 @@ describe("when rendering the community info", () => {
           isMember: true,
         })
 
-        expect(screen.getByText("Leave")).toBeInTheDocument()
+        expect(screen.getByText("JOINED")).toBeInTheDocument()
+        expect(screen.getByTestId("check-icon")).toBeInTheDocument()
       })
 
-      it("should call onLeave with the community id when leave button is clicked", async () => {
-        const user = userEvent.setup()
+      it("should have joined button disabled", () => {
         renderCommunityInfo({
           community: memberCommunity,
           isLoggedIn: true,
           address,
           isMember: true,
-          onLeave: mockOnLeave,
         })
 
-        const leaveButton = screen.getByText("Leave")
-        await user.click(leaveButton)
-
-        expect(mockOnLeave).toHaveBeenCalledWith("community-1")
-      })
-
-      it("should disable leave button when performing community action", () => {
-        renderCommunityInfo({
-          community: memberCommunity,
-          isLoggedIn: true,
-          address,
-          isMember: true,
-          isPerformingCommunityAction: true,
-        })
-
-        const leaveButton = screen.getByText("Loading...")
-        expect(leaveButton).toBeDisabled()
+        const joinedButton = screen.getByText("JOINED")
+        expect(joinedButton).toBeDisabled()
       })
     })
   })

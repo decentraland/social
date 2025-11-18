@@ -1,16 +1,16 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { JumpIn } from "decentraland-ui2"
+import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
   ActionButtons,
+  CTAButton,
   CommunityDetails,
   CommunityImage,
   CommunityImageContent,
   Description,
   InfoSection,
-  JoinButton,
   OwnerAvatar,
   OwnerAvatarContainer,
   OwnerRow,
@@ -35,7 +35,6 @@ type CommunityInfoProps = {
   isMember: boolean
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
-  onLeave: (communityId: string) => Promise<void>
 }
 
 export const CommunityInfo = ({
@@ -46,7 +45,6 @@ export const CommunityInfo = ({
   isMember,
   canViewContent,
   onJoin,
-  onLeave,
 }: CommunityInfoProps) => {
   const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
@@ -61,14 +59,6 @@ export const CommunityInfo = ({
 
     onJoin(community.id)
   }, [isLoggedIn, address, navigate, community.id, onJoin])
-
-  const handleButtonClick = useCallback(() => {
-    if (isMember) {
-      onLeave(community.id)
-    } else {
-      handleJoinClick()
-    }
-  }, [isMember, onLeave, community.id, handleJoinClick])
 
   return (
     <InfoSection>
@@ -122,15 +112,12 @@ export const CommunityInfo = ({
           </OwnerRow>
           <ActionButtons>
             {isMember ? (
-              <JoinButton
-                variant="outlined"
-                onClick={handleButtonClick}
-                disabled={isPerformingCommunityAction}
-              >
-                {isPerformingCommunityAction ? "Loading..." : "Leave"}
-              </JoinButton>
+              <CTAButton variant="outlined" disabled>
+                <Icon component={muiIcons.Check} sx={{ fontSize: 20 }} />
+                JOINED
+              </CTAButton>
             ) : !isLoggedIn ? (
-              <JoinButton
+              <CTAButton
                 variant="outlined"
                 onClick={() => {
                   const currentPath = `/communities/${community.id}`
@@ -140,18 +127,20 @@ export const CommunityInfo = ({
                 }}
               >
                 SIGN IN TO JOIN
-              </JoinButton>
+              </CTAButton>
             ) : isPrivate ? (
               <>
-                <JoinButton
-                  variant="outlined"
+                {/* TODO: Add cancel request button support */}
+                <CTAButton
+                  color="secondary"
+                  variant="contained"
                   onClick={handleJoinClick}
                   disabled={isPerformingCommunityAction}
                 >
                   {isPerformingCommunityAction
                     ? "Loading..."
                     : "REQUEST TO JOIN"}
-                </JoinButton>
+                </CTAButton>
                 {isLoggedIn && (
                   <JumpIn
                     variant="button"
@@ -177,13 +166,13 @@ export const CommunityInfo = ({
                 )}
               </>
             ) : (
-              <JoinButton
+              <CTAButton
                 variant="outlined"
-                onClick={handleButtonClick}
+                onClick={handleJoinClick}
                 disabled={isPerformingCommunityAction}
               >
                 {isPerformingCommunityAction ? "Loading..." : "JOIN"}
-              </JoinButton>
+              </CTAButton>
             )}
           </ActionButtons>
         </TitleSubtitleContainer>

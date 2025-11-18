@@ -32,11 +32,6 @@ type JoinCommunityResponse = {
   message?: string
 }
 
-type LeaveCommunityResponse = {
-  success: boolean
-  message?: string
-}
-
 type CommunityMember = {
   communityId: string
   memberAddress: string
@@ -64,5 +59,4 @@ export type {
   CommunityMember,
   CommunityMembersResponse,
   JoinCommunityResponse,
-  LeaveCommunityResponse,
 }

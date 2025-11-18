@@ -10,7 +10,6 @@ import { useAppSelector } from "../../../app/hooks"
 import {
   useGetCommunityByIdQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 } from "../../../features/communities/communities.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
@@ -91,7 +90,6 @@ jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
 jest.mock("../../../features/communities/communities.client", () => ({
   useGetCommunityByIdQuery: jest.fn(),
   useJoinCommunityMutation: jest.fn(),
-  useLeaveCommunityMutation: jest.fn(),
 }))
 
 jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
@@ -114,16 +112,13 @@ jest.mock("./components/CommunityInfo", () => ({
   CommunityInfo: ({
     community,
     onJoin,
-    onLeave,
   }: {
     community: { id: string; name: string }
     onJoin: (id: string) => void
-    onLeave: (id: string) => void
   }) => (
     <div data-testid="community-info">
       <div>{community.name}</div>
       <button onClick={() => onJoin(community.id)}>Join</button>
-      <button onClick={() => onLeave(community.id)}>Leave</button>
     </div>
   ),
 }))
@@ -179,7 +174,6 @@ jest.mock("../../PageLayout", () => ({
 const mockUseParams = useParams as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
-const mockUseLeaveCommunityMutation = useLeaveCommunityMutation as jest.Mock
 const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
 const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
@@ -192,18 +186,12 @@ function renderCommunityDetail() {
 
 describe("when rendering the community detail page", () => {
   let mockJoinMutation: jest.Mock
-  let mockLeaveMutation: jest.Mock
   let mockJoinUnwrap: jest.Mock
-  let mockLeaveUnwrap: jest.Mock
 
   beforeEach(() => {
     mockJoinUnwrap = jest.fn()
-    mockLeaveUnwrap = jest.fn()
     mockJoinMutation = jest.fn(() => ({
       unwrap: mockJoinUnwrap,
-    }))
-    mockLeaveMutation = jest.fn(() => ({
-      unwrap: mockLeaveUnwrap,
     }))
 
     mockUseParams.mockReturnValue({ id: "community-1" })
@@ -226,10 +214,6 @@ describe("when rendering the community detail page", () => {
     })
     mockUseJoinCommunityMutation.mockReturnValue([
       mockJoinMutation,
-      { isLoading: false, error: undefined, reset: jest.fn() },
-    ])
-    mockUseLeaveCommunityMutation.mockReturnValue([
-      mockLeaveMutation,
       { isLoading: false, error: undefined, reset: jest.fn() },
     ])
     mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -478,20 +462,6 @@ describe("when rendering the community detail page", () => {
           })
         })
 
-        it("should call onLeave with the community id when leave button is clicked", async () => {
-          const user = userEvent.setup()
-          mockLeaveUnwrap.mockResolvedValue({})
-
-          renderCommunityDetail()
-
-          const leaveButton = screen.getByText("Leave")
-          await user.click(leaveButton)
-
-          await waitFor(() => {
-            expect(mockLeaveMutation).toHaveBeenCalledWith("community-1")
-          })
-        })
-
         describe("and joining the community fails", () => {
           let joinError: Error
 
@@ -509,27 +479,6 @@ describe("when rendering the community detail page", () => {
 
             await waitFor(() => {
               expect(screen.getByText("Failed to join")).toBeInTheDocument()
-            })
-          })
-        })
-
-        describe("and leaving the community fails", () => {
-          let leaveError: Error
-
-          beforeEach(() => {
-            leaveError = new Error("Failed to leave")
-            mockLeaveUnwrap.mockRejectedValue(leaveError)
-          })
-
-          it("should display the error message from the failed leave attempt", async () => {
-            const user = userEvent.setup()
-            renderCommunityDetail()
-
-            const leaveButton = screen.getByText("Leave")
-            await user.click(leaveButton)
-
-            await waitFor(() => {
-              expect(screen.getByText("Failed to leave")).toBeInTheDocument()
             })
           })
         })

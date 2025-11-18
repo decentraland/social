@@ -14,9 +14,4 @@ type JoinCommunityResponse = {
   message?: string
 }
 
-type LeaveCommunityResponse = {
-  success: boolean
-  message?: string
-}
-
-export type { Community, JoinCommunityResponse, LeaveCommunityResponse }
+export type { Community, JoinCommunityResponse }
