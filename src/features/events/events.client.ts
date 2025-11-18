@@ -19,6 +19,38 @@ const eventsApi = client.injectEndpoints({
           baseUrl: config.get("EVENTS_API_URL"),
         }
       },
+      transformResponse: (response: {
+        ok: boolean
+        data: {
+          events: Array<{
+            id: string
+            name: string
+            start_at: string
+            finish_at: string
+            scene_name?: string
+            approved: boolean
+            rejected: boolean
+            [key: string]: unknown
+          }>
+          total: number
+        }
+      }): EventsResponse => {
+        return {
+          ...response,
+          data: {
+            ...response.data,
+            events: response.data.events.map((event) => {
+              const { start_at, finish_at, scene_name, ...rest } = event
+              return {
+                ...rest,
+                startAt: start_at, // add 6 months to the start time
+                finishAt: finish_at,
+                sceneName: scene_name,
+              }
+            }),
+          },
+        }
+      },
       serializeQueryArgs: ({ queryArgs }) => {
         const { communityId } = queryArgs
         return { communityId }

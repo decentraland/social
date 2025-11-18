@@ -66,6 +66,8 @@ function CommunityDetail() {
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === "private"
   const canViewContent = member || !isPrivate
+  const shouldFetchMembersAndEvents =
+    !!id && !!community && (!isPrivate || member)
 
   const {
     members,
@@ -75,7 +77,7 @@ function CommunityDetail() {
     loadMore: loadMoreMembers,
   } = usePaginatedCommunityMembers({
     communityId: id || "",
-    enabled: !!id && canViewContent,
+    enabled: shouldFetchMembersAndEvents,
   })
 
   const {
@@ -86,7 +88,7 @@ function CommunityDetail() {
     loadMore: loadMoreEvents,
   } = usePaginatedCommunityEvents({
     communityId: id || "",
-    enabled: !!id && canViewContent,
+    enabled: shouldFetchMembersAndEvents,
   })
 
   const displayError =

@@ -1,5 +1,6 @@
 import { Box, CircularProgress, Typography } from "decentraland-ui2"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
+import { formatEventTime } from "../../../../../utils/dateFormat"
 import {
   EmptyState,
   EventCard,
@@ -83,7 +84,7 @@ export const EventsList = ({
                 )}
               </EventImageContainer>
               <EventContent>
-                <EventTime>{event.startTime}</EventTime>
+                <EventTime>{formatEventTime(event.startTime)}</EventTime>
                 <EventName>{event.name}</EventName>
               </EventContent>
             </EventCard>
