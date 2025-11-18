@@ -8,6 +8,10 @@ on:
       - opened
       - synchronize
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -26,7 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: installing
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: linters
         uses: wearerequired/lint-action@v1

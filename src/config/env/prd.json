@@ -1,1 +1,8 @@
-{}
+{
+  "AUTH_URL": "/auth",
+  "SOCIAL_SERVICE_URL": "https://social-api.decentraland.org",
+  "ASSETS_CDN_URL": "https://assets-cdn.decentraland.org",
+  "EVENTS_API_URL": "https://events.decentraland.org/api",
+  "NETWORK": "mainnet",
+  "CHAIN_ID": "1"
+}

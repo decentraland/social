@@ -8,6 +8,41 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
+    define: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "process.env": {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        VITE_REACT_APP_DCL_DEFAULT_ENV:
+          envVariables.VITE_REACT_APP_DCL_DEFAULT_ENV,
+      },
+      global: "globalThis",
+    },
+    resolve: {
+      alias: {
+        buffer: "buffer",
+      },
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        define: {
+          global: "globalThis",
+        },
+      },
+      include: ["buffer"],
+    },
     ...(command === "build" ? { base: envVariables.VITE_BASE_URL } : undefined),
+    server: {
+      open: true,
+      proxy: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "/auth": {
+          target: "https://decentraland.zone",
+          followRedirects: true,
+          changeOrigin: true,
+          secure: false,
+          ws: true,
+        },
+      },
+    },
   }
 })
