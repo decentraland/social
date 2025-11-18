@@ -1,5 +1,47 @@
 {
   "global": {
     "loading": "Loading..."
+  },
+  "community_info": {
+    "jump_in_modal": {
+      "title": "Download Decentraland",
+      "description": "To jump into this community, you need to download Decentraland.",
+      "button_label": "Download"
+    },
+    "members": "Members",
+    "by": "By",
+    "unknown": "Unknown",
+    "joined": "JOINED",
+    "sign_in_to_join": "SIGN IN TO JOIN",
+    "request_to_join": "REQUEST TO JOIN",
+    "jump_in": "JUMP IN",
+    "join": "JOIN"
+  },
+  "community_detail": {
+    "failed_to_join": "Failed to join community",
+    "not_found": "Community not found",
+    "not_found_description": "The community you are looking for does not exist."
+  },
+  "events": {
+    "upcoming_events": "UPCOMING EVENTS",
+    "no_events_found": "No events found",
+    "live": "live"
+  },
+  "members_list": {
+    "title": "MEMBERS",
+    "no_members_found": "No members found",
+    "mutual_friends": "Mutual Friends"
+  },
+  "private_message": {
+    "title": "This is a Private Community",
+    "description": "You must be a member of this Community to see its profile."
+  },
+  "not_found": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist."
+  },
+  "errors": {
+    "network_request_failed": "Network request failed",
+    "unknown_error": "An unknown error occurred"
   }
 }

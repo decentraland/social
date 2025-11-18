@@ -138,7 +138,7 @@ export const CommunityInfo = ({
                   disabled={isPerformingCommunityAction}
                 >
                   {isPerformingCommunityAction
-                    ? t("community_info.loading")
+                    ? t("global.loading")
                     : t("community_info.request_to_join")}
                 </CTAButton>
                 {isLoggedIn && (
@@ -172,7 +172,7 @@ export const CommunityInfo = ({
                 disabled={isPerformingCommunityAction}
               >
                 {isPerformingCommunityAction
-                  ? t("community_info.loading")
+                  ? t("global.loading")
                   : t("community_info.join")}
               </CTAButton>
             )}
