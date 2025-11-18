@@ -84,7 +84,9 @@ export const EventsList = ({
                 )}
               </EventImageContainer>
               <EventContent>
-                <EventTime>{formatEventTime(event.startTime)}</EventTime>
+                <EventTime data-testid={`event-time-${event.id}`}>
+                  {formatEventTime(event.startTime)}
+                </EventTime>
                 <EventName>{event.name}</EventName>
               </EventContent>
             </EventCard>

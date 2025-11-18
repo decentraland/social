@@ -22,12 +22,36 @@ jest.mock("decentraland-ui2", () => {
     }
   }
 
+  const filterStyleProps = (props: Record<string, unknown>) => {
+    const {
+      display: _display,
+      justifyContent: _justifyContent,
+      alignItems: _alignItems,
+      minHeight: _minHeight,
+      padding: _padding,
+      modalProps: _modalProps,
+      buttonProps: _buttonProps,
+      ...rest
+    } = props
+    void _display
+    void _justifyContent
+    void _alignItems
+    void _minHeight
+    void _padding
+    void _modalProps
+    void _buttonProps
+    return rest
+  }
+
   return {
     Avatar: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
-    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+    Box: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
+      <div {...filterStyleProps(props)}>{children}</div>
     ),
     Button: ({
       children,
@@ -40,8 +64,9 @@ jest.mock("decentraland-ui2", () => {
       ...props
     }: {
       buttonText: string
-    } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-      <button {...props}>{buttonText}</button>
+    } & React.ButtonHTMLAttributes<HTMLButtonElement> &
+      Record<string, unknown>) => (
+      <button {...filterStyleProps(props)}>{buttonText}</button>
     ),
     Typography: ({
       children,

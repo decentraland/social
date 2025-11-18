@@ -15,6 +15,23 @@ jest.mock("decentraland-ui2", () => {
     }
   }
 
+  const filterStyleProps = (props: Record<string, unknown>) => {
+    const {
+      display: _display,
+      justifyContent: _justifyContent,
+      alignItems: _alignItems,
+      minHeight: _minHeight,
+      padding: _padding,
+      ...rest
+    } = props
+    void _display
+    void _justifyContent
+    void _alignItems
+    void _minHeight
+    void _padding
+    return rest
+  }
+
   return {
     Avatar: ({
       src,
@@ -23,8 +40,11 @@ jest.mock("decentraland-ui2", () => {
     }: React.ImgHTMLAttributes<HTMLImageElement>) => (
       <img src={src} alt={alt || "Avatar"} {...props} />
     ),
-    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+    Box: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
+      <div {...filterStyleProps(props)}>{children}</div>
     ),
     CircularProgress: () => <div role="progressbar" />,
     Typography: ({

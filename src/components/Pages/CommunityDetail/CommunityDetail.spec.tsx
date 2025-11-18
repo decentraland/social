@@ -26,20 +26,43 @@ jest.mock("decentraland-ui2", () => {
     }
   }
 
+  const filterStyleProps = (props: Record<string, unknown>) => {
+    const {
+      display: _display,
+      justifyContent: _justifyContent,
+      alignItems: _alignItems,
+      minHeight: _minHeight,
+      padding: _padding,
+      autoHideDuration: _autoHideDuration,
+      ...rest
+    } = props
+    void _display
+    void _justifyContent
+    void _alignItems
+    void _minHeight
+    void _padding
+    void _autoHideDuration
+    return rest
+  }
+
   return {
     Alert: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
-    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+    Box: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
+      <div {...filterStyleProps(props)}>{children}</div>
     ),
     CircularProgress: () => <div role="progressbar" />,
     Snackbar: ({
       children,
       open,
       ...props
-    }: React.HTMLAttributes<HTMLDivElement> & { open?: boolean }) =>
-      open ? <div {...props}>{children}</div> : null,
+    }: React.HTMLAttributes<HTMLDivElement> &
+      Record<string, unknown> & { open?: boolean }) =>
+      open ? <div {...filterStyleProps(props)}>{children}</div> : null,
     Typography: ({
       children,
       ...props

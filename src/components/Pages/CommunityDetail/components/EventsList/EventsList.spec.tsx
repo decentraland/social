@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import { EventsList } from "./EventsList"
+import { formatEventTime } from "../../../../../utils/dateFormat"
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -15,9 +16,29 @@ jest.mock("decentraland-ui2", () => {
     }
   }
 
+  const filterStyleProps = (props: Record<string, unknown>) => {
+    const {
+      display: _display,
+      justifyContent: _justifyContent,
+      alignItems: _alignItems,
+      minHeight: _minHeight,
+      padding: _padding,
+      ...rest
+    } = props
+    void _display
+    void _justifyContent
+    void _alignItems
+    void _minHeight
+    void _padding
+    return rest
+  }
+
   return {
-    Box: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+    Box: ({
+      children,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
+      <div {...filterStyleProps(props)}>{children}</div>
     ),
     CircularProgress: () => <div role="progressbar" />,
     Typography: ({
@@ -168,8 +189,12 @@ describe("when rendering the events list", () => {
     it("should display event start times", () => {
       renderEventsList({ events })
 
-      expect(screen.getByText("2024-01-01T10:00:00Z")).toBeInTheDocument()
-      expect(screen.getByText("2024-01-02T10:00:00Z")).toBeInTheDocument()
+      expect(screen.getByTestId("event-time-event-1")).toHaveTextContent(
+        formatEventTime(events[0].startTime)
+      )
+      expect(screen.getByTestId("event-time-event-2")).toHaveTextContent(
+        formatEventTime(events[1].startTime)
+      )
     })
   })
 

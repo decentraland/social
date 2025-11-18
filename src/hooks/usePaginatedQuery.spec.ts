@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { usePaginatedQuery } from "./usePaginatedQuery"
 
 type MockQueryArg = {
@@ -329,7 +329,9 @@ describe("when using the paginated query hook", () => {
 
       const initialOffset = mockQueryHook.mock.calls[0]?.[0]?.offset || 0
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       expect(mockQueryHook).toHaveBeenCalledTimes(1)
       const lastCall =
@@ -361,7 +363,9 @@ describe("when using the paginated query hook", () => {
 
       const initialCallCount = mockQueryHook.mock.calls.length
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       expect(mockQueryHook.mock.calls.length).toBe(initialCallCount)
     })
@@ -392,7 +396,9 @@ describe("when using the paginated query hook", () => {
 
       const initialCallCount = mockQueryHook.mock.calls.length
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       expect(mockQueryHook.mock.calls.length).toBe(initialCallCount)
     })
@@ -425,7 +431,9 @@ describe("when using the paginated query hook", () => {
         expect.any(Object)
       )
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       await waitFor(() => {
         expect(mockQueryHook).toHaveBeenCalledWith(
@@ -458,7 +466,9 @@ describe("when using the paginated query hook", () => {
         })
       )
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       await waitFor(() => {
         const lastCall =
@@ -496,7 +506,9 @@ describe("when using the paginated query hook", () => {
         }
       )
 
-      result.current.loadMore()
+      act(() => {
+        result.current.loadMore()
+      })
 
       rerender({ resetDep: "changed" })
 
