@@ -138,6 +138,12 @@ function CommunityDetail() {
     [isLoggedIn, address, leaveCommunity]
   )
 
+  const handleErrorClose = useCallback(() => {
+    setError(null)
+    resetJoinMutation()
+    resetLeaveMutation()
+  }, [resetJoinMutation, resetLeaveMutation])
+
   if (isLoading) {
     return (
       <ContentContainer>
@@ -152,12 +158,6 @@ function CommunityDetail() {
       </ContentContainer>
     )
   }
-
-  const handleErrorClose = useCallback(() => {
-    setError(null)
-    resetJoinMutation()
-    resetLeaveMutation()
-  }, [resetJoinMutation, resetLeaveMutation])
 
   if (displayError) {
     return (
