@@ -8,7 +8,10 @@ import {
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppSelector } from "../../../app/hooks"
 import {
+  useCancelCommunityRequestMutation,
+  useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
+  useGetMemberRequestsQuery,
   useJoinCommunityMutation,
 } from "../../../features/communities/communities.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
@@ -90,6 +93,9 @@ jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
 jest.mock("../../../features/communities/communities.client", () => ({
   useGetCommunityByIdQuery: jest.fn(),
   useJoinCommunityMutation: jest.fn(),
+  useGetMemberRequestsQuery: jest.fn(),
+  useCreateCommunityRequestMutation: jest.fn(),
+  useCancelCommunityRequestMutation: jest.fn(),
 }))
 
 jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
@@ -112,13 +118,32 @@ jest.mock("./components/CommunityInfo", () => ({
   CommunityInfo: ({
     community,
     onJoin,
+    onRequestToJoin,
+    onCancelRequest,
+    hasPendingRequest,
   }: {
     community: { id: string; name: string }
-    onJoin: (id: string) => void
+    onJoin?: (id: string) => void
+    onRequestToJoin?: (id: string) => void
+    onCancelRequest?: (id: string) => void
+    hasPendingRequest?: boolean
   }) => (
     <div data-testid="community-info">
       <div>{community.name}</div>
-      <button onClick={() => onJoin(community.id)}>Join</button>
+      {hasPendingRequest ? (
+        <button
+          onClick={() => onCancelRequest && onCancelRequest(community.id)}
+        >
+          CANCEL REQUEST
+        </button>
+      ) : (
+        <button
+          onClick={() => onRequestToJoin && onRequestToJoin(community.id)}
+        >
+          REQUEST TO JOIN
+        </button>
+      )}
+      {onJoin && <button onClick={() => onJoin(community.id)}>Join</button>}
     </div>
   ),
 }))
@@ -174,6 +199,11 @@ jest.mock("../../PageLayout", () => ({
 const mockUseParams = useParams as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
+const mockUseGetMemberRequestsQuery = useGetMemberRequestsQuery as jest.Mock
+const mockUseCreateCommunityRequestMutation =
+  useCreateCommunityRequestMutation as jest.Mock
+const mockUseCancelCommunityRequestMutation =
+  useCancelCommunityRequestMutation as jest.Mock
 const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
 const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
@@ -214,6 +244,17 @@ describe("when rendering the community detail page", () => {
     })
     mockUseJoinCommunityMutation.mockReturnValue([
       mockJoinMutation,
+      { isLoading: false, error: undefined, reset: jest.fn() },
+    ])
+    mockUseGetMemberRequestsQuery.mockReturnValue({
+      data: { data: { results: [], total: 0, page: 1, pages: 1, limit: 10 } },
+    })
+    mockUseCreateCommunityRequestMutation.mockReturnValue([
+      jest.fn(),
+      { isLoading: false, error: undefined, reset: jest.fn() },
+    ])
+    mockUseCancelCommunityRequestMutation.mockReturnValue([
+      jest.fn(),
       { isLoading: false, error: undefined, reset: jest.fn() },
     ])
     mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -424,6 +465,201 @@ describe("when rendering the community detail page", () => {
           expect(screen.getByTestId("private-message")).toBeInTheDocument()
           expect(screen.queryByTestId("events-list")).not.toBeInTheDocument()
           expect(screen.queryByTestId("members-list")).not.toBeInTheDocument()
+        })
+
+        describe("and the community is private", () => {
+          let mockCreateRequestMutation: jest.Mock
+          let mockCreateRequestUnwrap: jest.Mock
+          let mockCancelRequestMutation: jest.Mock
+          let mockCancelRequestUnwrap: jest.Mock
+
+          beforeEach(() => {
+            community = {
+              ...community,
+              privacy: "private",
+            }
+            mockUseGetCommunityByIdQuery.mockReturnValue({
+              data: { data: community },
+              isLoading: false,
+              error: undefined,
+              isError: false,
+            })
+
+            mockCreateRequestUnwrap = jest.fn()
+            mockCreateRequestMutation = jest.fn(() => ({
+              unwrap: mockCreateRequestUnwrap,
+            }))
+            mockUseCreateCommunityRequestMutation.mockReturnValue([
+              mockCreateRequestMutation,
+              { isLoading: false, error: undefined, reset: jest.fn() },
+            ])
+
+            mockCancelRequestUnwrap = jest.fn()
+            mockCancelRequestMutation = jest.fn(() => ({
+              unwrap: mockCancelRequestUnwrap,
+            }))
+            mockUseCancelCommunityRequestMutation.mockReturnValue([
+              mockCancelRequestMutation,
+              { isLoading: false, error: undefined, reset: jest.fn() },
+            ])
+          })
+
+          describe("and the user has no pending request", () => {
+            beforeEach(() => {
+              mockUseGetMemberRequestsQuery.mockReturnValue({
+                data: {
+                  data: {
+                    results: [],
+                    total: 0,
+                    page: 1,
+                    pages: 1,
+                    limit: 10,
+                  },
+                },
+              })
+            })
+
+            it("should fetch member requests", () => {
+              renderCommunityDetail()
+
+              expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
+                {
+                  address: "0x456",
+                  type: "request_to_join",
+                },
+                { skip: false }
+              )
+            })
+
+            it("should call createCommunityRequest when requesting to join", async () => {
+              const user = userEvent.setup()
+              mockCreateRequestUnwrap.mockResolvedValue({
+                data: {
+                  id: "request-1",
+                  communityId: "community-1",
+                  memberAddress: "0x456",
+                  type: "request_to_join",
+                  status: "pending",
+                },
+              })
+
+              renderCommunityDetail()
+
+              const requestButton = screen.getByText("REQUEST TO JOIN")
+              await user.click(requestButton)
+
+              await waitFor(() => {
+                expect(mockCreateRequestMutation).toHaveBeenCalledWith({
+                  communityId: "community-1",
+                  targetedAddress: "0x456",
+                })
+              })
+            })
+
+            describe("and creating the request fails", () => {
+              let createRequestError: Error
+
+              beforeEach(() => {
+                createRequestError = new Error("Failed to create request")
+                mockCreateRequestUnwrap.mockRejectedValue(createRequestError)
+              })
+
+              it("should display the error message", async () => {
+                const user = userEvent.setup()
+                renderCommunityDetail()
+
+                const requestButton = screen.getByText("REQUEST TO JOIN")
+                await user.click(requestButton)
+
+                await waitFor(() => {
+                  expect(
+                    screen.getByText("Failed to create request")
+                  ).toBeInTheDocument()
+                })
+              })
+            })
+          })
+
+          describe("and the user has a pending request", () => {
+            let pendingRequest: {
+              id: string
+              communityId: string
+              type: string
+              status: string
+            }
+
+            beforeEach(() => {
+              pendingRequest = {
+                id: "request-1",
+                communityId: "community-1",
+                type: "request_to_join",
+                status: "pending",
+              }
+              mockUseGetMemberRequestsQuery.mockReturnValue({
+                data: {
+                  data: {
+                    results: [pendingRequest],
+                    total: 1,
+                    page: 1,
+                    pages: 1,
+                    limit: 10,
+                  },
+                },
+              })
+            })
+
+            it("should identify the pending request for the community", () => {
+              renderCommunityDetail()
+
+              expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
+                {
+                  address: "0x456",
+                  type: "request_to_join",
+                },
+                { skip: false }
+              )
+            })
+
+            it("should call cancelCommunityRequest when canceling the request", async () => {
+              const user = userEvent.setup()
+              mockCancelRequestUnwrap.mockResolvedValue(undefined)
+
+              renderCommunityDetail()
+
+              const cancelButton = screen.getByText("CANCEL REQUEST")
+              await user.click(cancelButton)
+
+              await waitFor(() => {
+                expect(mockCancelRequestMutation).toHaveBeenCalledWith({
+                  communityId: "community-1",
+                  requestId: "request-1",
+                })
+              })
+            })
+
+            describe("and canceling the request fails", () => {
+              let cancelRequestError: Error
+
+              beforeEach(() => {
+                cancelRequestError = new Error("Failed to cancel request")
+                mockCancelRequestUnwrap.mockRejectedValue(cancelRequestError)
+              })
+
+              it("should display the error message", async () => {
+                const user = userEvent.setup()
+                renderCommunityDetail()
+
+                const cancelButton = screen.getByText("CANCEL REQUEST")
+                await user.click(cancelButton)
+
+                await waitFor(() => {
+                  expect(
+                    screen.getByText("Failed to cancel request")
+                  ).toBeInTheDocument()
+                })
+              })
+            })
+          })
         })
       })
 

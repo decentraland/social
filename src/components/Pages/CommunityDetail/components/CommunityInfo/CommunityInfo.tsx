@@ -35,6 +35,9 @@ type CommunityInfoProps = {
   isMember: boolean
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
+  hasPendingRequest?: boolean
+  onRequestToJoin?: (communityId: string) => Promise<void>
+  onCancelRequest?: (communityId: string) => Promise<void>
 }
 
 export const CommunityInfo = ({
@@ -45,6 +48,9 @@ export const CommunityInfo = ({
   isMember,
   canViewContent,
   onJoin,
+  hasPendingRequest = false,
+  onRequestToJoin,
+  onCancelRequest,
 }: CommunityInfoProps) => {
   const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
@@ -59,6 +65,28 @@ export const CommunityInfo = ({
 
     onJoin(community.id)
   }, [isLoggedIn, address, navigate, community.id, onJoin])
+
+  const handleRequestToJoinClick = useCallback(() => {
+    if (!isLoggedIn || !address) {
+      const currentPath = `/communities/${community.id}`
+      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      return
+    }
+
+    if (onRequestToJoin) {
+      onRequestToJoin(community.id)
+    }
+  }, [isLoggedIn, address, navigate, community.id, onRequestToJoin])
+
+  const handleCancelRequestClick = useCallback(() => {
+    if (!isLoggedIn || !address) {
+      return
+    }
+
+    if (onCancelRequest) {
+      onCancelRequest(community.id)
+    }
+  }, [isLoggedIn, address, community.id, onCancelRequest])
 
   return (
     <InfoSection>
@@ -130,17 +158,29 @@ export const CommunityInfo = ({
               </CTAButton>
             ) : isPrivate ? (
               <>
-                {/* TODO: Add cancel request button support */}
-                <CTAButton
-                  color="secondary"
-                  variant="contained"
-                  onClick={handleJoinClick}
-                  disabled={isPerformingCommunityAction}
-                >
-                  {isPerformingCommunityAction
-                    ? t("global.loading")
-                    : t("community_info.request_to_join")}
-                </CTAButton>
+                {hasPendingRequest ? (
+                  <CTAButton
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleCancelRequestClick}
+                    disabled={isPerformingCommunityAction}
+                  >
+                    {isPerformingCommunityAction
+                      ? t("global.loading")
+                      : t("community_info.cancel_request")}
+                  </CTAButton>
+                ) : (
+                  <CTAButton
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleRequestToJoinClick}
+                    disabled={isPerformingCommunityAction}
+                  >
+                    {isPerformingCommunityAction
+                      ? t("global.loading")
+                      : t("community_info.request_to_join")}
+                  </CTAButton>
+                )}
                 {isLoggedIn && (
                   <JumpIn
                     variant="button"

@@ -24,7 +24,10 @@ import {
 } from "./utils/errorUtils"
 import { useAppSelector } from "../../../app/hooks"
 import {
+  useCancelCommunityRequestMutation,
+  useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
+  useGetMemberRequestsQuery,
   useJoinCommunityMutation,
 } from "../../../features/communities/communities.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
@@ -59,9 +62,22 @@ function CommunityDetail() {
     joinCommunity,
     { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
   ] = useJoinCommunityMutation()
-
-  const isPerformingCommunityAction = isJoining
-  const mutationError = joinError
+  const [
+    createCommunityRequest,
+    {
+      isLoading: isCreatingRequest,
+      error: createRequestError,
+      reset: resetCreateRequestMutation,
+    },
+  ] = useCreateCommunityRequestMutation()
+  const [
+    cancelCommunityRequest,
+    {
+      isLoading: isCancellingRequest,
+      error: cancelRequestError,
+      reset: resetCancelRequestMutation,
+    },
+  ] = useCancelCommunityRequestMutation()
 
   const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
@@ -72,6 +88,30 @@ function CommunityDetail() {
   const canViewContent = member || !isPrivate
   const shouldFetchMembersAndEvents =
     !!id && !!community && (!isPrivate || member)
+
+  // Fetch member requests if user is logged in and viewing a private community
+  const shouldFetchRequests = isLoggedIn && !!address && !!isPrivate && !member
+  const { data: memberRequestsData } = useGetMemberRequestsQuery(
+    {
+      address: address || "",
+      type: "request_to_join",
+    },
+    { skip: !shouldFetchRequests }
+  )
+
+  // Find pending request for current community
+  const pendingRequest = memberRequestsData?.data.results.find(
+    (request) =>
+      request.communityId === id &&
+      request.status === "pending" &&
+      request.type === "request_to_join"
+  )
+  const hasPendingRequest = !!pendingRequest
+  const pendingRequestId = pendingRequest?.id
+
+  const isPerformingCommunityAction =
+    isJoining || isCreatingRequest || isCancellingRequest
+  const mutationError = joinError || createRequestError || cancelRequestError
 
   const {
     members,
@@ -122,10 +162,63 @@ function CommunityDetail() {
     [isLoggedIn, address, joinCommunity]
   )
 
+  const handleRequestToJoin = useCallback(
+    async (communityId: string) => {
+      if (!isLoggedIn || !address) {
+        return
+      }
+
+      try {
+        await createCommunityRequest({
+          communityId,
+          targetedAddress: address,
+        }).unwrap()
+      } catch (err) {
+        if (isFetchBaseQueryError(err)) {
+          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t("community_detail.failed_to_join"))
+        } else if (isErrorWithMessage(err)) {
+          setError(err.message)
+        } else {
+          setError(t("community_detail.failed_to_join"))
+        }
+      }
+    },
+    [isLoggedIn, address, createCommunityRequest]
+  )
+
+  const handleCancelRequest = useCallback(
+    async (communityId: string, requestId: string) => {
+      if (!isLoggedIn || !address) {
+        return
+      }
+
+      try {
+        await cancelCommunityRequest({ communityId, requestId }).unwrap()
+      } catch (err) {
+        if (isFetchBaseQueryError(err)) {
+          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t("community_detail.failed_to_join"))
+        } else if (isErrorWithMessage(err)) {
+          setError(err.message)
+        } else {
+          setError(t("community_detail.failed_to_join"))
+        }
+      }
+    },
+    [isLoggedIn, address, cancelCommunityRequest]
+  )
+
   const handleErrorClose = useCallback(() => {
     setError(null)
     resetJoinMutation()
-  }, [resetJoinMutation])
+    resetCreateRequestMutation()
+    resetCancelRequestMutation()
+  }, [
+    resetJoinMutation,
+    resetCreateRequestMutation,
+    resetCancelRequestMutation,
+  ])
 
   if (isLoading || isWalletConnecting) {
     return (
@@ -183,6 +276,14 @@ function CommunityDetail() {
             isMember={member}
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}
+            hasPendingRequest={hasPendingRequest}
+            onRequestToJoin={handleRequestToJoin}
+            onCancelRequest={
+              pendingRequestId
+                ? (communityId: string) =>
+                    handleCancelRequest(communityId, pendingRequestId)
+                : undefined
+            }
           />
 
           {!canViewContent && <PrivateMessage />}
