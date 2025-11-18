@@ -141,7 +141,7 @@ export const CommunityInfo = ({
           <ActionButtons>
             {isMember ? (
               <CTAButton variant="outlined" disabled>
-                <Icon component={muiIcons.Check} sx={{ fontSize: 20 }} />
+                <Icon component={muiIcons.Check} fontSize="small" />
                 {t("community_info.joined")}
               </CTAButton>
             ) : !isLoggedIn ? (
