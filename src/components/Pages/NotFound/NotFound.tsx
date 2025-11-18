@@ -1,3 +1,4 @@
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, Typography } from "decentraland-ui2"
 import { PageLayout } from "../../PageLayout"
 
@@ -11,9 +12,9 @@ const NotFound = () => {
         justifyContent="center"
         minHeight="400px"
       >
-        <Typography variant="h4">Page not found</Typography>
+        <Typography variant="h4">{t("not_found.title")}</Typography>
         <Typography variant="body1" color="textSecondary">
-          The page you are looking for does not exist.
+          {t("not_found.description")}
         </Typography>
       </Box>
     </PageLayout>

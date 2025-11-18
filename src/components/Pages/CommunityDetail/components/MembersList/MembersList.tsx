@@ -1,3 +1,4 @@
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, CircularProgress, Typography } from "decentraland-ui2"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import {
@@ -45,7 +46,7 @@ export const MembersList = ({
   if (isLoading) {
     return (
       <MembersSection>
-        <SectionTitle>MEMBERS</SectionTitle>
+        <SectionTitle>{t("members_list.title")}</SectionTitle>
         <Box
           display="flex"
           justifyContent="center"
@@ -60,11 +61,11 @@ export const MembersList = ({
 
   return (
     <MembersSection>
-      <SectionTitle>MEMBERS</SectionTitle>
+      <SectionTitle>{t("members_list.title")}</SectionTitle>
       {members.length === 0 ? (
         <EmptyState>
           <Typography variant="body2" color="textSecondary">
-            No members found
+            {t("members_list.no_members_found")}
           </Typography>
         </EmptyState>
       ) : (
@@ -83,7 +84,8 @@ export const MembersList = ({
                 <MemberRole>{memberItem.role}</MemberRole>
                 {memberItem.mutualFriends > 0 && (
                   <MemberMutualFriends>
-                    {memberItem.mutualFriends} Mutual Friends
+                    {memberItem.mutualFriends}{" "}
+                    {t("members_list.mutual_friends")}
                   </MemberMutualFriends>
                 )}
               </MemberInfo>

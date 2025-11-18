@@ -1,3 +1,4 @@
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, CircularProgress, Typography } from "decentraland-ui2"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import { formatEventTime } from "../../../../../utils/dateFormat"
@@ -49,7 +50,7 @@ export const EventsList = ({
   if (isLoading) {
     return (
       <EventsSection>
-        <SectionTitle>UPCOMING EVENTS</SectionTitle>
+        <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
         <Box
           display="flex"
           justifyContent="center"
@@ -64,11 +65,11 @@ export const EventsList = ({
 
   return (
     <EventsSection>
-      <SectionTitle>UPCOMING EVENTS</SectionTitle>
+      <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
       {events.length === 0 ? (
         <EmptyState>
           <Typography variant="body2" color="textSecondary">
-            No events found
+            {t("events.no_events_found")}
           </Typography>
         </EmptyState>
       ) : (
@@ -79,7 +80,7 @@ export const EventsList = ({
                 <EventImage src={event.image} alt={event.name} />
                 {event.isLive && (
                   <LiveBadgeContainer>
-                    <LiveBadgeText>live</LiveBadgeText>
+                    <LiveBadgeText>{t("events.live")}</LiveBadgeText>
                   </LiveBadgeContainer>
                 )}
               </EventImageContainer>

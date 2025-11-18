@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react"
 import { useParams } from "react-router-dom"
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   getData as getWallet,
   isConnecting,
@@ -110,11 +111,11 @@ function CommunityDetail() {
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
           const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || "Failed to join community")
+          setError(errMsg || t("community_detail.failed_to_join"))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError("Failed to join community")
+          setError(t("community_detail.failed_to_join"))
         }
       }
     },
@@ -159,9 +160,11 @@ function CommunityDetail() {
     return (
       <ContentContainer>
         <CenteredContainer>
-          <Typography variant="h4">Community not found</Typography>
+          <Typography variant="h4">
+            {t("community_detail.not_found")}
+          </Typography>
           <Typography variant="body1" color="textSecondary">
-            The community you are looking for does not exist.
+            {t("community_detail.not_found_description")}
           </Typography>
         </CenteredContainer>
       </ContentContainer>

@@ -96,10 +96,6 @@ jest.mock("decentraland-ui2", () => {
   }
 })
 
-jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({
-  t: jest.fn((key: string) => key),
-}))
-
 jest.mock("../../utils/communityUtils", () => ({
   getThumbnailUrl: jest.fn(
     (id: string) => `https://example.com/thumbnails/${id}.jpg`

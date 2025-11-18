@@ -93,7 +93,7 @@ export const CommunityInfo = ({
                   notation: "compact",
                   compactDisplay: "short",
                 }).format(community.membersCount)}{" "}
-                Members
+                {t("community_info.members")}
               </PrivacyMembersText>
             </PrivacyMembersRow>
           </TitleRow>
@@ -104,9 +104,9 @@ export const CommunityInfo = ({
               />
             </OwnerAvatarContainer>
             <OwnerText>
-              By{" "}
+              {t("community_info.by")}{" "}
               <span className="owner-name">
-                {community.ownerName || "Unknown"}
+                {community.ownerName || t("community_info.unknown")}
               </span>
             </OwnerText>
           </OwnerRow>
@@ -114,7 +114,7 @@ export const CommunityInfo = ({
             {isMember ? (
               <CTAButton variant="outlined" disabled>
                 <Icon component={muiIcons.Check} sx={{ fontSize: 20 }} />
-                JOINED
+                {t("community_info.joined")}
               </CTAButton>
             ) : !isLoggedIn ? (
               <CTAButton
@@ -126,7 +126,7 @@ export const CommunityInfo = ({
                   )
                 }}
               >
-                SIGN IN TO JOIN
+                {t("community_info.sign_in_to_join")}
               </CTAButton>
             ) : isPrivate ? (
               <>
@@ -138,13 +138,13 @@ export const CommunityInfo = ({
                   disabled={isPerformingCommunityAction}
                 >
                   {isPerformingCommunityAction
-                    ? "Loading..."
-                    : "REQUEST TO JOIN"}
+                    ? t("community_info.loading")
+                    : t("community_info.request_to_join")}
                 </CTAButton>
                 {isLoggedIn && (
                   <JumpIn
                     variant="button"
-                    buttonText="JUMP IN"
+                    buttonText={t("community_info.jump_in")}
                     modalProps={{
                       title: t("community_info.jump_in_modal.title"),
                       description: t(
@@ -171,7 +171,9 @@ export const CommunityInfo = ({
                 onClick={handleJoinClick}
                 disabled={isPerformingCommunityAction}
               >
-                {isPerformingCommunityAction ? "Loading..." : "JOIN"}
+                {isPerformingCommunityAction
+                  ? t("community_info.loading")
+                  : t("community_info.join")}
               </CTAButton>
             )}
           </ActionButtons>

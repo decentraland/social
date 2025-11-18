@@ -1,3 +1,4 @@
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   LockIcon,
   PrivateMessage as PrivateMessageContainer,
@@ -46,9 +47,9 @@ export const PrivateMessage = () => {
         </svg>
       </LockIcon>
       <PrivateMessageContent>
-        <PrivateMessageTitle>This is a Private Community</PrivateMessageTitle>
+        <PrivateMessageTitle>{t("private_message.title")}</PrivateMessageTitle>
         <PrivateMessageText>
-          You must be a member of this Community to see its profile.
+          {t("private_message.description")}
         </PrivateMessageText>
       </PrivateMessageContent>
     </PrivateMessageContainer>
