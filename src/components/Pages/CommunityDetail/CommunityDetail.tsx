@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react"
 import { useParams } from "react-router-dom"
-import { getData as getWallet } from "decentraland-dapps/dist/modules/wallet/selectors"
+import {
+  getData as getWallet,
+  isConnecting,
+} from "decentraland-dapps/dist/modules/wallet/selectors"
 import {
   Alert,
   Box,
@@ -39,14 +42,18 @@ import {
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const wallet = useAppSelector(getWallet)
+  const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
+
+  // Skip query if wallet is still connecting to ensure state is ready for signing
+  const shouldSkipQuery = !id || isWalletConnecting
 
   const {
     data,
     isLoading,
     error: queryError,
     isError,
-  } = useGetCommunityByIdQuery(id || "", { skip: !id })
+  } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
   const [
     joinCommunity,
     { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
@@ -146,7 +153,7 @@ function CommunityDetail() {
     resetLeaveMutation()
   }, [resetJoinMutation, resetLeaveMutation])
 
-  if (isLoading) {
+  if (isLoading || isWalletConnecting) {
     return (
       <ContentContainer>
         <Box
@@ -178,9 +185,18 @@ function CommunityDetail() {
   if (!community) {
     return (
       <ContentContainer>
-        <Typography variant="body1" color="textSecondary">
-          Community not found
-        </Typography>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="400px"
+        >
+          <Typography variant="h4">Community not found</Typography>
+          <Typography variant="body1" color="textSecondary">
+            The community you are looking for does not exist.
+          </Typography>
+        </Box>
       </ContentContainer>
     )
   }
