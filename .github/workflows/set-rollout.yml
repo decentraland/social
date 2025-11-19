@@ -28,7 +28,7 @@ jobs:
           packageVersion: ${{ github.event.deployment.payload.packageVersion }}
 
           # Rollout information
-          deploymentPath: "social-site"
+          deploymentPath: "social"
           deploymentEnvironment: "zone"
           deploymentName: "_site"
           percentage: 100
@@ -48,7 +48,7 @@ jobs:
           packageVersion: ${{ github.event.deployment.payload.packageVersion }}
 
           # Rollout information
-          deploymentPath: "social-site"
+          deploymentPath: "social"
           deploymentEnvironment: "today"
           deploymentName: "_site"
           percentage: 100

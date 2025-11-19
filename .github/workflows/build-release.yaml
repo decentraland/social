@@ -3,7 +3,7 @@ name: Build and release
 on:
   push:
     branches:
-      - master
+      - main
   release:
     types:
       - created
@@ -37,16 +37,16 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NODE_PATH: 'src'
-          NODE_OPTIONS: '--max-old-space-size=6144'
+          NODE_PATH: "src"
+          NODE_OPTIONS: "--max-old-space-size=6144"
 
       - name: Publish
         uses: decentraland/oddish-action@master
         with:
-          cwd: './dist'
+          cwd: "./dist"
           deterministic-snapshot: true
           provenance: false
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
           access: public
           gitlab-token: ${{ secrets.GITLAB_CDN_DEPLOYER_TOKEN }}
           gitlab-pipeline-url: ${{ secrets.GITLAB_CDN_DEPLOYER_URL }}
