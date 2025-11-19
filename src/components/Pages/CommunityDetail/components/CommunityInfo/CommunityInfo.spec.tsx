@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
+import { Privacy, Visibility } from "../../../../../features/communities/types"
 import type { Community } from "../../../../../features/communities/types"
 
 jest.mock("react-router-dom", () => ({
@@ -111,8 +112,8 @@ function renderCommunityInfo(
     id: "community-1",
     name: "Test Community",
     description: "Test Description",
-    privacy: "public",
-    visibility: "all",
+    privacy: Privacy.PUBLIC,
+    visibility: Visibility.ALL,
     active: true,
     membersCount: 100,
     ownerAddress: "0x123",
@@ -146,8 +147,8 @@ describe("when rendering the community info", () => {
       id: "community-1",
       name: "Test Community",
       description: "Test Description",
-      privacy: "public",
-      visibility: "all",
+      privacy: Privacy.PUBLIC,
+      visibility: Visibility.ALL,
       active: true,
       membersCount: 100,
       ownerAddress: "0x123",
@@ -171,7 +172,7 @@ describe("when rendering the community info", () => {
     beforeEach(() => {
       privateCommunity = {
         ...defaultCommunity,
-        privacy: "private",
+        privacy: Privacy.PRIVATE,
       }
     })
 
@@ -236,8 +237,8 @@ describe("when rendering the community info", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -273,8 +274,8 @@ describe("when rendering the community info", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -290,8 +291,8 @@ describe("when rendering the community info", () => {
             id: "community-1",
             name: "Test Community",
             description: "Test Description",
-            privacy: "public",
-            visibility: "all",
+            privacy: Privacy.PUBLIC,
+            visibility: Visibility.ALL,
             active: true,
             membersCount: 100,
             ownerAddress: "0x123",
@@ -349,8 +350,8 @@ describe("when rendering the community info", () => {
             id: "community-1",
             name: "Test Community",
             description: "Test Description",
-            privacy: "private",
-            visibility: "all",
+            privacy: Privacy.PRIVATE,
+            visibility: Visibility.ALL,
             active: true,
             membersCount: 100,
             ownerAddress: "0x123",
@@ -494,8 +495,8 @@ describe("when rendering the community info", () => {
           id: "community-1",
           name: "Test Community",
           description: "Test Description",
-          privacy: "public",
-          visibility: "all",
+          privacy: Privacy.PUBLIC,
+          visibility: Visibility.ALL,
           active: true,
           membersCount: 100,
           ownerAddress: "0x123",

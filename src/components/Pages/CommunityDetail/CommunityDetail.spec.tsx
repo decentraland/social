@@ -14,6 +14,13 @@ import {
   useGetMemberRequestsQuery,
   useJoinCommunityMutation,
 } from "../../../features/communities/communities.client"
+import {
+  Privacy,
+  RequestStatus,
+  RequestType,
+  Role,
+  Visibility,
+} from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -364,8 +371,8 @@ describe("when rendering the community detail page", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -451,7 +458,7 @@ describe("when rendering the community detail page", () => {
         it("should not enable content viewing for private communities", () => {
           community = {
             ...community,
-            privacy: "private",
+            privacy: Privacy.PRIVATE,
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
@@ -476,7 +483,7 @@ describe("when rendering the community detail page", () => {
           beforeEach(() => {
             community = {
               ...community,
-              privacy: "private",
+              privacy: Privacy.PRIVATE,
             }
             mockUseGetCommunityByIdQuery.mockReturnValue({
               data: { data: community },
@@ -525,7 +532,7 @@ describe("when rendering the community detail page", () => {
               expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
                 {
                   address: "0x456",
-                  type: "request_to_join",
+                  type: RequestType.REQUEST_TO_JOIN,
                 },
                 { skip: false }
               )
@@ -538,8 +545,8 @@ describe("when rendering the community detail page", () => {
                   id: "request-1",
                   communityId: "community-1",
                   memberAddress: "0x456",
-                  type: "request_to_join",
-                  status: "pending",
+                  type: RequestType.REQUEST_TO_JOIN,
+                  status: RequestStatus.PENDING,
                 },
               })
 
@@ -592,8 +599,8 @@ describe("when rendering the community detail page", () => {
               pendingRequest = {
                 id: "request-1",
                 communityId: "community-1",
-                type: "request_to_join",
-                status: "pending",
+                type: RequestType.REQUEST_TO_JOIN,
+                status: RequestStatus.PENDING,
               }
               mockUseGetMemberRequestsQuery.mockReturnValue({
                 data: {
@@ -614,7 +621,7 @@ describe("when rendering the community detail page", () => {
               expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
                 {
                   address: "0x456",
-                  type: "request_to_join",
+                  type: RequestType.REQUEST_TO_JOIN,
                 },
                 { skip: false }
               )
@@ -667,7 +674,7 @@ describe("when rendering the community detail page", () => {
         beforeEach(() => {
           community = {
             ...community,
-            role: "member",
+            role: Role.MEMBER,
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
@@ -817,7 +824,7 @@ describe("when rendering the community detail page", () => {
           },
           {
             name: "Jane Smith",
-            role: "member",
+            role: Role.MEMBER,
             mutualFriends: 5,
           },
         ]

@@ -2,6 +2,7 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
+import { Privacy } from "../../../../../features/communities/types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
   ActionButtons,
@@ -54,7 +55,7 @@ export const CommunityInfo = ({
 }: CommunityInfoProps) => {
   const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
-  const isPrivate = community.privacy === "private"
+  const isPrivate = community.privacy === Privacy.PRIVATE
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {

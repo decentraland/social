@@ -30,6 +30,11 @@ import {
   useGetMemberRequestsQuery,
   useJoinCommunityMutation,
 } from "../../../features/communities/communities.client"
+import {
+  Privacy,
+  RequestStatus,
+  RequestType,
+} from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -84,7 +89,7 @@ function CommunityDetail() {
   const community = data?.data
 
   const member = community ? isMember(community) : false
-  const isPrivate = community?.privacy === "private"
+  const isPrivate = community?.privacy === Privacy.PRIVATE
   const canViewContent = member || !isPrivate
   const shouldFetchMembersAndEvents =
     !!id && !!community && (!isPrivate || member)
@@ -94,7 +99,7 @@ function CommunityDetail() {
   const { data: memberRequestsData } = useGetMemberRequestsQuery(
     {
       address: address || "",
-      type: "request_to_join",
+      type: RequestType.REQUEST_TO_JOIN,
     },
     { skip: !shouldFetchRequests }
   )
@@ -103,8 +108,8 @@ function CommunityDetail() {
   const pendingRequest = memberRequestsData?.data.results.find(
     (request) =>
       request.communityId === id &&
-      request.status === "pending" &&
-      request.type === "request_to_join"
+      request.status === RequestStatus.PENDING &&
+      request.type === RequestType.REQUEST_TO_JOIN
   )
   const hasPendingRequest = !!pendingRequest
   const pendingRequestId = pendingRequest?.id

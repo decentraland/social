@@ -4,6 +4,8 @@ import {
   CreateCommunityRequestResponse,
   JoinCommunityResponse,
   MemberRequestsResponse,
+  RequestIntention,
+  RequestType,
 } from "./types"
 import { client } from "../../services/client"
 
@@ -85,7 +87,7 @@ const communitiesApi = client.injectEndpoints({
         method: "POST",
         body: {
           targetedAddress,
-          type: "request_to_join",
+          type: RequestType.REQUEST_TO_JOIN,
         },
       }),
       invalidatesTags: (
@@ -106,7 +108,7 @@ const communitiesApi = client.injectEndpoints({
         url: `/v1/communities/${communityId}/requests/${requestId}`,
         method: "PATCH",
         body: {
-          intention: "cancelled",
+          intention: RequestIntention.CANCELLED,
         },
       }),
       invalidatesTags: (
@@ -121,7 +123,7 @@ const communitiesApi = client.injectEndpoints({
     }),
     getMemberRequests: builder.query<
       MemberRequestsResponse,
-      { address: string; type?: "request_to_join" | "invite" }
+      { address: string; type?: RequestType }
     >({
       query: ({ address, type }) => {
         const params = new URLSearchParams()

@@ -1,3 +1,35 @@
+enum RequestStatus {
+  PENDING = "pending",
+  ACCEPTED = "accepted",
+  REJECTED = "rejected",
+  CANCELLED = "cancelled",
+}
+
+enum RequestType {
+  INVITE = "invite",
+  REQUEST_TO_JOIN = "request_to_join",
+}
+
+enum Privacy {
+  PUBLIC = "public",
+  PRIVATE = "private",
+}
+
+enum Visibility {
+  ALL = "all",
+  UNLISTED = "unlisted",
+}
+
+enum Role {
+  OWNER = "owner",
+  MODERATOR = "moderator",
+  MEMBER = "member",
+}
+
+enum RequestIntention {
+  CANCELLED = "cancelled",
+}
+
 type CommunityThumbnails = {
   [key: string]: string
 }
@@ -14,12 +46,12 @@ type Community = {
   description: string
   ownerAddress: string
   ownerName?: string
-  privacy: "public" | "private"
-  visibility: "all" | "unlisted"
+  privacy: Privacy
+  visibility: Visibility
   active: boolean
   membersCount: number
   thumbnails?: CommunityThumbnails
-  role?: "owner" | "moderator" | "member"
+  role?: Role
   voiceChatStatus?: VoiceChatStatus
 }
 
@@ -35,7 +67,7 @@ type JoinCommunityResponse = {
 type CommunityMember = {
   communityId: string
   memberAddress: string
-  role: "owner" | "moderator" | "member"
+  role: Role
   joinedAt: string
   profilePictureUrl?: string
   hasClaimedName?: boolean
@@ -57,15 +89,15 @@ type MemberRequest = {
   id: string
   communityId: string
   memberAddress: string
-  type: "invite" | "request_to_join"
-  status: "pending" | "accepted" | "rejected" | "cancelled"
+  type: RequestType
+  status: RequestStatus
 }
 
 type MemberCommunityRequest = Omit<Community, "id"> & {
   id: string
   communityId: string
-  type: "invite" | "request_to_join"
-  status: "pending" | "accepted" | "rejected" | "cancelled"
+  type: RequestType
+  status: RequestStatus
 }
 
 type CreateCommunityRequestResponse = {
@@ -94,4 +126,13 @@ export type {
   MemberCommunityRequest,
   CreateCommunityRequestResponse,
   MemberRequestsResponse,
+}
+
+export {
+  Privacy,
+  RequestIntention,
+  RequestStatus,
+  RequestType,
+  Role,
+  Visibility,
 }
