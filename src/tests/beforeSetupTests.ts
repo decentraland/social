@@ -1,12 +1,10 @@
 import { TextDecoder, TextEncoder } from "util"
 import { flatten } from "flat"
-import intlEn from "../intl/en.json"
 import * as locales from "../modules/translation/locales"
 
 // Create a flat translation map from our JSON files
 const translations: Record<string, string> = {
   ...flatten(locales.en),
-  ...flatten(intlEn),
 }
 
 jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({

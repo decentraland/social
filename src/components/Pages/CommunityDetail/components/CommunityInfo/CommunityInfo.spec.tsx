@@ -341,6 +341,9 @@ describe("when rendering the community info", () => {
       })
 
       describe("and the community is private", () => {
+        let mockOnRequestToJoin: jest.Mock
+        let mockOnCancelRequest: jest.Mock
+
         beforeEach(() => {
           community = {
             id: "community-1",
@@ -353,57 +356,132 @@ describe("when rendering the community info", () => {
             ownerAddress: "0x123",
             ownerName: "Test Owner",
           }
+          mockOnRequestToJoin = jest.fn()
+          mockOnCancelRequest = jest.fn()
         })
 
-        it("should display request to join button", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
+        describe("and the user has no pending request", () => {
+          beforeEach(() => {
+            mockOnRequestToJoin = jest.fn()
           })
 
-          expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
+          it("should display request to join button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              onRequestToJoin: mockOnRequestToJoin,
+            })
+
+            expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
+          })
+
+          it("should call onRequestToJoin with the community id when request to join button is clicked", async () => {
+            const user = userEvent.setup()
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              onRequestToJoin: mockOnRequestToJoin,
+            })
+
+            const requestButton = screen.getByText("REQUEST TO JOIN")
+            await user.click(requestButton)
+
+            expect(mockOnRequestToJoin).toHaveBeenCalledWith("community-1")
+          })
+
+          it("should display jump in button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+            })
+
+            expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+          })
+
+          it("should disable request to join button when performing community action", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              isPerformingCommunityAction: true,
+            })
+
+            const requestButton = screen.getByText("Loading...")
+            expect(requestButton).toBeDisabled()
+          })
         })
 
-        it("should call onJoin with the community id when request to join button is clicked", async () => {
-          const user = userEvent.setup()
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            onJoin: mockOnJoin,
+        describe("and the user has a pending request", () => {
+          beforeEach(() => {
+            mockOnCancelRequest = jest.fn()
           })
 
-          const requestButton = screen.getByText("REQUEST TO JOIN")
-          await user.click(requestButton)
+          it("should display cancel request button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              onCancelRequest: mockOnCancelRequest,
+            })
 
-          expect(mockOnJoin).toHaveBeenCalledWith("community-1")
-        })
-
-        it("should display jump in button", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
+            expect(screen.getByText("CANCEL REQUEST")).toBeInTheDocument()
           })
 
-          expect(screen.getByText("JUMP IN")).toBeInTheDocument()
-        })
+          it("should call onCancelRequest with the community id when cancel request button is clicked", async () => {
+            const user = userEvent.setup()
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              onCancelRequest: mockOnCancelRequest,
+            })
 
-        it("should disable request to join button when performing community action", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            isPerformingCommunityAction: true,
+            const cancelButton = screen.getByText("CANCEL REQUEST")
+            await user.click(cancelButton)
+
+            expect(mockOnCancelRequest).toHaveBeenCalledWith("community-1")
           })
 
-          const requestButton = screen.getByText("Loading...")
-          expect(requestButton).toBeDisabled()
+          it("should display jump in button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+            })
+
+            expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+          })
+
+          it("should disable cancel request button when performing community action", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              isPerformingCommunityAction: true,
+            })
+
+            const cancelButton = screen.getByText("Loading...")
+            expect(cancelButton).toBeDisabled()
+          })
         })
       })
     })

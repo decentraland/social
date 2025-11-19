@@ -53,10 +53,45 @@ type CommunityMembersResponse = {
   }
 }
 
+type MemberRequest = {
+  id: string
+  communityId: string
+  memberAddress: string
+  type: "invite" | "request_to_join"
+  status: "pending" | "accepted" | "rejected" | "cancelled"
+}
+
+type MemberCommunityRequest = Omit<Community, "id"> & {
+  id: string
+  communityId: string
+  type: "invite" | "request_to_join"
+  status: "pending" | "accepted" | "rejected" | "cancelled"
+}
+
+type CreateCommunityRequestResponse = {
+  data: MemberRequest
+}
+
+type PaginatedResponse<T> = {
+  data: {
+    results: T[]
+    total: number
+    page: number
+    pages: number
+    limit: number
+  }
+}
+
+type MemberRequestsResponse = PaginatedResponse<MemberCommunityRequest>
+
 export type {
   Community,
   CommunityResponse,
   CommunityMember,
   CommunityMembersResponse,
   JoinCommunityResponse,
+  MemberRequest,
+  MemberCommunityRequest,
+  CreateCommunityRequestResponse,
+  MemberRequestsResponse,
 }

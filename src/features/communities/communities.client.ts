@@ -1,7 +1,9 @@
 import {
   CommunityMembersResponse,
   CommunityResponse,
+  CreateCommunityRequestResponse,
   JoinCommunityResponse,
+  MemberRequestsResponse,
 } from "./types"
 import { client } from "../../services/client"
 
@@ -74,6 +76,68 @@ const communitiesApi = client.injectEndpoints({
         id: string
       ) => [{ type: "Communities" as const, id }, "Communities"],
     }),
+    createCommunityRequest: builder.mutation<
+      CreateCommunityRequestResponse,
+      { communityId: string; targetedAddress: string }
+    >({
+      query: ({ communityId, targetedAddress }) => ({
+        url: `/v1/communities/${communityId}/requests`,
+        method: "POST",
+        body: {
+          targetedAddress,
+          type: "request_to_join",
+        },
+      }),
+      invalidatesTags: (
+        _result: CreateCommunityRequestResponse | undefined,
+        _error: unknown,
+        { communityId }: { communityId: string }
+      ) => [
+        { type: "Communities" as const, id: communityId },
+        "Communities",
+        "MemberRequests",
+      ],
+    }),
+    cancelCommunityRequest: builder.mutation<
+      void,
+      { communityId: string; requestId: string }
+    >({
+      query: ({ communityId, requestId }) => ({
+        url: `/v1/communities/${communityId}/requests/${requestId}`,
+        method: "PATCH",
+        body: {
+          intention: "cancelled",
+        },
+      }),
+      invalidatesTags: (
+        _result: void | undefined,
+        _error: unknown,
+        { communityId }: { communityId: string }
+      ) => [
+        { type: "Communities" as const, id: communityId },
+        "Communities",
+        "MemberRequests",
+      ],
+    }),
+    getMemberRequests: builder.query<
+      MemberRequestsResponse,
+      { address: string; type?: "request_to_join" | "invite" }
+    >({
+      query: ({ address, type }) => {
+        const params = new URLSearchParams()
+        if (type) params.append("type", type)
+        const queryString = params.toString()
+        return `/v1/members/${address}/requests${queryString ? `?${queryString}` : ""}`
+      },
+      providesTags: (
+        result: MemberRequestsResponse | undefined,
+        _error: unknown,
+        { address }: { address: string }
+      ) =>
+        result
+          ? [{ type: "MemberRequests" as const, id: address }, "MemberRequests"]
+          : ["MemberRequests"],
+    }),
   }),
 })
 
@@ -81,6 +145,9 @@ const {
   useGetCommunityByIdQuery,
   useGetCommunityMembersQuery,
   useJoinCommunityMutation,
+  useCreateCommunityRequestMutation,
+  useCancelCommunityRequestMutation,
+  useGetMemberRequestsQuery,
 } = communitiesApi
 
 export {
@@ -88,4 +155,7 @@ export {
   useGetCommunityByIdQuery,
   useGetCommunityMembersQuery,
   useJoinCommunityMutation,
+  useCreateCommunityRequestMutation,
+  useCancelCommunityRequestMutation,
+  useGetMemberRequestsQuery,
 }
