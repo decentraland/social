@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import { MembersList } from "./MembersList"
+import { Role } from "../../../../../features/communities/types"
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -127,7 +128,7 @@ describe("when rendering the members list", () => {
         },
         {
           name: "Jane Smith",
-          role: "member",
+          role: Role.MEMBER,
           mutualFriends: 5,
         },
       ]

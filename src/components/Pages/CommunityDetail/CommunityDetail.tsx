@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react"
 import { useParams } from "react-router-dom"
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   getData as getWallet,
   isConnecting,
@@ -23,10 +24,17 @@ import {
 } from "./utils/errorUtils"
 import { useAppSelector } from "../../../app/hooks"
 import {
+  useCancelCommunityRequestMutation,
+  useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
+  useGetMemberRequestsQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 } from "../../../features/communities/communities.client"
+import {
+  Privacy,
+  RequestStatus,
+  RequestType,
+} from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -60,22 +68,55 @@ function CommunityDetail() {
     { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
   ] = useJoinCommunityMutation()
   const [
-    leaveCommunity,
-    { isLoading: isLeaving, error: leaveError, reset: resetLeaveMutation },
-  ] = useLeaveCommunityMutation()
-
-  const isPerformingCommunityAction = isJoining || isLeaving
-  const mutationError = joinError || leaveError
+    createCommunityRequest,
+    {
+      isLoading: isCreatingRequest,
+      error: createRequestError,
+      reset: resetCreateRequestMutation,
+    },
+  ] = useCreateCommunityRequestMutation()
+  const [
+    cancelCommunityRequest,
+    {
+      isLoading: isCancellingRequest,
+      error: cancelRequestError,
+      reset: resetCancelRequestMutation,
+    },
+  ] = useCancelCommunityRequestMutation()
 
   const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
   const community = data?.data
 
   const member = community ? isMember(community) : false
-  const isPrivate = community?.privacy === "private"
+  const isPrivate = community?.privacy === Privacy.PRIVATE
   const canViewContent = member || !isPrivate
   const shouldFetchMembersAndEvents =
     !!id && !!community && (!isPrivate || member)
+
+  // Fetch member requests if user is logged in and viewing a private community
+  const shouldFetchRequests = isLoggedIn && !!address && !!isPrivate && !member
+  const { data: memberRequestsData } = useGetMemberRequestsQuery(
+    {
+      address: address || "",
+      type: RequestType.REQUEST_TO_JOIN,
+    },
+    { skip: !shouldFetchRequests }
+  )
+
+  // Find pending request for current community
+  const pendingRequest = memberRequestsData?.data.results.find(
+    (request) =>
+      request.communityId === id &&
+      request.status === RequestStatus.PENDING &&
+      request.type === RequestType.REQUEST_TO_JOIN
+  )
+  const hasPendingRequest = !!pendingRequest
+  const pendingRequestId = pendingRequest?.id
+
+  const isPerformingCommunityAction =
+    isJoining || isCreatingRequest || isCancellingRequest
+  const mutationError = joinError || createRequestError || cancelRequestError
 
   const {
     members,
@@ -115,44 +156,74 @@ function CommunityDetail() {
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
           const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || "Failed to join community")
+          setError(errMsg || t("community_detail.failed_to_join"))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError("Failed to join community")
+          setError(t("community_detail.failed_to_join"))
         }
       }
     },
     [isLoggedIn, address, joinCommunity]
   )
 
-  const handleLeaveCommunity = useCallback(
+  const handleRequestToJoin = useCallback(
     async (communityId: string) => {
       if (!isLoggedIn || !address) {
         return
       }
 
       try {
-        await leaveCommunity(communityId).unwrap()
+        await createCommunityRequest({
+          communityId,
+          targetedAddress: address,
+        }).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
           const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || "Failed to leave community")
+          setError(errMsg || t("community_detail.failed_to_join"))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError("Failed to leave community")
+          setError(t("community_detail.failed_to_join"))
         }
       }
     },
-    [isLoggedIn, address, leaveCommunity]
+    [isLoggedIn, address, createCommunityRequest]
+  )
+
+  const handleCancelRequest = useCallback(
+    async (communityId: string, requestId: string) => {
+      if (!isLoggedIn || !address) {
+        return
+      }
+
+      try {
+        await cancelCommunityRequest({ communityId, requestId }).unwrap()
+      } catch (err) {
+        if (isFetchBaseQueryError(err)) {
+          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t("community_detail.failed_to_join"))
+        } else if (isErrorWithMessage(err)) {
+          setError(err.message)
+        } else {
+          setError(t("community_detail.failed_to_join"))
+        }
+      }
+    },
+    [isLoggedIn, address, cancelCommunityRequest]
   )
 
   const handleErrorClose = useCallback(() => {
     setError(null)
     resetJoinMutation()
-    resetLeaveMutation()
-  }, [resetJoinMutation, resetLeaveMutation])
+    resetCreateRequestMutation()
+    resetCancelRequestMutation()
+  }, [
+    resetJoinMutation,
+    resetCreateRequestMutation,
+    resetCancelRequestMutation,
+  ])
 
   if (isLoading || isWalletConnecting) {
     return (
@@ -187,9 +258,11 @@ function CommunityDetail() {
     return (
       <ContentContainer>
         <CenteredContainer>
-          <Typography variant="h4">Community not found</Typography>
+          <Typography variant="h4">
+            {t("community_detail.not_found")}
+          </Typography>
           <Typography variant="body1" color="textSecondary">
-            The community you are looking for does not exist.
+            {t("community_detail.not_found_description")}
           </Typography>
         </CenteredContainer>
       </ContentContainer>
@@ -208,7 +281,14 @@ function CommunityDetail() {
             isMember={member}
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}
-            onLeave={handleLeaveCommunity}
+            hasPendingRequest={hasPendingRequest}
+            onRequestToJoin={handleRequestToJoin}
+            onCancelRequest={
+              pendingRequestId
+                ? (communityId: string) =>
+                    handleCancelRequest(communityId, pendingRequestId)
+                : undefined
+            }
           />
 
           {!canViewContent && <PrivateMessage />}

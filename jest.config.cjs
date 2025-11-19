@@ -23,12 +23,26 @@ module.exports = {
         isolatedModules: false,
       },
     ],
+    "^.+/node_modules/flat/.+\\.js$": [
+      "@swc/jest",
+      {
+        jsc: {
+          parser: {
+            syntax: "ecmascript",
+          },
+          target: "es2020",
+        },
+        module: {
+          type: "commonjs",
+        },
+      },
+    ],
   },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(decentraland-ui2|@emotion|@mui)/)",
+    "node_modules/(?!(decentraland-ui2|@emotion|@mui|flat)/)",
   ],
   setupFiles: ["<rootDir>/src/tests/beforeSetupTests.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/tests/afterSetupTest.ts"],

@@ -8,10 +8,19 @@ import {
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppSelector } from "../../../app/hooks"
 import {
+  useCancelCommunityRequestMutation,
+  useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
+  useGetMemberRequestsQuery,
   useJoinCommunityMutation,
-  useLeaveCommunityMutation,
 } from "../../../features/communities/communities.client"
+import {
+  Privacy,
+  RequestStatus,
+  RequestType,
+  Role,
+  Visibility,
+} from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -91,7 +100,9 @@ jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
 jest.mock("../../../features/communities/communities.client", () => ({
   useGetCommunityByIdQuery: jest.fn(),
   useJoinCommunityMutation: jest.fn(),
-  useLeaveCommunityMutation: jest.fn(),
+  useGetMemberRequestsQuery: jest.fn(),
+  useCreateCommunityRequestMutation: jest.fn(),
+  useCancelCommunityRequestMutation: jest.fn(),
 }))
 
 jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
@@ -114,16 +125,32 @@ jest.mock("./components/CommunityInfo", () => ({
   CommunityInfo: ({
     community,
     onJoin,
-    onLeave,
+    onRequestToJoin,
+    onCancelRequest,
+    hasPendingRequest,
   }: {
     community: { id: string; name: string }
-    onJoin: (id: string) => void
-    onLeave: (id: string) => void
+    onJoin?: (id: string) => void
+    onRequestToJoin?: (id: string) => void
+    onCancelRequest?: (id: string) => void
+    hasPendingRequest?: boolean
   }) => (
     <div data-testid="community-info">
       <div>{community.name}</div>
-      <button onClick={() => onJoin(community.id)}>Join</button>
-      <button onClick={() => onLeave(community.id)}>Leave</button>
+      {hasPendingRequest ? (
+        <button
+          onClick={() => onCancelRequest && onCancelRequest(community.id)}
+        >
+          CANCEL REQUEST
+        </button>
+      ) : (
+        <button
+          onClick={() => onRequestToJoin && onRequestToJoin(community.id)}
+        >
+          REQUEST TO JOIN
+        </button>
+      )}
+      {onJoin && <button onClick={() => onJoin(community.id)}>Join</button>}
     </div>
   ),
 }))
@@ -179,7 +206,11 @@ jest.mock("../../PageLayout", () => ({
 const mockUseParams = useParams as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
-const mockUseLeaveCommunityMutation = useLeaveCommunityMutation as jest.Mock
+const mockUseGetMemberRequestsQuery = useGetMemberRequestsQuery as jest.Mock
+const mockUseCreateCommunityRequestMutation =
+  useCreateCommunityRequestMutation as jest.Mock
+const mockUseCancelCommunityRequestMutation =
+  useCancelCommunityRequestMutation as jest.Mock
 const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
 const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
@@ -192,18 +223,12 @@ function renderCommunityDetail() {
 
 describe("when rendering the community detail page", () => {
   let mockJoinMutation: jest.Mock
-  let mockLeaveMutation: jest.Mock
   let mockJoinUnwrap: jest.Mock
-  let mockLeaveUnwrap: jest.Mock
 
   beforeEach(() => {
     mockJoinUnwrap = jest.fn()
-    mockLeaveUnwrap = jest.fn()
     mockJoinMutation = jest.fn(() => ({
       unwrap: mockJoinUnwrap,
-    }))
-    mockLeaveMutation = jest.fn(() => ({
-      unwrap: mockLeaveUnwrap,
     }))
 
     mockUseParams.mockReturnValue({ id: "community-1" })
@@ -228,8 +253,15 @@ describe("when rendering the community detail page", () => {
       mockJoinMutation,
       { isLoading: false, error: undefined, reset: jest.fn() },
     ])
-    mockUseLeaveCommunityMutation.mockReturnValue([
-      mockLeaveMutation,
+    mockUseGetMemberRequestsQuery.mockReturnValue({
+      data: { data: { results: [], total: 0, page: 1, pages: 1, limit: 10 } },
+    })
+    mockUseCreateCommunityRequestMutation.mockReturnValue([
+      jest.fn(),
+      { isLoading: false, error: undefined, reset: jest.fn() },
+    ])
+    mockUseCancelCommunityRequestMutation.mockReturnValue([
+      jest.fn(),
       { isLoading: false, error: undefined, reset: jest.fn() },
     ])
     mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -339,8 +371,8 @@ describe("when rendering the community detail page", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -426,7 +458,7 @@ describe("when rendering the community detail page", () => {
         it("should not enable content viewing for private communities", () => {
           community = {
             ...community,
-            privacy: "private",
+            privacy: Privacy.PRIVATE,
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
@@ -441,13 +473,208 @@ describe("when rendering the community detail page", () => {
           expect(screen.queryByTestId("events-list")).not.toBeInTheDocument()
           expect(screen.queryByTestId("members-list")).not.toBeInTheDocument()
         })
+
+        describe("and the community is private", () => {
+          let mockCreateRequestMutation: jest.Mock
+          let mockCreateRequestUnwrap: jest.Mock
+          let mockCancelRequestMutation: jest.Mock
+          let mockCancelRequestUnwrap: jest.Mock
+
+          beforeEach(() => {
+            community = {
+              ...community,
+              privacy: Privacy.PRIVATE,
+            }
+            mockUseGetCommunityByIdQuery.mockReturnValue({
+              data: { data: community },
+              isLoading: false,
+              error: undefined,
+              isError: false,
+            })
+
+            mockCreateRequestUnwrap = jest.fn()
+            mockCreateRequestMutation = jest.fn(() => ({
+              unwrap: mockCreateRequestUnwrap,
+            }))
+            mockUseCreateCommunityRequestMutation.mockReturnValue([
+              mockCreateRequestMutation,
+              { isLoading: false, error: undefined, reset: jest.fn() },
+            ])
+
+            mockCancelRequestUnwrap = jest.fn()
+            mockCancelRequestMutation = jest.fn(() => ({
+              unwrap: mockCancelRequestUnwrap,
+            }))
+            mockUseCancelCommunityRequestMutation.mockReturnValue([
+              mockCancelRequestMutation,
+              { isLoading: false, error: undefined, reset: jest.fn() },
+            ])
+          })
+
+          describe("and the user has no pending request", () => {
+            beforeEach(() => {
+              mockUseGetMemberRequestsQuery.mockReturnValue({
+                data: {
+                  data: {
+                    results: [],
+                    total: 0,
+                    page: 1,
+                    pages: 1,
+                    limit: 10,
+                  },
+                },
+              })
+            })
+
+            it("should fetch member requests", () => {
+              renderCommunityDetail()
+
+              expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
+                {
+                  address: "0x456",
+                  type: RequestType.REQUEST_TO_JOIN,
+                },
+                { skip: false }
+              )
+            })
+
+            it("should call createCommunityRequest when requesting to join", async () => {
+              const user = userEvent.setup()
+              mockCreateRequestUnwrap.mockResolvedValue({
+                data: {
+                  id: "request-1",
+                  communityId: "community-1",
+                  memberAddress: "0x456",
+                  type: RequestType.REQUEST_TO_JOIN,
+                  status: RequestStatus.PENDING,
+                },
+              })
+
+              renderCommunityDetail()
+
+              const requestButton = screen.getByText("REQUEST TO JOIN")
+              await user.click(requestButton)
+
+              await waitFor(() => {
+                expect(mockCreateRequestMutation).toHaveBeenCalledWith({
+                  communityId: "community-1",
+                  targetedAddress: "0x456",
+                })
+              })
+            })
+
+            describe("and creating the request fails", () => {
+              let createRequestError: Error
+
+              beforeEach(() => {
+                createRequestError = new Error("Failed to create request")
+                mockCreateRequestUnwrap.mockRejectedValue(createRequestError)
+              })
+
+              it("should display the error message", async () => {
+                const user = userEvent.setup()
+                renderCommunityDetail()
+
+                const requestButton = screen.getByText("REQUEST TO JOIN")
+                await user.click(requestButton)
+
+                await waitFor(() => {
+                  expect(
+                    screen.getByText("Failed to create request")
+                  ).toBeInTheDocument()
+                })
+              })
+            })
+          })
+
+          describe("and the user has a pending request", () => {
+            let pendingRequest: {
+              id: string
+              communityId: string
+              type: string
+              status: string
+            }
+
+            beforeEach(() => {
+              pendingRequest = {
+                id: "request-1",
+                communityId: "community-1",
+                type: RequestType.REQUEST_TO_JOIN,
+                status: RequestStatus.PENDING,
+              }
+              mockUseGetMemberRequestsQuery.mockReturnValue({
+                data: {
+                  data: {
+                    results: [pendingRequest],
+                    total: 1,
+                    page: 1,
+                    pages: 1,
+                    limit: 10,
+                  },
+                },
+              })
+            })
+
+            it("should identify the pending request for the community", () => {
+              renderCommunityDetail()
+
+              expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
+                {
+                  address: "0x456",
+                  type: RequestType.REQUEST_TO_JOIN,
+                },
+                { skip: false }
+              )
+            })
+
+            it("should call cancelCommunityRequest when canceling the request", async () => {
+              const user = userEvent.setup()
+              mockCancelRequestUnwrap.mockResolvedValue(undefined)
+
+              renderCommunityDetail()
+
+              const cancelButton = screen.getByText("CANCEL REQUEST")
+              await user.click(cancelButton)
+
+              await waitFor(() => {
+                expect(mockCancelRequestMutation).toHaveBeenCalledWith({
+                  communityId: "community-1",
+                  requestId: "request-1",
+                })
+              })
+            })
+
+            describe("and canceling the request fails", () => {
+              let cancelRequestError: Error
+
+              beforeEach(() => {
+                cancelRequestError = new Error("Failed to cancel request")
+                mockCancelRequestUnwrap.mockRejectedValue(cancelRequestError)
+              })
+
+              it("should display the error message", async () => {
+                const user = userEvent.setup()
+                renderCommunityDetail()
+
+                const cancelButton = screen.getByText("CANCEL REQUEST")
+                await user.click(cancelButton)
+
+                await waitFor(() => {
+                  expect(
+                    screen.getByText("Failed to cancel request")
+                  ).toBeInTheDocument()
+                })
+              })
+            })
+          })
+        })
       })
 
       describe("and the user is a member", () => {
         beforeEach(() => {
           community = {
             ...community,
-            role: "member",
+            role: Role.MEMBER,
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
@@ -478,20 +705,6 @@ describe("when rendering the community detail page", () => {
           })
         })
 
-        it("should call onLeave with the community id when leave button is clicked", async () => {
-          const user = userEvent.setup()
-          mockLeaveUnwrap.mockResolvedValue({})
-
-          renderCommunityDetail()
-
-          const leaveButton = screen.getByText("Leave")
-          await user.click(leaveButton)
-
-          await waitFor(() => {
-            expect(mockLeaveMutation).toHaveBeenCalledWith("community-1")
-          })
-        })
-
         describe("and joining the community fails", () => {
           let joinError: Error
 
@@ -509,27 +722,6 @@ describe("when rendering the community detail page", () => {
 
             await waitFor(() => {
               expect(screen.getByText("Failed to join")).toBeInTheDocument()
-            })
-          })
-        })
-
-        describe("and leaving the community fails", () => {
-          let leaveError: Error
-
-          beforeEach(() => {
-            leaveError = new Error("Failed to leave")
-            mockLeaveUnwrap.mockRejectedValue(leaveError)
-          })
-
-          it("should display the error message from the failed leave attempt", async () => {
-            const user = userEvent.setup()
-            renderCommunityDetail()
-
-            const leaveButton = screen.getByText("Leave")
-            await user.click(leaveButton)
-
-            await waitFor(() => {
-              expect(screen.getByText("Failed to leave")).toBeInTheDocument()
             })
           })
         })
@@ -632,7 +824,7 @@ describe("when rendering the community detail page", () => {
           },
           {
             name: "Jane Smith",
-            role: "member",
+            role: Role.MEMBER,
             mutualFriends: 5,
           },
         ]

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
+import { Privacy, Visibility } from "../../../../../features/communities/types"
 import type { Community } from "../../../../../features/communities/types"
 
 jest.mock("react-router-dom", () => ({
@@ -31,6 +32,7 @@ jest.mock("decentraland-ui2", () => {
       padding: _padding,
       modalProps: _modalProps,
       buttonProps: _buttonProps,
+      sx: _sx,
       ...rest
     } = props
     void _display
@@ -40,8 +42,15 @@ jest.mock("decentraland-ui2", () => {
     void _padding
     void _modalProps
     void _buttonProps
+    void _sx
     return rest
   }
+
+  const CheckIcon = () => (
+    <svg data-testid="check-icon">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    </svg>
+  )
 
   return {
     Avatar: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -59,6 +68,13 @@ jest.mock("decentraland-ui2", () => {
     }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
       <button {...props}>{children}</button>
     ),
+    Icon: ({
+      component: Component,
+      ...props
+    }: {
+      component?: React.ComponentType<Record<string, unknown>>
+    } & React.HTMLAttributes<HTMLElement>) =>
+      Component ? <Component {...props} /> : <span {...props} />,
     JumpIn: ({
       buttonText,
       ...props
@@ -74,13 +90,12 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    muiIcons: {
+      Check: CheckIcon,
+    },
     styled: mockStyled,
   }
 })
-
-jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({
-  t: jest.fn((key: string) => key),
-}))
 
 jest.mock("../../utils/communityUtils", () => ({
   getThumbnailUrl: jest.fn(
@@ -97,8 +112,8 @@ function renderCommunityInfo(
     id: "community-1",
     name: "Test Community",
     description: "Test Description",
-    privacy: "public",
-    visibility: "all",
+    privacy: Privacy.PUBLIC,
+    visibility: Visibility.ALL,
     active: true,
     membersCount: 100,
     ownerAddress: "0x123",
@@ -114,7 +129,6 @@ function renderCommunityInfo(
       isMember={false}
       canViewContent={true}
       onJoin={jest.fn()}
-      onLeave={jest.fn()}
       {...props}
     />
   )
@@ -122,21 +136,19 @@ function renderCommunityInfo(
 
 describe("when rendering the community info", () => {
   let mockOnJoin: jest.Mock
-  let mockOnLeave: jest.Mock
   let mockNavigateFn: jest.Mock
   let defaultCommunity: Community
 
   beforeEach(() => {
     mockOnJoin = jest.fn()
-    mockOnLeave = jest.fn()
     mockNavigateFn = jest.fn()
     mockNavigate.mockReturnValue(mockNavigateFn)
     defaultCommunity = {
       id: "community-1",
       name: "Test Community",
       description: "Test Description",
-      privacy: "public",
-      visibility: "all",
+      privacy: Privacy.PUBLIC,
+      visibility: Visibility.ALL,
       active: true,
       membersCount: 100,
       ownerAddress: "0x123",
@@ -160,7 +172,7 @@ describe("when rendering the community info", () => {
     beforeEach(() => {
       privateCommunity = {
         ...defaultCommunity,
-        privacy: "private",
+        privacy: Privacy.PRIVATE,
       }
     })
 
@@ -225,8 +237,8 @@ describe("when rendering the community info", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -262,8 +274,8 @@ describe("when rendering the community info", () => {
         id: "community-1",
         name: "Test Community",
         description: "Test Description",
-        privacy: "public",
-        visibility: "all",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
         ownerAddress: "0x123",
@@ -279,8 +291,8 @@ describe("when rendering the community info", () => {
             id: "community-1",
             name: "Test Community",
             description: "Test Description",
-            privacy: "public",
-            visibility: "all",
+            privacy: Privacy.PUBLIC,
+            visibility: Visibility.ALL,
             active: true,
             membersCount: 100,
             ownerAddress: "0x123",
@@ -330,69 +342,147 @@ describe("when rendering the community info", () => {
       })
 
       describe("and the community is private", () => {
+        let mockOnRequestToJoin: jest.Mock
+        let mockOnCancelRequest: jest.Mock
+
         beforeEach(() => {
           community = {
             id: "community-1",
             name: "Test Community",
             description: "Test Description",
-            privacy: "private",
-            visibility: "all",
+            privacy: Privacy.PRIVATE,
+            visibility: Visibility.ALL,
             active: true,
             membersCount: 100,
             ownerAddress: "0x123",
             ownerName: "Test Owner",
           }
+          mockOnRequestToJoin = jest.fn()
+          mockOnCancelRequest = jest.fn()
         })
 
-        it("should display request to join button", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
+        describe("and the user has no pending request", () => {
+          beforeEach(() => {
+            mockOnRequestToJoin = jest.fn()
           })
 
-          expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
+          it("should display request to join button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              onRequestToJoin: mockOnRequestToJoin,
+            })
+
+            expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
+          })
+
+          it("should call onRequestToJoin with the community id when request to join button is clicked", async () => {
+            const user = userEvent.setup()
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              onRequestToJoin: mockOnRequestToJoin,
+            })
+
+            const requestButton = screen.getByText("REQUEST TO JOIN")
+            await user.click(requestButton)
+
+            expect(mockOnRequestToJoin).toHaveBeenCalledWith("community-1")
+          })
+
+          it("should display jump in button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+            })
+
+            expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+          })
+
+          it("should disable request to join button when performing community action", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: false,
+              isPerformingCommunityAction: true,
+            })
+
+            const requestButton = screen.getByText("Loading...")
+            expect(requestButton).toBeDisabled()
+          })
         })
 
-        it("should call onJoin with the community id when request to join button is clicked", async () => {
-          const user = userEvent.setup()
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            onJoin: mockOnJoin,
+        describe("and the user has a pending request", () => {
+          beforeEach(() => {
+            mockOnCancelRequest = jest.fn()
           })
 
-          const requestButton = screen.getByText("REQUEST TO JOIN")
-          await user.click(requestButton)
+          it("should display cancel request button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              onCancelRequest: mockOnCancelRequest,
+            })
 
-          expect(mockOnJoin).toHaveBeenCalledWith("community-1")
-        })
-
-        it("should display jump in button", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
+            expect(screen.getByText("CANCEL REQUEST")).toBeInTheDocument()
           })
 
-          expect(screen.getByText("JUMP IN")).toBeInTheDocument()
-        })
+          it("should call onCancelRequest with the community id when cancel request button is clicked", async () => {
+            const user = userEvent.setup()
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              onCancelRequest: mockOnCancelRequest,
+            })
 
-        it("should disable request to join button when performing community action", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            isPerformingCommunityAction: true,
+            const cancelButton = screen.getByText("CANCEL REQUEST")
+            await user.click(cancelButton)
+
+            expect(mockOnCancelRequest).toHaveBeenCalledWith("community-1")
           })
 
-          const requestButton = screen.getByText("Loading...")
-          expect(requestButton).toBeDisabled()
+          it("should display jump in button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+            })
+
+            expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+          })
+
+          it("should disable cancel request button when performing community action", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              hasPendingRequest: true,
+              isPerformingCommunityAction: true,
+            })
+
+            const cancelButton = screen.getByText("Loading...")
+            expect(cancelButton).toBeDisabled()
+          })
         })
       })
     })
@@ -405,8 +495,8 @@ describe("when rendering the community info", () => {
           id: "community-1",
           name: "Test Community",
           description: "Test Description",
-          privacy: "public",
-          visibility: "all",
+          privacy: Privacy.PUBLIC,
+          visibility: Visibility.ALL,
           active: true,
           membersCount: 100,
           ownerAddress: "0x123",
@@ -414,7 +504,7 @@ describe("when rendering the community info", () => {
         }
       })
 
-      it("should display leave button", () => {
+      it("should display joined button with check icon", () => {
         renderCommunityInfo({
           community: memberCommunity,
           isLoggedIn: true,
@@ -422,36 +512,20 @@ describe("when rendering the community info", () => {
           isMember: true,
         })
 
-        expect(screen.getByText("Leave")).toBeInTheDocument()
+        expect(screen.getByText("JOINED")).toBeInTheDocument()
+        expect(screen.getByTestId("check-icon")).toBeInTheDocument()
       })
 
-      it("should call onLeave with the community id when leave button is clicked", async () => {
-        const user = userEvent.setup()
+      it("should have joined button disabled", () => {
         renderCommunityInfo({
           community: memberCommunity,
           isLoggedIn: true,
           address,
           isMember: true,
-          onLeave: mockOnLeave,
         })
 
-        const leaveButton = screen.getByText("Leave")
-        await user.click(leaveButton)
-
-        expect(mockOnLeave).toHaveBeenCalledWith("community-1")
-      })
-
-      it("should disable leave button when performing community action", () => {
-        renderCommunityInfo({
-          community: memberCommunity,
-          isLoggedIn: true,
-          address,
-          isMember: true,
-          isPerformingCommunityAction: true,
-        })
-
-        const leaveButton = screen.getByText("Loading...")
-        expect(leaveButton).toBeDisabled()
+        const joinedButton = screen.getByText("JOINED")
+        expect(joinedButton).toBeDisabled()
       })
     })
   })

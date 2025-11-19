@@ -1,16 +1,17 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { JumpIn } from "decentraland-ui2"
+import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
+import { Privacy } from "../../../../../features/communities/types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
   ActionButtons,
+  CTAButton,
   CommunityDetails,
   CommunityImage,
   CommunityImageContent,
   Description,
   InfoSection,
-  JoinButton,
   OwnerAvatar,
   OwnerAvatarContainer,
   OwnerRow,
@@ -35,7 +36,9 @@ type CommunityInfoProps = {
   isMember: boolean
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
-  onLeave: (communityId: string) => Promise<void>
+  hasPendingRequest?: boolean
+  onRequestToJoin?: (communityId: string) => Promise<void>
+  onCancelRequest?: (communityId: string) => Promise<void>
 }
 
 export const CommunityInfo = ({
@@ -46,11 +49,13 @@ export const CommunityInfo = ({
   isMember,
   canViewContent,
   onJoin,
-  onLeave,
+  hasPendingRequest = false,
+  onRequestToJoin,
+  onCancelRequest,
 }: CommunityInfoProps) => {
   const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
-  const isPrivate = community.privacy === "private"
+  const isPrivate = community.privacy === Privacy.PRIVATE
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -62,13 +67,27 @@ export const CommunityInfo = ({
     onJoin(community.id)
   }, [isLoggedIn, address, navigate, community.id, onJoin])
 
-  const handleButtonClick = useCallback(() => {
-    if (isMember) {
-      onLeave(community.id)
-    } else {
-      handleJoinClick()
+  const handleRequestToJoinClick = useCallback(() => {
+    if (!isLoggedIn || !address) {
+      const currentPath = `/communities/${community.id}`
+      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      return
     }
-  }, [isMember, onLeave, community.id, handleJoinClick])
+
+    if (onRequestToJoin) {
+      onRequestToJoin(community.id)
+    }
+  }, [isLoggedIn, address, navigate, community.id, onRequestToJoin])
+
+  const handleCancelRequestClick = useCallback(() => {
+    if (!isLoggedIn || !address) {
+      return
+    }
+
+    if (onCancelRequest) {
+      onCancelRequest(community.id)
+    }
+  }, [isLoggedIn, address, community.id, onCancelRequest])
 
   return (
     <InfoSection>
@@ -103,7 +122,7 @@ export const CommunityInfo = ({
                   notation: "compact",
                   compactDisplay: "short",
                 }).format(community.membersCount)}{" "}
-                Members
+                {t("community_info.members")}
               </PrivacyMembersText>
             </PrivacyMembersRow>
           </TitleRow>
@@ -114,23 +133,20 @@ export const CommunityInfo = ({
               />
             </OwnerAvatarContainer>
             <OwnerText>
-              By{" "}
+              {t("community_info.by")}{" "}
               <span className="owner-name">
-                {community.ownerName || "Unknown"}
+                {community.ownerName || t("community_info.unknown")}
               </span>
             </OwnerText>
           </OwnerRow>
           <ActionButtons>
             {isMember ? (
-              <JoinButton
-                variant="outlined"
-                onClick={handleButtonClick}
-                disabled={isPerformingCommunityAction}
-              >
-                {isPerformingCommunityAction ? "Loading..." : "Leave"}
-              </JoinButton>
+              <CTAButton variant="outlined" disabled>
+                <Icon component={muiIcons.Check} fontSize="small" />
+                {t("community_info.joined")}
+              </CTAButton>
             ) : !isLoggedIn ? (
-              <JoinButton
+              <CTAButton
                 variant="outlined"
                 onClick={() => {
                   const currentPath = `/communities/${community.id}`
@@ -139,23 +155,37 @@ export const CommunityInfo = ({
                   )
                 }}
               >
-                SIGN IN TO JOIN
-              </JoinButton>
+                {t("community_info.sign_in_to_join")}
+              </CTAButton>
             ) : isPrivate ? (
               <>
-                <JoinButton
-                  variant="outlined"
-                  onClick={handleJoinClick}
-                  disabled={isPerformingCommunityAction}
-                >
-                  {isPerformingCommunityAction
-                    ? "Loading..."
-                    : "REQUEST TO JOIN"}
-                </JoinButton>
+                {hasPendingRequest ? (
+                  <CTAButton
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleCancelRequestClick}
+                    disabled={isPerformingCommunityAction}
+                  >
+                    {isPerformingCommunityAction
+                      ? t("global.loading")
+                      : t("community_info.cancel_request")}
+                  </CTAButton>
+                ) : (
+                  <CTAButton
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleRequestToJoinClick}
+                    disabled={isPerformingCommunityAction}
+                  >
+                    {isPerformingCommunityAction
+                      ? t("global.loading")
+                      : t("community_info.request_to_join")}
+                  </CTAButton>
+                )}
                 {isLoggedIn && (
                   <JumpIn
                     variant="button"
-                    buttonText="JUMP IN"
+                    buttonText={t("community_info.jump_in")}
                     modalProps={{
                       title: t("community_info.jump_in_modal.title"),
                       description: t(
@@ -177,13 +207,15 @@ export const CommunityInfo = ({
                 )}
               </>
             ) : (
-              <JoinButton
+              <CTAButton
                 variant="outlined"
-                onClick={handleButtonClick}
+                onClick={handleJoinClick}
                 disabled={isPerformingCommunityAction}
               >
-                {isPerformingCommunityAction ? "Loading..." : "JOIN"}
-              </JoinButton>
+                {isPerformingCommunityAction
+                  ? t("global.loading")
+                  : t("community_info.join")}
+              </CTAButton>
             )}
           </ActionButtons>
         </TitleSubtitleContainer>

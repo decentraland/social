@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react"
 import { usePaginatedCommunityMembers } from "./usePaginatedCommunityMembers"
 import { useGetCommunityMembersQuery } from "../features/communities/communities.client"
-import { CommunityMembersResponse } from "../features/communities/types"
+import { CommunityMembersResponse, Role } from "../features/communities/types"
 
 jest.mock("../features/communities/communities.client", () => ({
   useGetCommunityMembersQuery: jest.fn(),
@@ -100,13 +100,13 @@ describe("when using the paginated community members hook", () => {
             {
               communityId: "test-community-id",
               memberAddress: "0x123",
-              role: "member",
+              role: Role.MEMBER,
               joinedAt: "2024-01-01",
             },
             {
               communityId: "test-community-id",
               memberAddress: "0x456",
-              role: "moderator",
+              role: Role.MODERATOR,
               joinedAt: "2024-01-02",
             },
           ],
@@ -197,7 +197,7 @@ describe("when using the paginated community members hook", () => {
             {
               communityId: "test-community-id",
               memberAddress: "0x123",
-              role: "member",
+              role: Role.MEMBER,
               joinedAt: "2024-01-01",
             },
           ],
@@ -231,7 +231,7 @@ describe("when using the paginated community members hook", () => {
             {
               communityId: "test-community-id",
               memberAddress: "0x123",
-              role: "member",
+              role: Role.MEMBER,
               joinedAt: "2024-01-01",
             },
           ],
@@ -339,7 +339,7 @@ describe("when using the paginated community members hook", () => {
             {
               communityId: "test-community-id",
               memberAddress: "0x123",
-              role: "member",
+              role: Role.MEMBER,
               joinedAt: "2024-01-01",
             },
           ],

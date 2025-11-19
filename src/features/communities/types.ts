@@ -1,3 +1,35 @@
+enum RequestStatus {
+  PENDING = "pending",
+  ACCEPTED = "accepted",
+  REJECTED = "rejected",
+  CANCELLED = "cancelled",
+}
+
+enum RequestType {
+  INVITE = "invite",
+  REQUEST_TO_JOIN = "request_to_join",
+}
+
+enum Privacy {
+  PUBLIC = "public",
+  PRIVATE = "private",
+}
+
+enum Visibility {
+  ALL = "all",
+  UNLISTED = "unlisted",
+}
+
+enum Role {
+  OWNER = "owner",
+  MODERATOR = "moderator",
+  MEMBER = "member",
+}
+
+enum RequestIntention {
+  CANCELLED = "cancelled",
+}
+
 type CommunityThumbnails = {
   [key: string]: string
 }
@@ -14,12 +46,12 @@ type Community = {
   description: string
   ownerAddress: string
   ownerName?: string
-  privacy: "public" | "private"
-  visibility: "all" | "unlisted"
+  privacy: Privacy
+  visibility: Visibility
   active: boolean
   membersCount: number
   thumbnails?: CommunityThumbnails
-  role?: "owner" | "moderator" | "member"
+  role?: Role
   voiceChatStatus?: VoiceChatStatus
 }
 
@@ -32,15 +64,10 @@ type JoinCommunityResponse = {
   message?: string
 }
 
-type LeaveCommunityResponse = {
-  success: boolean
-  message?: string
-}
-
 type CommunityMember = {
   communityId: string
   memberAddress: string
-  role: "owner" | "moderator" | "member"
+  role: Role
   joinedAt: string
   profilePictureUrl?: string
   hasClaimedName?: boolean
@@ -58,11 +85,54 @@ type CommunityMembersResponse = {
   }
 }
 
+type MemberRequest = {
+  id: string
+  communityId: string
+  memberAddress: string
+  type: RequestType
+  status: RequestStatus
+}
+
+type MemberCommunityRequest = Omit<Community, "id"> & {
+  id: string
+  communityId: string
+  type: RequestType
+  status: RequestStatus
+}
+
+type CreateCommunityRequestResponse = {
+  data: MemberRequest
+}
+
+type PaginatedResponse<T> = {
+  data: {
+    results: T[]
+    total: number
+    page: number
+    pages: number
+    limit: number
+  }
+}
+
+type MemberRequestsResponse = PaginatedResponse<MemberCommunityRequest>
+
 export type {
   Community,
   CommunityResponse,
   CommunityMember,
   CommunityMembersResponse,
   JoinCommunityResponse,
-  LeaveCommunityResponse,
+  MemberRequest,
+  MemberCommunityRequest,
+  CreateCommunityRequestResponse,
+  MemberRequestsResponse,
+}
+
+export {
+  Privacy,
+  RequestIntention,
+  RequestStatus,
+  RequestType,
+  Role,
+  Visibility,
 }

@@ -1,4 +1,5 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
+import { t } from "decentraland-dapps/dist/modules/translation/utils"
 
 function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
   return (
@@ -32,12 +33,12 @@ const getErrorMessage = (err: unknown): string | null => {
     if ("error" in err && err.error) {
       return String(err.error)
     }
-    return "Network request failed"
+    return t("errors.network_request_failed")
   }
   if (isErrorWithMessage(err)) {
     return err.message
   }
-  return "An unknown error occurred"
+  return t("errors.unknown_error")
 }
 
 export { getErrorMessage, isErrorWithMessage, isFetchBaseQueryError }

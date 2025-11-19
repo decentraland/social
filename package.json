@@ -50,6 +50,8 @@
   },
   "devDependencies": {
     "@dcl/eslint-config": "^2.3.1",
+    "@swc/core": "^1.15.2",
+    "@swc/jest": "^0.2.39",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
