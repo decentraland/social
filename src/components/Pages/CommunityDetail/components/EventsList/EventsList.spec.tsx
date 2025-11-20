@@ -86,6 +86,12 @@ describe("when rendering the events list", () => {
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
     })
 
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ isLoading: true, hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+    })
+
     it("should display a loading indicator", () => {
       renderEventsList({ isLoading: true })
 
@@ -102,6 +108,12 @@ describe("when rendering the events list", () => {
       renderEventsList({ events: [] })
 
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+    })
+
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ events: [], hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
     })
 
     it("should display an empty state message", () => {
@@ -147,6 +159,12 @@ describe("when rendering the events list", () => {
       renderEventsList({ events })
 
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+    })
+
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ events, hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
     })
 
     it("should render all events", () => {

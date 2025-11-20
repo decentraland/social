@@ -1,6 +1,11 @@
 import { useCallback } from "react"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
+import {
+  Icon,
+  JumpIn,
+  muiIcons,
+  useTabletAndBelowMediaQuery,
+} from "decentraland-ui2"
 import { Privacy } from "../../../../../features/communities/types"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
@@ -58,6 +63,7 @@ export const CommunityInfo = ({
 }: CommunityInfoProps) => {
   const thumbnailUrl = getThumbnailUrl(community.id)
   const isPrivate = community.privacy === Privacy.PRIVATE
+  const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -191,7 +197,7 @@ export const CommunityInfo = ({
                       : t("community_info.request_to_join")}
                   </CTAButton>
                 )}
-                {isLoggedIn && (
+                {isLoggedIn && !isTabletOrMobile && (
                   <JumpIn
                     variant="button"
                     buttonText={t("community_info.jump_in")}
