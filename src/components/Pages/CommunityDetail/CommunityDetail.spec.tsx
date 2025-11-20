@@ -25,6 +25,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 
+const mockUseTabletAndBelowMediaQuery = jest.fn()
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -84,6 +85,8 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    useTabletAndBelowMediaQuery: (...args: unknown[]) =>
+      mockUseTabletAndBelowMediaQuery(...args),
     styled: mockStyled,
   }
 })
@@ -235,6 +238,9 @@ describe("when rendering the community detail page", () => {
     mockJoinMutation = jest.fn(() => ({
       unwrap: mockJoinUnwrap,
     }))
+
+    // Default to desktop (not tablet/mobile)
+    mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
 
     mockUseParams.mockReturnValue({ id: "community-1" })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()])

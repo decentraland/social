@@ -34,6 +34,7 @@ jest.mock("decentraland-ui2", () => {
       textTransform: _textTransform,
       color: _color,
       fontFamily: _fontFamily,
+      active: _active,
       ...rest
     } = props
     void _display
@@ -51,6 +52,7 @@ jest.mock("decentraland-ui2", () => {
     void _textTransform
     void _color
     void _fontFamily
+    void _active
     return rest
   }
 
@@ -67,9 +69,12 @@ jest.mock("decentraland-ui2", () => {
     Typography: ({
       children,
       ...props
-    }: React.HTMLAttributes<HTMLParagraphElement>) => (
-      <p {...props}>{children}</p>
-    ),
+    }: React.HTMLAttributes<HTMLParagraphElement> &
+      Record<string, unknown>) => {
+      const { active: _active, ...rest } = props
+      void _active
+      return <p {...rest}>{children}</p>
+    },
     styled: mockStyled,
   }
 })

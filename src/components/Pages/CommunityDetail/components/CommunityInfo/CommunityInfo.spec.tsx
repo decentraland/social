@@ -10,6 +10,7 @@ jest.mock("../../../../../utils/authRedirect", () => ({
   redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args),
 }))
 
+const mockUseTabletAndBelowMediaQuery = jest.fn()
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -94,6 +95,8 @@ jest.mock("decentraland-ui2", () => {
     muiIcons: {
       Check: CheckIcon,
     },
+    useTabletAndBelowMediaQuery: (...args: unknown[]) =>
+      mockUseTabletAndBelowMediaQuery(...args),
     styled: mockStyled,
   }
 })
@@ -103,16 +106,6 @@ jest.mock("../../utils/communityUtils", () => ({
     (id: string) => `https://example.com/thumbnails/${id}.jpg`
   ),
 }))
-
-const mockUseTabletAndBelowMediaQuery = jest.fn()
-jest.mock("decentraland-ui2", () => {
-  const actual = jest.requireActual("decentraland-ui2")
-  return {
-    ...actual,
-    useTabletAndBelowMediaQuery: (...args: unknown[]) =>
-      mockUseTabletAndBelowMediaQuery(...args),
-  }
-})
 
 function renderCommunityInfo(
   props: Partial<React.ComponentProps<typeof CommunityInfo>> = {}
