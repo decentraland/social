@@ -69,7 +69,7 @@ const communitiesApi = client.injectEndpoints({
     }),
     joinCommunity: builder.mutation<JoinCommunityResponse, string>({
       query: (id: string) => ({
-        url: `/v1/communities/${id}/join`,
+        url: `/v1/communities/${id}/members`,
         method: "POST",
       }),
       invalidatesTags: (
