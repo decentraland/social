@@ -39,6 +39,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 import { PageLayout } from "../../PageLayout"
+import { AllowedAction } from "./CommunityDetail.types"
 import {
   BottomSection,
   CenteredContainer,
@@ -47,9 +48,6 @@ import {
   MembersColumn,
   PageContainer,
 } from "./CommunityDetail.styled"
-
-const ALLOWED_ACTIONS = ["join", "requestToJoin"] as const
-type AllowedAction = (typeof ALLOWED_ACTIONS)[number]
 
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
@@ -101,13 +99,14 @@ function CommunityDetail() {
 
   // Fetch member requests if user is logged in and viewing a private community
   const shouldFetchRequests = isLoggedIn && !!address && !!isPrivate && !member
-  const { data: memberRequestsData } = useGetMemberRequestsQuery(
-    {
-      address: address || "",
-      type: RequestType.REQUEST_TO_JOIN,
-    },
-    { skip: !shouldFetchRequests }
-  )
+  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } =
+    useGetMemberRequestsQuery(
+      {
+        address: address || "",
+        type: RequestType.REQUEST_TO_JOIN,
+      },
+      { skip: !shouldFetchRequests }
+    )
 
   // Find pending request for current community
   const pendingRequest = memberRequestsData?.data.results.find(
@@ -204,7 +203,11 @@ function CommunityDetail() {
       }
 
       try {
-        await cancelCommunityRequest({ communityId, requestId }).unwrap()
+        await cancelCommunityRequest({
+          communityId,
+          requestId,
+          address,
+        }).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
           const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
@@ -254,7 +257,10 @@ function CommunityDetail() {
     }
 
     // Validate action is in whitelist
-    if (!ALLOWED_ACTIONS.includes(action)) {
+    if (
+      action &&
+      !Object.values(AllowedAction).includes(action as AllowedAction)
+    ) {
       console.warn(`Invalid action parameter: ${action}`)
       // Clean up invalid action parameter
       const newSearchParams = new URLSearchParams(searchParams)
@@ -264,7 +270,7 @@ function CommunityDetail() {
     }
 
     // Handle edge cases
-    if (action === "join") {
+    if (action === AllowedAction.JOIN) {
       // Skip if already a member
       if (member) {
         const newSearchParams = new URLSearchParams(searchParams)
@@ -280,7 +286,7 @@ function CommunityDetail() {
         newSearchParams.delete("action")
         setSearchParams(newSearchParams, { replace: true })
       })
-    } else if (action === "requestToJoin") {
+    } else if (action === AllowedAction.REQUEST_TO_JOIN) {
       // Skip if already has pending request
       if (hasPendingRequest) {
         const newSearchParams = new URLSearchParams(searchParams)
@@ -369,6 +375,7 @@ function CommunityDetail() {
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}
             hasPendingRequest={hasPendingRequest}
+            isLoadingMemberRequests={isLoadingMemberRequests}
             onRequestToJoin={handleRequestToJoin}
             onCancelRequest={
               pendingRequestId

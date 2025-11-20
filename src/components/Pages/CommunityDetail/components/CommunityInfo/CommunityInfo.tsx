@@ -1,8 +1,9 @@
 import { useCallback } from "react"
-import { useNavigate } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
+import { config } from "../../../../../config"
 import { Privacy } from "../../../../../features/communities/types"
+import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
   ActionButtons,
@@ -37,6 +38,7 @@ type CommunityInfoProps = {
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
   hasPendingRequest?: boolean
+  isLoadingMemberRequests?: boolean
   onRequestToJoin?: (communityId: string) => Promise<void>
   onCancelRequest?: (communityId: string) => Promise<void>
 }
@@ -50,30 +52,42 @@ export const CommunityInfo = ({
   canViewContent,
   onJoin,
   hasPendingRequest = false,
+  isLoadingMemberRequests = false,
   onRequestToJoin,
   onCancelRequest,
 }: CommunityInfoProps) => {
-  const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
   const isPrivate = community.privacy === Privacy.PRIVATE
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
       const currentPath = `/communities/${community.id}`
-      navigate(
-        `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=join`
+      const basename = /^decentraland.(zone|org|today)$/.test(
+        window.location.host
+      )
+        ? "/social"
+        : ""
+      const redirectTo = `${basename}${currentPath}?action=${AllowedAction.JOIN}`
+      window.location.replace(
+        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
       )
       return
     }
 
     onJoin(community.id)
-  }, [isLoggedIn, address, navigate, community.id, onJoin])
+  }, [isLoggedIn, address, community.id, onJoin])
 
   const handleRequestToJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
       const currentPath = `/communities/${community.id}`
-      navigate(
-        `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=requestToJoin`
+      const basename = /^decentraland.(zone|org|today)$/.test(
+        window.location.host
+      )
+        ? "/social"
+        : ""
+      const redirectTo = `${basename}${currentPath}?action=${AllowedAction.REQUEST_TO_JOIN}`
+      window.location.replace(
+        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
       )
       return
     }
@@ -81,7 +95,7 @@ export const CommunityInfo = ({
     if (onRequestToJoin) {
       onRequestToJoin(community.id)
     }
-  }, [isLoggedIn, address, navigate, community.id, onRequestToJoin])
+  }, [isLoggedIn, address, community.id, onRequestToJoin])
 
   const handleCancelRequestClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -151,12 +165,21 @@ export const CommunityInfo = ({
               </CTAButton>
             ) : !isLoggedIn ? (
               <CTAButton
-                variant="outlined"
+                variant="contained"
+                color="secondary"
                 onClick={() => {
                   const currentPath = `/communities/${community.id}`
-                  const action = isPrivate ? "requestToJoin" : "join"
-                  navigate(
-                    `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=${action}`
+                  const action = isPrivate
+                    ? AllowedAction.REQUEST_TO_JOIN
+                    : AllowedAction.JOIN
+                  const basename = /^decentraland.(zone|org|today)$/.test(
+                    window.location.host
+                  )
+                    ? "/social"
+                    : ""
+                  const redirectTo = `${basename}${currentPath}?action=${action}`
+                  window.location.replace(
+                    `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
                   )
                 }}
               >
@@ -164,7 +187,11 @@ export const CommunityInfo = ({
               </CTAButton>
             ) : isPrivate ? (
               <>
-                {hasPendingRequest ? (
+                {isLoadingMemberRequests ? (
+                  <CTAButton color="secondary" variant="contained" disabled>
+                    {t("global.loading")}
+                  </CTAButton>
+                ) : hasPendingRequest ? (
                   <CTAButton
                     color="secondary"
                     variant="contained"

@@ -742,6 +742,7 @@ describe("when rendering the community detail page", () => {
                   expect(mockCancelRequestMutation).toHaveBeenCalledWith({
                     communityId: "community-1",
                     requestId: "request-1",
+                    address: "0x456",
                   })
                 })
               })

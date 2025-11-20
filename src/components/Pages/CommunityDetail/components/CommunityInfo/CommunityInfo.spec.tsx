@@ -1,12 +1,47 @@
-import { useNavigate } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
 import { Privacy, Visibility } from "../../../../../features/communities/types"
 import type { Community } from "../../../../../features/communities/types"
 
-jest.mock("react-router-dom", () => ({
-  useNavigate: jest.fn(),
+const mockLocationReplace = jest.fn()
+
+// Mock window.location.replace and host
+// Override the replace method and host property on the existing location object
+const originalReplace = window.location.replace
+const originalHost = window.location.host
+
+beforeAll(() => {
+  Object.defineProperty(window.location, "replace", {
+    writable: true,
+    value: mockLocationReplace,
+  })
+  Object.defineProperty(window.location, "host", {
+    writable: true,
+    value: "localhost",
+  })
+})
+
+afterAll(() => {
+  Object.defineProperty(window.location, "replace", {
+    writable: true,
+    value: originalReplace,
+  })
+  Object.defineProperty(window.location, "host", {
+    writable: true,
+    value: originalHost,
+  })
+})
+
+jest.mock("../../../../../config", () => ({
+  config: {
+    get: jest.fn((key: string) => {
+      if (key === "AUTH_URL") {
+        return "https://auth.example.com"
+      }
+      return ""
+    }),
+  },
 }))
 
 jest.mock("decentraland-ui2", () => {
@@ -103,8 +138,6 @@ jest.mock("../../utils/communityUtils", () => ({
   ),
 }))
 
-const mockNavigate = useNavigate as jest.Mock
-
 function renderCommunityInfo(
   props: Partial<React.ComponentProps<typeof CommunityInfo>> = {}
 ) {
@@ -136,13 +169,11 @@ function renderCommunityInfo(
 
 describe("when rendering the community info", () => {
   let mockOnJoin: jest.Mock
-  let mockNavigateFn: jest.Mock
   let defaultCommunity: Community
 
   beforeEach(() => {
     mockOnJoin = jest.fn()
-    mockNavigateFn = jest.fn()
-    mockNavigate.mockReturnValue(mockNavigateFn)
+    mockLocationReplace.mockClear()
     defaultCommunity = {
       id: "community-1",
       name: "Test Community",
@@ -254,17 +285,16 @@ describe("when rendering the community info", () => {
 
     describe("and the community is public", () => {
       describe("and the sign in button is clicked", () => {
-        it("should navigate to sign in page with action=join", async () => {
+        it("should redirect to auth URL with action=join", async () => {
           const user = userEvent.setup()
           renderCommunityInfo({ community, isLoggedIn: false })
 
           const signInButton = screen.getByText("SIGN IN TO JOIN")
           await user.click(signInButton)
 
-          expect(mockNavigateFn).toHaveBeenCalledWith(
-            "/sign-in?redirectTo=" +
-              encodeURIComponent("/communities/community-1") +
-              "&action=join"
+          expect(mockLocationReplace).toHaveBeenCalledWith(
+            "https://auth.example.com/login?redirectTo=" +
+              encodeURIComponent("/communities/community-1?action=join")
           )
         })
       })
@@ -281,7 +311,7 @@ describe("when rendering the community info", () => {
       })
 
       describe("and the sign in button is clicked", () => {
-        it("should navigate to sign in page with action=requestToJoin", async () => {
+        it("should redirect to auth URL with action=requestToJoin", async () => {
           const user = userEvent.setup()
           renderCommunityInfo({
             community: privateCommunity,
@@ -291,10 +321,11 @@ describe("when rendering the community info", () => {
           const signInButton = screen.getByText("SIGN IN TO JOIN")
           await user.click(signInButton)
 
-          expect(mockNavigateFn).toHaveBeenCalledWith(
-            "/sign-in?redirectTo=" +
-              encodeURIComponent("/communities/community-1") +
-              "&action=requestToJoin"
+          expect(mockLocationReplace).toHaveBeenCalledWith(
+            "https://auth.example.com/login?redirectTo=" +
+              encodeURIComponent(
+                "/communities/community-1?action=requestToJoin"
+              )
           )
         })
       })
