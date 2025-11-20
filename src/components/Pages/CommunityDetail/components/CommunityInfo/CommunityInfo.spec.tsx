@@ -252,16 +252,52 @@ describe("when rendering the community info", () => {
       expect(screen.getByText("SIGN IN TO JOIN")).toBeInTheDocument()
     })
 
-    it("should navigate to sign in page when sign in button is clicked", async () => {
-      const user = userEvent.setup()
-      renderCommunityInfo({ community, isLoggedIn: false })
+    describe("and the community is public", () => {
+      describe("and the sign in button is clicked", () => {
+        it("should navigate to sign in page with action=join", async () => {
+          const user = userEvent.setup()
+          renderCommunityInfo({ community, isLoggedIn: false })
 
-      const signInButton = screen.getByText("SIGN IN TO JOIN")
-      await user.click(signInButton)
+          const signInButton = screen.getByText("SIGN IN TO JOIN")
+          await user.click(signInButton)
 
-      expect(mockNavigateFn).toHaveBeenCalledWith(
-        "/sign-in?redirectTo=" + encodeURIComponent("/communities/community-1")
-      )
+          expect(mockNavigateFn).toHaveBeenCalledWith(
+            "/sign-in?redirectTo=" +
+              encodeURIComponent("/communities/community-1") +
+              "&action=join"
+          )
+        })
+      })
+    })
+
+    describe("and the community is private", () => {
+      let privateCommunity: Community
+
+      beforeEach(() => {
+        privateCommunity = {
+          ...community,
+          privacy: Privacy.PRIVATE,
+        }
+      })
+
+      describe("and the sign in button is clicked", () => {
+        it("should navigate to sign in page with action=requestToJoin", async () => {
+          const user = userEvent.setup()
+          renderCommunityInfo({
+            community: privateCommunity,
+            isLoggedIn: false,
+          })
+
+          const signInButton = screen.getByText("SIGN IN TO JOIN")
+          await user.click(signInButton)
+
+          expect(mockNavigateFn).toHaveBeenCalledWith(
+            "/sign-in?redirectTo=" +
+              encodeURIComponent("/communities/community-1") +
+              "&action=requestToJoin"
+          )
+        })
+      })
     })
   })
 
@@ -311,33 +347,37 @@ describe("when rendering the community info", () => {
           expect(screen.getByText("JOIN")).toBeInTheDocument()
         })
 
-        it("should call onJoin with the community id when join button is clicked", async () => {
-          const user = userEvent.setup()
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            onJoin: mockOnJoin,
+        describe("and the join button is clicked", () => {
+          it("should call onJoin with the community id", async () => {
+            const user = userEvent.setup()
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              onJoin: mockOnJoin,
+            })
+
+            const joinButton = screen.getByText("JOIN")
+            await user.click(joinButton)
+
+            expect(mockOnJoin).toHaveBeenCalledWith("community-1")
           })
-
-          const joinButton = screen.getByText("JOIN")
-          await user.click(joinButton)
-
-          expect(mockOnJoin).toHaveBeenCalledWith("community-1")
         })
 
-        it("should disable join button when performing community action", () => {
-          renderCommunityInfo({
-            community,
-            isLoggedIn: true,
-            address,
-            isMember: false,
-            isPerformingCommunityAction: true,
-          })
+        describe("and a community action is being performed", () => {
+          it("should disable the join button", () => {
+            renderCommunityInfo({
+              community,
+              isLoggedIn: true,
+              address,
+              isMember: false,
+              isPerformingCommunityAction: true,
+            })
 
-          const joinButton = screen.getByText("Loading...")
-          expect(joinButton).toBeDisabled()
+            const joinButton = screen.getByText("Loading...")
+            expect(joinButton).toBeDisabled()
+          })
         })
       })
 
@@ -379,21 +419,39 @@ describe("when rendering the community info", () => {
             expect(screen.getByText("REQUEST TO JOIN")).toBeInTheDocument()
           })
 
-          it("should call onRequestToJoin with the community id when request to join button is clicked", async () => {
-            const user = userEvent.setup()
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: false,
-              onRequestToJoin: mockOnRequestToJoin,
+          describe("and the request to join button is clicked", () => {
+            it("should call onRequestToJoin with the community id", async () => {
+              const user = userEvent.setup()
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: false,
+                onRequestToJoin: mockOnRequestToJoin,
+              })
+
+              const requestButton = screen.getByText("REQUEST TO JOIN")
+              await user.click(requestButton)
+
+              expect(mockOnRequestToJoin).toHaveBeenCalledWith("community-1")
             })
+          })
 
-            const requestButton = screen.getByText("REQUEST TO JOIN")
-            await user.click(requestButton)
+          describe("and a community action is being performed", () => {
+            it("should disable the request to join button", () => {
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: false,
+                isPerformingCommunityAction: true,
+              })
 
-            expect(mockOnRequestToJoin).toHaveBeenCalledWith("community-1")
+              const requestButton = screen.getByText("Loading...")
+              expect(requestButton).toBeDisabled()
+            })
           })
 
           it("should display jump in button", () => {
@@ -441,21 +499,23 @@ describe("when rendering the community info", () => {
             expect(screen.getByText("CANCEL REQUEST")).toBeInTheDocument()
           })
 
-          it("should call onCancelRequest with the community id when cancel request button is clicked", async () => {
-            const user = userEvent.setup()
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: true,
-              onCancelRequest: mockOnCancelRequest,
+          describe("and the cancel request button is clicked", () => {
+            it("should call onCancelRequest with the community id", async () => {
+              const user = userEvent.setup()
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: true,
+                onCancelRequest: mockOnCancelRequest,
+              })
+
+              const cancelButton = screen.getByText("CANCEL REQUEST")
+              await user.click(cancelButton)
+
+              expect(mockOnCancelRequest).toHaveBeenCalledWith("community-1")
             })
-
-            const cancelButton = screen.getByText("CANCEL REQUEST")
-            await user.click(cancelButton)
-
-            expect(mockOnCancelRequest).toHaveBeenCalledWith("community-1")
           })
 
           it("should display jump in button", () => {
@@ -470,18 +530,20 @@ describe("when rendering the community info", () => {
             expect(screen.getByText("JUMP IN")).toBeInTheDocument()
           })
 
-          it("should disable cancel request button when performing community action", () => {
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: true,
-              isPerformingCommunityAction: true,
-            })
+          describe("and a community action is being performed", () => {
+            it("should disable the cancel request button", () => {
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: true,
+                isPerformingCommunityAction: true,
+              })
 
-            const cancelButton = screen.getByText("Loading...")
-            expect(cancelButton).toBeDisabled()
+              const cancelButton = screen.getByText("Loading...")
+              expect(cancelButton).toBeDisabled()
+            })
           })
         })
       })

@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useParams, useSearchParams } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   getData as getWallet,
@@ -48,11 +48,16 @@ import {
   PageContainer,
 } from "./CommunityDetail.styled"
 
+const ALLOWED_ACTIONS = ["join", "requestToJoin"] as const
+type AllowedAction = (typeof ALLOWED_ACTIONS)[number]
+
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const wallet = useAppSelector(getWallet)
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
+  const executedActionRef = useRef<string | null>(null)
 
   // Skip query if wallet is still connecting to ensure state is ready for signing
   const shouldSkipQuery = !id || isWalletConnecting
@@ -223,6 +228,88 @@ function CommunityDetail() {
     resetJoinMutation,
     resetCreateRequestMutation,
     resetCancelRequestMutation,
+  ])
+
+  // Auto-execute action after authentication redirect
+  useEffect(() => {
+    const action = searchParams.get("action") as AllowedAction | null
+
+    // Reset ref when action param changes to a different value
+    if (action && executedActionRef.current !== action) {
+      executedActionRef.current = null
+    }
+
+    // Skip if no action, already executed this action, or conditions not met
+    if (
+      !action ||
+      executedActionRef.current === action ||
+      !isLoggedIn ||
+      !address ||
+      !community ||
+      isLoading ||
+      isWalletConnecting ||
+      isPerformingCommunityAction
+    ) {
+      return
+    }
+
+    // Validate action is in whitelist
+    if (!ALLOWED_ACTIONS.includes(action)) {
+      console.warn(`Invalid action parameter: ${action}`)
+      // Clean up invalid action parameter
+      const newSearchParams = new URLSearchParams(searchParams)
+      newSearchParams.delete("action")
+      setSearchParams(newSearchParams, { replace: true })
+      return
+    }
+
+    // Handle edge cases
+    if (action === "join") {
+      // Skip if already a member
+      if (member) {
+        const newSearchParams = new URLSearchParams(searchParams)
+        newSearchParams.delete("action")
+        setSearchParams(newSearchParams, { replace: true })
+        return
+      }
+      // Execute join action
+      executedActionRef.current = action
+      handleJoinCommunity(community.id).finally(() => {
+        // Clean up action parameter after execution
+        const newSearchParams = new URLSearchParams(searchParams)
+        newSearchParams.delete("action")
+        setSearchParams(newSearchParams, { replace: true })
+      })
+    } else if (action === "requestToJoin") {
+      // Skip if already has pending request
+      if (hasPendingRequest) {
+        const newSearchParams = new URLSearchParams(searchParams)
+        newSearchParams.delete("action")
+        setSearchParams(newSearchParams, { replace: true })
+        return
+      }
+      // Execute request to join action
+      executedActionRef.current = action
+      handleRequestToJoin(community.id).finally(() => {
+        // Clean up action parameter after execution
+        const newSearchParams = new URLSearchParams(searchParams)
+        newSearchParams.delete("action")
+        setSearchParams(newSearchParams, { replace: true })
+      })
+    }
+  }, [
+    searchParams,
+    setSearchParams,
+    isLoggedIn,
+    address,
+    community,
+    isLoading,
+    isWalletConnecting,
+    isPerformingCommunityAction,
+    member,
+    hasPendingRequest,
+    handleJoinCommunity,
+    handleRequestToJoin,
   ])
 
   if (isLoading || isWalletConnecting) {

@@ -60,7 +60,9 @@ export const CommunityInfo = ({
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
       const currentPath = `/communities/${community.id}`
-      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      navigate(
+        `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=join`
+      )
       return
     }
 
@@ -70,7 +72,9 @@ export const CommunityInfo = ({
   const handleRequestToJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
       const currentPath = `/communities/${community.id}`
-      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      navigate(
+        `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=requestToJoin`
+      )
       return
     }
 
@@ -150,8 +154,9 @@ export const CommunityInfo = ({
                 variant="outlined"
                 onClick={() => {
                   const currentPath = `/communities/${community.id}`
+                  const action = isPrivate ? "requestToJoin" : "join"
                   navigate(
-                    `/sign-in?redirectTo=${encodeURIComponent(currentPath)}`
+                    `/sign-in?redirectTo=${encodeURIComponent(currentPath)}&action=${action}`
                   )
                 }}
               >
@@ -208,7 +213,8 @@ export const CommunityInfo = ({
               </>
             ) : (
               <CTAButton
-                variant="outlined"
+                color="secondary"
+                variant="contained"
                 onClick={handleJoinClick}
                 disabled={isPerformingCommunityAction}
               >
