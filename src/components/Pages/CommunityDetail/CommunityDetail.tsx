@@ -241,72 +241,77 @@ function CommunityDetail() {
   useEffect(() => {
     const action = searchParams.get("action") as AllowedAction | null
 
-    // Reset ref when action param changes to a different value
+    const removeActionParam = () => {
+      const newSearchParams = new URLSearchParams(searchParams)
+      newSearchParams.delete("action")
+      setSearchParams(newSearchParams, { replace: true })
+    }
+
+    const canExecuteAction = (): boolean => {
+      return !!(
+        action &&
+        executedActionRef.current !== action &&
+        isLoggedIn &&
+        address &&
+        community &&
+        !isLoading &&
+        !isWalletConnecting &&
+        !isPerformingCommunityAction
+      )
+    }
+
+    const isValidAction = (
+      actionValue: string | null
+    ): actionValue is AllowedAction => {
+      return !!(
+        actionValue &&
+        Object.values(AllowedAction).includes(actionValue as AllowedAction)
+      )
+    }
+
     if (action && executedActionRef.current !== action) {
       executedActionRef.current = null
     }
 
-    // Skip if no action, already executed this action, or conditions not met
-    if (
-      !action ||
-      executedActionRef.current === action ||
-      !isLoggedIn ||
-      !address ||
-      !community ||
-      isLoading ||
-      isWalletConnecting ||
-      isPerformingCommunityAction
-    ) {
+    if (!canExecuteAction()) {
       return
     }
 
-    // Validate action is in whitelist
-    if (
-      action &&
-      !Object.values(AllowedAction).includes(action as AllowedAction)
-    ) {
+    if (!isValidAction(action)) {
       console.warn(`Invalid action parameter: ${action}`)
-      // Clean up invalid action parameter
-      const newSearchParams = new URLSearchParams(searchParams)
-      newSearchParams.delete("action")
-      setSearchParams(newSearchParams, { replace: true })
+      removeActionParam()
       return
     }
 
-    // Handle edge cases
-    if (action === AllowedAction.JOIN) {
-      // Skip if already a member
-      if (member) {
-        const newSearchParams = new URLSearchParams(searchParams)
-        newSearchParams.delete("action")
-        setSearchParams(newSearchParams, { replace: true })
-        return
+    // At this point, community is guaranteed to be defined (checked in canExecuteAction)
+    const actionHandlers: Record<
+      AllowedAction,
+      {
+        shouldSkip: () => boolean
+        execute: () => Promise<void>
       }
-      // Execute join action
-      executedActionRef.current = action
-      handleJoinCommunity(community.id).finally(() => {
-        // Clean up action parameter after execution
-        const newSearchParams = new URLSearchParams(searchParams)
-        newSearchParams.delete("action")
-        setSearchParams(newSearchParams, { replace: true })
-      })
-    } else if (action === AllowedAction.REQUEST_TO_JOIN) {
-      // Skip if already has pending request
-      if (hasPendingRequest) {
-        const newSearchParams = new URLSearchParams(searchParams)
-        newSearchParams.delete("action")
-        setSearchParams(newSearchParams, { replace: true })
-        return
-      }
-      // Execute request to join action
-      executedActionRef.current = action
-      handleRequestToJoin(community.id).finally(() => {
-        // Clean up action parameter after execution
-        const newSearchParams = new URLSearchParams(searchParams)
-        newSearchParams.delete("action")
-        setSearchParams(newSearchParams, { replace: true })
-      })
+    > = {
+      [AllowedAction.JOIN]: {
+        shouldSkip: () => member,
+        execute: () => handleJoinCommunity(community!.id),
+      },
+      [AllowedAction.REQUEST_TO_JOIN]: {
+        shouldSkip: () => hasPendingRequest,
+        execute: () => handleRequestToJoin(community!.id),
+      },
     }
+
+    const handler = actionHandlers[action]
+
+    if (handler.shouldSkip()) {
+      removeActionParam()
+      return
+    }
+
+    executedActionRef.current = action
+    handler.execute().finally(() => {
+      removeActionParam()
+    })
   }, [
     searchParams,
     setSearchParams,

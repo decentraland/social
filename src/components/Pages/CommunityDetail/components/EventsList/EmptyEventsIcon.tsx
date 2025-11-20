@@ -1,11 +1,10 @@
+import { SvgIcon } from "decentraland-ui2"
+
 export const EmptyEventsIcon = () => {
   return (
-    <svg
-      width="100"
-      height="100"
+    <SvgIcon
+      sx={{ width: "100px", height: "100px", fill: "none" }}
       viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
     >
       <path
         d="M37.2773 18.9824V31.2046M61.7218 18.9824V31.2046"
@@ -32,6 +31,6 @@ export const EmptyEventsIcon = () => {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
+    </SvgIcon>
   )
 }
