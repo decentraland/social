@@ -107,7 +107,7 @@ describe("when rendering the events list", () => {
     it("should display an empty state message", () => {
       renderEventsList({ events: [] })
 
-      expect(screen.getByText("No events found")).toBeInTheDocument()
+      expect(screen.getByText("No Upcoming Events")).toBeInTheDocument()
     })
   })
 

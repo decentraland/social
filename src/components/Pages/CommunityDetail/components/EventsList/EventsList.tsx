@@ -1,9 +1,11 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Box, CircularProgress, Typography } from "decentraland-ui2"
+import { Box, CircularProgress } from "decentraland-ui2"
+import { EmptyEventsIcon } from "./EmptyEventsIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import { formatEventTime } from "../../../../../utils/dateFormat"
 import {
   EmptyState,
+  EmptyStateText,
   EventCard,
   EventContent,
   EventImage,
@@ -68,9 +70,10 @@ export const EventsList = ({
       <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
       {events.length === 0 ? (
         <EmptyState>
-          <Typography variant="body2" color="textSecondary">
-            {t("events.no_events_found")}
-          </Typography>
+          <EmptyEventsIcon />
+          <EmptyStateText color="textPrimary">
+            {t("events.no_upcoming_events")}
+          </EmptyStateText>
         </EmptyState>
       ) : (
         <EventsGrid>

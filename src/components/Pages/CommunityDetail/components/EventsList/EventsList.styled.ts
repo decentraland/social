@@ -152,15 +152,28 @@ const LoadMoreSentinel = styled(Box)(() => ({
 
 const EmptyState = styled(Box)(({ theme }) => ({
   display: "flex",
+  flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
   padding: theme.spacing(4),
   width: "100%",
   gridColumn: "1 / -1",
+  gap: theme.spacing(2),
+}))
+
+const EmptyStateText = styled(Typography)(() => ({
+  fontFamily: "Inter",
+  fontWeight: 600,
+  fontSize: "18px",
+  lineHeight: "100%",
+  letterSpacing: "0%",
+  textAlign: "center",
+  verticalAlign: "middle",
 }))
 
 export {
   EmptyState,
+  EmptyStateText,
   EventCard,
   EventContent,
   EventImage,
