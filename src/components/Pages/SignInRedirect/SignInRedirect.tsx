@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
-import { config } from "../../../config"
+import { redirectToAuth } from "../../../utils/authRedirect"
 
 export const SignInRedirect = () => {
   const { pathname, search } = useLocation()
@@ -8,18 +8,9 @@ export const SignInRedirect = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(search)
     const currentRedirectTo = searchParams.get("redirectTo")
-    const basename = /^decentraland.(zone|org|today)$/.test(
-      window.location.host
-    )
-      ? "/social"
-      : ""
-    const redirectTo = !currentRedirectTo
-      ? `${basename}${pathname}${search}`
-      : `${basename}${currentRedirectTo}`
 
-    window.location.replace(
-      `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-    )
+    const redirectPath = currentRedirectTo || `${pathname}${search}`
+    redirectToAuth(redirectPath)
   }, [pathname, search])
 
   return null

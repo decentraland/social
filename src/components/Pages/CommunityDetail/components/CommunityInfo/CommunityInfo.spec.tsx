@@ -2,7 +2,13 @@ import { render, screen } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
 import { Privacy, Visibility } from "../../../../../features/communities/types"
+import { AllowedAction } from "../../CommunityDetail.types"
 import type { Community } from "../../../../../features/communities/types"
+
+const mockRedirectToAuth = jest.fn()
+jest.mock("../../../../../utils/authRedirect", () => ({
+  redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args),
+}))
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -133,6 +139,7 @@ describe("when rendering the community info", () => {
 
   beforeEach(() => {
     mockOnJoin = jest.fn()
+    mockRedirectToAuth.mockClear()
     defaultCommunity = {
       id: "community-1",
       name: "Test Community",
@@ -244,14 +251,17 @@ describe("when rendering the community info", () => {
 
     describe("and the community is public", () => {
       describe("and the sign in button is clicked", () => {
-        it("should attempt to redirect to auth URL with action=join", async () => {
+        it("should redirect to auth URL with action=join", async () => {
           const user = userEvent.setup()
           renderCommunityInfo({ community, isLoggedIn: false })
 
           const signInButton = screen.getByText("SIGN IN TO JOIN")
-          // The click will trigger window.location.replace which fails in jsdom
-          // but we verify the button is clickable and doesn't crash
-          await expect(user.click(signInButton)).resolves.not.toThrow()
+          await user.click(signInButton)
+
+          expect(mockRedirectToAuth).toHaveBeenCalledWith(
+            `/communities/${community.id}`,
+            { action: AllowedAction.JOIN }
+          )
         })
       })
     })
@@ -267,7 +277,7 @@ describe("when rendering the community info", () => {
       })
 
       describe("and the sign in button is clicked", () => {
-        it("should attempt to redirect to auth URL with action=requestToJoin", async () => {
+        it("should redirect to auth URL with action=requestToJoin", async () => {
           const user = userEvent.setup()
           renderCommunityInfo({
             community: privateCommunity,
@@ -275,9 +285,12 @@ describe("when rendering the community info", () => {
           })
 
           const signInButton = screen.getByText("SIGN IN TO JOIN")
-          // The click will trigger window.location.replace which fails in jsdom
-          // but we verify the button is clickable and doesn't crash
-          await expect(user.click(signInButton)).resolves.not.toThrow()
+          await user.click(signInButton)
+
+          expect(mockRedirectToAuth).toHaveBeenCalledWith(
+            `/communities/${privateCommunity.id}`,
+            { action: AllowedAction.REQUEST_TO_JOIN }
+          )
         })
       })
     })

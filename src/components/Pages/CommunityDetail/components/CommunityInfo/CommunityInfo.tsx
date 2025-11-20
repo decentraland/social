@@ -1,8 +1,8 @@
 import { useCallback } from "react"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
-import { config } from "../../../../../config"
 import { Privacy } from "../../../../../features/communities/types"
+import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
@@ -61,16 +61,9 @@ export const CommunityInfo = ({
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
-      const currentPath = `/communities/${community.id}`
-      const basename = /^decentraland.(zone|org|today)$/.test(
-        window.location.host
-      )
-        ? "/social"
-        : ""
-      const redirectTo = `${basename}${currentPath}?action=${AllowedAction.JOIN}`
-      window.location.replace(
-        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-      )
+      redirectToAuth(`/communities/${community.id}`, {
+        action: AllowedAction.JOIN,
+      })
       return
     }
 
@@ -79,16 +72,9 @@ export const CommunityInfo = ({
 
   const handleRequestToJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
-      const currentPath = `/communities/${community.id}`
-      const basename = /^decentraland.(zone|org|today)$/.test(
-        window.location.host
-      )
-        ? "/social"
-        : ""
-      const redirectTo = `${basename}${currentPath}?action=${AllowedAction.REQUEST_TO_JOIN}`
-      window.location.replace(
-        `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-      )
+      redirectToAuth(`/communities/${community.id}`, {
+        action: AllowedAction.REQUEST_TO_JOIN,
+      })
       return
     }
 
@@ -168,19 +154,10 @@ export const CommunityInfo = ({
                 variant="contained"
                 color="secondary"
                 onClick={() => {
-                  const currentPath = `/communities/${community.id}`
                   const action = isPrivate
                     ? AllowedAction.REQUEST_TO_JOIN
                     : AllowedAction.JOIN
-                  const basename = /^decentraland.(zone|org|today)$/.test(
-                    window.location.host
-                  )
-                    ? "/social"
-                    : ""
-                  const redirectTo = `${basename}${currentPath}?action=${action}`
-                  window.location.replace(
-                    `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-                  )
+                  redirectToAuth(`/communities/${community.id}`, { action })
                 }}
               >
                 {t("community_info.sign_in_to_join")}
