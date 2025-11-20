@@ -61,7 +61,10 @@ function CommunityDetail() {
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
-  // Skip query if wallet is still connecting to ensure state is ready for signing
+  const isLoggedIn = hasValidIdentity(wallet)
+  const address = wallet?.address
+
+  // Skip query if no id or wallet is currently connecting
   const shouldSkipQuery = !id || isWalletConnecting
 
   const {
@@ -69,7 +72,17 @@ function CommunityDetail() {
     isLoading,
     error: queryError,
     isError,
+    refetch,
   } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
+
+  // Refetch when address becomes available to get authenticated response with role
+  const previousAddressRef = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (address && !previousAddressRef.current && data) {
+      refetch()
+    }
+    previousAddressRef.current = address
+  }, [address, data, refetch])
   const [
     joinCommunity,
     { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
@@ -91,8 +104,6 @@ function CommunityDetail() {
     },
   ] = useCancelCommunityRequestMutation()
 
-  const isLoggedIn = hasValidIdentity(wallet)
-  const address = wallet?.address
   const community = data?.data
 
   const member = community ? isMember(community) : false
@@ -327,6 +338,10 @@ function CommunityDetail() {
     handleRequestToJoin,
   ])
 
+  // Show loading only if:
+  // 1. Query is loading
+  // 2. Wallet is connecting (state not yet determined)
+  // Stop loading once wallet state is determined: if not connecting, we know if connected or not
   if (isLoading || isWalletConnecting) {
     return (
       <ContentContainer>
