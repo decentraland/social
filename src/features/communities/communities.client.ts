@@ -5,7 +5,9 @@ import {
   JoinCommunityResponse,
   MemberRequestsResponse,
   RequestIntention,
+  RequestStatus,
   RequestType,
+  Role,
 } from "./types"
 import { client } from "../../services/client"
 
@@ -69,9 +71,30 @@ const communitiesApi = client.injectEndpoints({
     }),
     joinCommunity: builder.mutation<JoinCommunityResponse, string>({
       query: (id: string) => ({
-        url: `/v1/communities/${id}/join`,
+        url: `/v1/communities/${id}/members`,
         method: "POST",
       }),
+      async onQueryStarted(communityId, { dispatch, queryFulfilled }) {
+        // Optimistically update the community to show user as member
+        const patchResult = dispatch(
+          communitiesApi.util.updateQueryData(
+            "getCommunityById",
+            communityId,
+            (draft) => {
+              if (draft?.data) {
+                draft.data.role = Role.MEMBER
+              }
+            }
+          )
+        )
+
+        try {
+          await queryFulfilled
+        } catch {
+          // Revert the optimistic update on error
+          patchResult.undo()
+        }
+      },
       invalidatesTags: (
         _result: JoinCommunityResponse | undefined,
         _error: unknown,
@@ -90,6 +113,51 @@ const communitiesApi = client.injectEndpoints({
           type: RequestType.REQUEST_TO_JOIN,
         },
       }),
+      async onQueryStarted(
+        { communityId, targetedAddress },
+        { dispatch, queryFulfilled, getState }
+      ) {
+        // Get community data from cache to create proper optimistic request
+        const state = getState() as {
+          client?: {
+            queries?: Record<string, { data?: CommunityResponse }>
+          }
+        }
+        const queryKey =
+          communitiesApi.endpoints.getCommunityById.select(communityId)
+        const queryState = queryKey(state as never)
+        const community = queryState?.data?.data
+
+        // Optimistically add a pending request to the member requests cache
+        const patchResult = dispatch(
+          communitiesApi.util.updateQueryData(
+            "getMemberRequests",
+            { address: targetedAddress, type: RequestType.REQUEST_TO_JOIN },
+            (draft) => {
+              if (draft?.data) {
+                // Create an optimistic request with community data
+                // MemberCommunityRequest extends Community (minus id) and adds id, communityId, type, status
+                const optimisticRequest = {
+                  ...(community || {}),
+                  id: `temp-${Date.now()}`,
+                  communityId,
+                  type: RequestType.REQUEST_TO_JOIN,
+                  status: RequestStatus.PENDING,
+                } as (typeof draft.data.results)[0]
+                draft.data.results = [optimisticRequest, ...draft.data.results]
+                draft.data.total = (draft.data.total || 0) + 1
+              }
+            }
+          )
+        )
+
+        try {
+          await queryFulfilled
+        } catch {
+          // Revert the optimistic update on error
+          patchResult.undo()
+        }
+      },
       invalidatesTags: (
         _result: CreateCommunityRequestResponse | undefined,
         _error: unknown,
@@ -102,7 +170,7 @@ const communitiesApi = client.injectEndpoints({
     }),
     cancelCommunityRequest: builder.mutation<
       void,
-      { communityId: string; requestId: string }
+      { communityId: string; requestId: string; address?: string }
     >({
       query: ({ communityId, requestId }) => ({
         url: `/v1/communities/${communityId}/requests/${requestId}`,
@@ -111,6 +179,39 @@ const communitiesApi = client.injectEndpoints({
           intention: RequestIntention.CANCELLED,
         },
       }),
+      async onQueryStarted(
+        { requestId, address },
+        { dispatch, queryFulfilled }
+      ) {
+        let patchResult: { undo: () => void } | null = null
+
+        // Optimistically remove the request from cache if address is provided
+        if (address) {
+          patchResult = dispatch(
+            communitiesApi.util.updateQueryData(
+              "getMemberRequests",
+              { address, type: RequestType.REQUEST_TO_JOIN },
+              (draft) => {
+                if (draft?.data) {
+                  draft.data.results = draft.data.results.filter(
+                    (request) => request.id !== requestId
+                  )
+                  draft.data.total = Math.max((draft.data.total || 0) - 1, 0)
+                }
+              }
+            )
+          )
+        }
+
+        try {
+          await queryFulfilled
+        } catch {
+          // Revert the optimistic update on error
+          if (patchResult) {
+            patchResult.undo()
+          }
+        }
+      },
       invalidatesTags: (
         _result: void | undefined,
         _error: unknown,

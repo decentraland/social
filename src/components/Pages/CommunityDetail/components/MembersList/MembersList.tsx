@@ -28,6 +28,7 @@ type MembersListProps = {
   isFetchingMore?: boolean
   hasMore?: boolean
   onLoadMore: () => void
+  hideTitle?: boolean
 }
 
 export const MembersList = ({
@@ -36,6 +37,7 @@ export const MembersList = ({
   isFetchingMore = false,
   hasMore = false,
   onLoadMore,
+  hideTitle = false,
 }: MembersListProps) => {
   const sentinelRef = useInfiniteScroll({
     hasMore,
@@ -46,7 +48,7 @@ export const MembersList = ({
   if (isLoading) {
     return (
       <MembersSection>
-        <SectionTitle>{t("members_list.title")}</SectionTitle>
+        {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
         <Box
           display="flex"
           justifyContent="center"
@@ -61,7 +63,7 @@ export const MembersList = ({
 
   return (
     <MembersSection>
-      <SectionTitle>{t("members_list.title")}</SectionTitle>
+      {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
       {members.length === 0 ? (
         <EmptyState>
           <Typography variant="body2" color="textSecondary">

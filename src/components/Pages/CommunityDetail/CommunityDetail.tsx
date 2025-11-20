@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useParams, useSearchParams } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   getData as getWallet,
@@ -11,11 +11,13 @@ import {
   CircularProgress,
   Snackbar,
   Typography,
+  useTabletAndBelowMediaQuery,
 } from "decentraland-ui2"
 import { CommunityInfo } from "./components/CommunityInfo"
 import { EventsList } from "./components/EventsList"
 import { MembersList } from "./components/MembersList"
 import { PrivateMessage } from "./components/PrivateMessage"
+import { type TabType, Tabs } from "./components/Tabs"
 import { isMember } from "./utils/communityUtils"
 import {
   getErrorMessage,
@@ -39,6 +41,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 import { PageLayout } from "../../PageLayout"
+import { AllowedAction } from "./CommunityDetail.types"
 import {
   BottomSection,
   CenteredContainer,
@@ -50,9 +53,13 @@ import {
 
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const wallet = useAppSelector(getWallet)
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
+  const executedActionRef = useRef<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabType>("members")
+  const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
   // Skip query if wallet is still connecting to ensure state is ready for signing
   const shouldSkipQuery = !id || isWalletConnecting
@@ -96,13 +103,14 @@ function CommunityDetail() {
 
   // Fetch member requests if user is logged in and viewing a private community
   const shouldFetchRequests = isLoggedIn && !!address && !!isPrivate && !member
-  const { data: memberRequestsData } = useGetMemberRequestsQuery(
-    {
-      address: address || "",
-      type: RequestType.REQUEST_TO_JOIN,
-    },
-    { skip: !shouldFetchRequests }
-  )
+  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } =
+    useGetMemberRequestsQuery(
+      {
+        address: address || "",
+        type: RequestType.REQUEST_TO_JOIN,
+      },
+      { skip: !shouldFetchRequests }
+    )
 
   // Find pending request for current community
   const pendingRequest = memberRequestsData?.data.results.find(
@@ -199,7 +207,11 @@ function CommunityDetail() {
       }
 
       try {
-        await cancelCommunityRequest({ communityId, requestId }).unwrap()
+        await cancelCommunityRequest({
+          communityId,
+          requestId,
+          address,
+        }).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
           const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
@@ -223,6 +235,96 @@ function CommunityDetail() {
     resetJoinMutation,
     resetCreateRequestMutation,
     resetCancelRequestMutation,
+  ])
+
+  // Auto-execute action after authentication redirect
+  useEffect(() => {
+    const action = searchParams.get("action") as AllowedAction | null
+
+    const removeActionParam = () => {
+      const newSearchParams = new URLSearchParams(searchParams)
+      newSearchParams.delete("action")
+      setSearchParams(newSearchParams, { replace: true })
+    }
+
+    const canExecuteAction = (): boolean => {
+      return !!(
+        action &&
+        executedActionRef.current !== action &&
+        isLoggedIn &&
+        address &&
+        community &&
+        !isLoading &&
+        !isWalletConnecting &&
+        !isPerformingCommunityAction
+      )
+    }
+
+    const isValidAction = (
+      actionValue: string | null
+    ): actionValue is AllowedAction => {
+      return !!(
+        actionValue &&
+        Object.values(AllowedAction).includes(actionValue as AllowedAction)
+      )
+    }
+
+    if (action && executedActionRef.current !== action) {
+      executedActionRef.current = null
+    }
+
+    if (!canExecuteAction()) {
+      return
+    }
+
+    if (!isValidAction(action)) {
+      console.warn(`Invalid action parameter: ${action}`)
+      removeActionParam()
+      return
+    }
+
+    // At this point, community is guaranteed to be defined (checked in canExecuteAction)
+    const actionHandlers: Record<
+      AllowedAction,
+      {
+        shouldSkip: () => boolean
+        execute: () => Promise<void>
+      }
+    > = {
+      [AllowedAction.JOIN]: {
+        shouldSkip: () => member,
+        execute: () => handleJoinCommunity(community!.id),
+      },
+      [AllowedAction.REQUEST_TO_JOIN]: {
+        shouldSkip: () => hasPendingRequest,
+        execute: () => handleRequestToJoin(community!.id),
+      },
+    }
+
+    const handler = actionHandlers[action]
+
+    if (handler.shouldSkip()) {
+      removeActionParam()
+      return
+    }
+
+    executedActionRef.current = action
+    handler.execute().finally(() => {
+      removeActionParam()
+    })
+  }, [
+    searchParams,
+    setSearchParams,
+    isLoggedIn,
+    address,
+    community,
+    isLoading,
+    isWalletConnecting,
+    isPerformingCommunityAction,
+    member,
+    hasPendingRequest,
+    handleJoinCommunity,
+    handleRequestToJoin,
   ])
 
   if (isLoading || isWalletConnecting) {
@@ -282,6 +384,7 @@ function CommunityDetail() {
             canViewContent={canViewContent}
             onJoin={handleJoinCommunity}
             hasPendingRequest={hasPendingRequest}
+            isLoadingMemberRequests={isLoadingMemberRequests}
             onRequestToJoin={handleRequestToJoin}
             onCancelRequest={
               pendingRequestId
@@ -295,35 +398,76 @@ function CommunityDetail() {
 
           {canViewContent && (
             <BottomSection>
-              <MembersColumn>
-                <MembersList
-                  members={members.map((member) => ({
-                    name: member.name || member.memberAddress,
-                    role: member.role,
-                    mutualFriends: 0,
-                  }))}
-                  isLoading={isLoadingMembers}
-                  isFetchingMore={isFetchingMoreMembers}
-                  hasMore={hasMoreMembers}
-                  onLoadMore={loadMoreMembers}
-                />
-              </MembersColumn>
+              {isTabletOrMobile ? (
+                <>
+                  <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+                  {activeTab === "members" ? (
+                    <MembersColumn>
+                      <MembersList
+                        members={members.map((member) => ({
+                          name: member.name || member.memberAddress,
+                          role: member.role,
+                          mutualFriends: 0,
+                        }))}
+                        isLoading={isLoadingMembers}
+                        isFetchingMore={isFetchingMoreMembers}
+                        hasMore={hasMoreMembers}
+                        onLoadMore={loadMoreMembers}
+                        hideTitle={true}
+                      />
+                    </MembersColumn>
+                  ) : (
+                    <EventsColumn>
+                      <EventsList
+                        events={events.map((event) => ({
+                          id: event.id,
+                          name: event.name,
+                          image: event.image || "",
+                          isLive: event.live || false,
+                          startTime: event.startAt,
+                        }))}
+                        isLoading={isLoadingEvents}
+                        isFetchingMore={isFetchingMoreEvents}
+                        hasMore={hasMoreEvents}
+                        onLoadMore={loadMoreEvents}
+                        hideTitle={true}
+                      />
+                    </EventsColumn>
+                  )}
+                </>
+              ) : (
+                <>
+                  <MembersColumn>
+                    <MembersList
+                      members={members.map((member) => ({
+                        name: member.name || member.memberAddress,
+                        role: member.role,
+                        mutualFriends: 0,
+                      }))}
+                      isLoading={isLoadingMembers}
+                      isFetchingMore={isFetchingMoreMembers}
+                      hasMore={hasMoreMembers}
+                      onLoadMore={loadMoreMembers}
+                    />
+                  </MembersColumn>
 
-              <EventsColumn>
-                <EventsList
-                  events={events.map((event) => ({
-                    id: event.id,
-                    name: event.name,
-                    image: event.image || "",
-                    isLive: event.live || false,
-                    startTime: event.startAt,
-                  }))}
-                  isLoading={isLoadingEvents}
-                  isFetchingMore={isFetchingMoreEvents}
-                  hasMore={hasMoreEvents}
-                  onLoadMore={loadMoreEvents}
-                />
-              </EventsColumn>
+                  <EventsColumn>
+                    <EventsList
+                      events={events.map((event) => ({
+                        id: event.id,
+                        name: event.name,
+                        image: event.image || "",
+                        isLive: event.live || false,
+                        startTime: event.startAt,
+                      }))}
+                      isLoading={isLoadingEvents}
+                      isFetchingMore={isFetchingMoreEvents}
+                      hasMore={hasMoreEvents}
+                      onLoadMore={loadMoreEvents}
+                    />
+                  </EventsColumn>
+                </>
+              )}
             </BottomSection>
           )}
         </ContentContainer>

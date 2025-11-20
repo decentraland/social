@@ -16,18 +16,18 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   textTransform: "uppercase",
   color: theme.palette.common.white,
-  paddingBottom: "24px",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
+  paddingBottom: theme.spacing(3), // 24px
+  borderBottom: `1px solid ${theme.palette.divider}`,
   lineHeight: 1,
   width: "100%",
 }))
 
 const EventsGrid = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "9px",
+  gap: theme.spacing(1.125), // 9px
   alignItems: "stretch",
   flexWrap: "wrap",
-  rowGap: "20px",
+  rowGap: theme.spacing(2.5), // 20px
   width: "100%",
   maxHeight: "600px",
   overflowY: "auto",
@@ -38,34 +38,35 @@ const EventsGrid = styled(Box)(({ theme }) => ({
     width: "8px",
   },
   "&::-webkit-scrollbar-track": {
-    background: "rgba(255, 255, 255, 0.1)",
-    borderRadius: "4px",
+    background: theme.palette.action.hover,
+    borderRadius: theme.spacing(0.5),
   },
   "&::-webkit-scrollbar-thumb": {
-    background: "rgba(255, 255, 255, 0.3)",
-    borderRadius: "4px",
+    background: theme.palette.divider,
+    borderRadius: theme.spacing(0.5),
     "&:hover": {
-      background: "rgba(255, 255, 255, 0.4)",
+      background: theme.palette.action.selected,
     },
   },
-  [theme.breakpoints.down("sm")]: {
+  [theme.breakpoints.down("xs")]: {
     flexDirection: "column",
     flexWrap: "nowrap",
+    rowGap: theme.spacing(2.5),
   },
 }))
 
 const EventCard = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "flex-start",
-  gap: "14px",
-  flex: "0 0 calc((100% - 18px) / 3)",
+  gap: theme.spacing(1.75), // 14px
+  flex: "0 0 calc((100% - 9px) / 2)",
   minWidth: "424px",
   height: "126px",
-  borderRadius: "12px",
+  borderRadius: theme.spacing(1.5), // 12px
   cursor: "pointer",
   position: "relative",
   overflow: "visible",
-  [theme.breakpoints.down("sm")]: {
+  [theme.breakpoints.down("xs")]: {
     width: "100%",
     flex: "none",
     minWidth: "100%",
@@ -76,36 +77,36 @@ const EventImage = styled("img")(({ theme }) => ({
   width: "180px",
   height: "126px",
   objectFit: "cover",
-  borderRadius: "10px",
+  borderRadius: theme.spacing(1.25), // 10px
   backgroundColor: theme.palette.background.default,
   flexShrink: 0,
 }))
 
-const EventImageContainer = styled(Box)(() => ({
+const EventImageContainer = styled(Box)(({ theme }) => ({
   position: "relative",
   width: "180px",
   height: "126px",
   flexShrink: 0,
   overflow: "hidden",
-  borderRadius: "10px",
+  borderRadius: theme.spacing(1.25), // 10px
 }))
 
-const LiveBadgeContainer = styled(Box)(() => ({
+const LiveBadgeContainer = styled(Box)(({ theme }) => ({
   position: "absolute",
-  top: "10px",
-  left: "10px",
+  top: theme.spacing(1.25), // 10px
+  left: theme.spacing(1.25), // 10px
   zIndex: 1,
 }))
 
 const LiveBadgeText = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "6px",
+  gap: theme.spacing(0.75), // 6px
   height: "28px",
-  backgroundColor: "#e00000",
-  color: "#fcfcfc",
-  padding: "4px 8px 4px 6px",
-  borderRadius: "8px",
+  backgroundColor: theme.palette.error.main,
+  color: theme.palette.common.white,
+  padding: theme.spacing(0.5, 1, 0.5, 0.75), // 4px 8px 4px 6px
+  borderRadius: theme.spacing(1), // 8px
   fontSize: "14px",
   fontWeight: 600,
   textTransform: "uppercase",
@@ -129,7 +130,7 @@ const EventTime = styled(Typography)(({ theme }) => ({
   fontSize: "14px",
   fontWeight: 600,
   lineHeight: "normal",
-  color: "rgba(255, 255, 255, 0.7)",
+  color: theme.palette.text.secondary,
   textTransform: "uppercase",
   whiteSpace: "nowrap",
   fontFamily: theme.typography.fontFamily,
@@ -139,7 +140,7 @@ const EventName = styled(Typography)(({ theme }) => ({
   fontSize: "18px",
   fontWeight: 600,
   lineHeight: "normal",
-  color: "#fcfcfc",
+  color: theme.palette.common.white,
   whiteSpace: "pre-wrap",
   fontFamily: theme.typography.fontFamily,
 }))
@@ -152,15 +153,28 @@ const LoadMoreSentinel = styled(Box)(() => ({
 
 const EmptyState = styled(Box)(({ theme }) => ({
   display: "flex",
+  flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
   padding: theme.spacing(4),
   width: "100%",
   gridColumn: "1 / -1",
+  gap: theme.spacing(2),
+}))
+
+const EmptyStateText = styled(Typography)(() => ({
+  fontFamily: "Inter",
+  fontWeight: 600,
+  fontSize: "18px",
+  lineHeight: "100%",
+  letterSpacing: "0%",
+  textAlign: "center",
+  verticalAlign: "middle",
 }))
 
 export {
   EmptyState,
+  EmptyStateText,
   EventCard,
   EventContent,
   EventImage,

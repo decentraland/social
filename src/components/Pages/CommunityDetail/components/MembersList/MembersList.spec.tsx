@@ -87,6 +87,12 @@ describe("when rendering the members list", () => {
       expect(screen.getByText("MEMBERS")).toBeInTheDocument()
     })
 
+    it("should not display the section title when hideTitle is true", () => {
+      renderMembersList({ isLoading: true, hideTitle: true })
+
+      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+    })
+
     it("should display a loading indicator", () => {
       renderMembersList({ isLoading: true })
 
@@ -103,6 +109,12 @@ describe("when rendering the members list", () => {
       renderMembersList({ members: [] })
 
       expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+    })
+
+    it("should not display the section title when hideTitle is true", () => {
+      renderMembersList({ members: [], hideTitle: true })
+
+      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
     })
 
     it("should display an empty state message", () => {
@@ -142,6 +154,12 @@ describe("when rendering the members list", () => {
       renderMembersList({ members })
 
       expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+    })
+
+    it("should not display the section title when hideTitle is true", () => {
+      renderMembersList({ members, hideTitle: true })
+
+      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
     })
 
     it("should render all members", () => {

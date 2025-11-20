@@ -8,7 +8,7 @@ import {
 } from "decentraland-dapps/dist/modules/wallet/selectors"
 import { NavbarErrorBoundary } from "./NavbarErrorBoundary"
 import { useAppSelector } from "../../app/hooks"
-import { config } from "../../config"
+import { redirectToAuth } from "../../utils/authRedirect"
 
 const safeSelector = <T,>(selector: (state: unknown) => T, fallback: T) => {
   return (state: unknown): T => {
@@ -37,18 +37,9 @@ const Navbar = memo(() => {
   const handleSignIn = useCallback(() => {
     const searchParams = new URLSearchParams(search)
     const currentRedirectTo = searchParams.get("redirectTo")
-    const basename = /^decentraland.(zone|org|today)$/.test(
-      window.location.host
-    )
-      ? "/social"
-      : ""
-    const redirectTo = !currentRedirectTo
-      ? `${basename}${pathname}${search}`
-      : `${basename}${currentRedirectTo}`
 
-    window.location.replace(
-      `${config.get("AUTH_URL")}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-    )
+    const redirectPath = currentRedirectTo || `${pathname}${search}`
+    redirectToAuth(redirectPath)
   }, [pathname, search])
 
   return (

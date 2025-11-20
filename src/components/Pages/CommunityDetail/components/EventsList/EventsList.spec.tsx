@@ -47,6 +47,9 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    SvgIcon: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
     styled: mockStyled,
   }
 })
@@ -86,6 +89,12 @@ describe("when rendering the events list", () => {
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
     })
 
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ isLoading: true, hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+    })
+
     it("should display a loading indicator", () => {
       renderEventsList({ isLoading: true })
 
@@ -104,10 +113,16 @@ describe("when rendering the events list", () => {
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
     })
 
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ events: [], hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+    })
+
     it("should display an empty state message", () => {
       renderEventsList({ events: [] })
 
-      expect(screen.getByText("No events found")).toBeInTheDocument()
+      expect(screen.getByText("No Upcoming Events")).toBeInTheDocument()
     })
   })
 
@@ -147,6 +162,12 @@ describe("when rendering the events list", () => {
       renderEventsList({ events })
 
       expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+    })
+
+    it("should not display the section title when hideTitle is true", () => {
+      renderEventsList({ events, hideTitle: true })
+
+      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
     })
 
     it("should render all events", () => {

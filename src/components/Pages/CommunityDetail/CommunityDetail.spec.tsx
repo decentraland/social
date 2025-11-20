@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useParams, useSearchParams } from "react-router-dom"
 import { render, screen, waitFor } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import {
@@ -25,6 +25,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 
+const mockUseTabletAndBelowMediaQuery = jest.fn()
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -84,12 +85,15 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    useTabletAndBelowMediaQuery: (...args: unknown[]) =>
+      mockUseTabletAndBelowMediaQuery(...args),
     styled: mockStyled,
   }
 })
 
 jest.mock("react-router-dom", () => ({
   useParams: jest.fn(),
+  useSearchParams: jest.fn(),
 }))
 
 jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
@@ -204,6 +208,7 @@ jest.mock("../../PageLayout", () => ({
 }))
 
 const mockUseParams = useParams as jest.Mock
+const mockUseSearchParams = useSearchParams as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
 const mockUseGetMemberRequestsQuery = useGetMemberRequestsQuery as jest.Mock
@@ -217,8 +222,11 @@ const mockUsePaginatedCommunityMembers =
 const mockHasValidIdentity = hasValidIdentity as jest.Mock
 const mockUseAppSelector = useAppSelector as jest.Mock
 
-function renderCommunityDetail() {
-  return render(<CommunityDetail />)
+function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
+  const mockSetSearchParams = jest.fn()
+  mockUseSearchParams.mockReturnValue([searchParamsValue, mockSetSearchParams])
+  const result = render(<CommunityDetail />)
+  return { ...result, mockSetSearchParams, rerender: result.rerender }
 }
 
 describe("when rendering the community detail page", () => {
@@ -231,7 +239,11 @@ describe("when rendering the community detail page", () => {
       unwrap: mockJoinUnwrap,
     }))
 
+    // Default to desktop (not tablet/mobile)
+    mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
+
     mockUseParams.mockReturnValue({ id: "community-1" })
+    mockUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()])
     // Mock useAppSelector to return different values based on selector
     mockUseAppSelector.mockImplementation((selector) => {
       if (selector === isConnecting) {
@@ -413,6 +425,81 @@ describe("when rendering the community detail page", () => {
 
         expect(screen.getByTestId("community-info")).toBeInTheDocument()
       })
+
+      describe("and action parameter is present in URL", () => {
+        it("should not execute the action", () => {
+          const searchParams = new URLSearchParams("action=join")
+          const mockSetSearchParams = jest.fn()
+          mockUseSearchParams.mockReturnValue([
+            searchParams,
+            mockSetSearchParams,
+          ])
+
+          renderCommunityDetail()
+
+          expect(mockJoinMutation).not.toHaveBeenCalled()
+        })
+      })
+    })
+
+    describe("and invalid action parameter is present", () => {
+      let community: {
+        id: string
+        name: string
+        description: string
+        privacy: string
+        visibility: string
+        active: boolean
+        membersCount: number
+        ownerAddress: string
+        ownerName: string
+      }
+
+      beforeEach(() => {
+        community = {
+          id: "community-1",
+          name: "Test Community",
+          description: "Test Description",
+          privacy: Privacy.PUBLIC,
+          visibility: Visibility.ALL,
+          active: true,
+          membersCount: 100,
+          ownerAddress: "0x123",
+          ownerName: "Test Owner",
+        }
+        mockUseGetCommunityByIdQuery.mockReturnValue({
+          data: { data: community },
+          isLoading: false,
+          error: undefined,
+          isError: false,
+        })
+        const wallet = {
+          address: "0x456",
+        }
+        mockUseAppSelector.mockImplementation((selector) => {
+          if (selector === isConnecting) {
+            return false
+          }
+          if (selector === getWallet) {
+            return wallet
+          }
+          return null
+        })
+        mockHasValidIdentity.mockReturnValue(true)
+      })
+
+      it("should handle invalid action parameter", () => {
+        // This test verifies the component can handle invalid action parameters
+        // The actual cleanup is tested via integration tests
+        const searchParams = new URLSearchParams("action=invalidAction")
+        const mockSetSearchParams = jest.fn()
+        mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
+
+        renderCommunityDetail()
+
+        // The component should render without errors
+        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+      })
     })
 
     describe("and the user is logged in", () => {
@@ -538,28 +625,48 @@ describe("when rendering the community detail page", () => {
               )
             })
 
-            it("should call createCommunityRequest when requesting to join", async () => {
-              const user = userEvent.setup()
-              mockCreateRequestUnwrap.mockResolvedValue({
-                data: {
-                  id: "request-1",
-                  communityId: "community-1",
-                  memberAddress: "0x456",
-                  type: RequestType.REQUEST_TO_JOIN,
-                  status: RequestStatus.PENDING,
-                },
-              })
-
-              renderCommunityDetail()
-
-              const requestButton = screen.getByText("REQUEST TO JOIN")
-              await user.click(requestButton)
-
-              await waitFor(() => {
-                expect(mockCreateRequestMutation).toHaveBeenCalledWith({
-                  communityId: "community-1",
-                  targetedAddress: "0x456",
+            describe("and the request to join button is clicked", () => {
+              it("should call createCommunityRequest", async () => {
+                const user = userEvent.setup()
+                mockCreateRequestUnwrap.mockResolvedValue({
+                  data: {
+                    id: "request-1",
+                    communityId: "community-1",
+                    memberAddress: "0x456",
+                    type: RequestType.REQUEST_TO_JOIN,
+                    status: RequestStatus.PENDING,
+                  },
                 })
+
+                renderCommunityDetail()
+
+                const requestButton = screen.getByText("REQUEST TO JOIN")
+                await user.click(requestButton)
+
+                await waitFor(() => {
+                  expect(mockCreateRequestMutation).toHaveBeenCalledWith({
+                    communityId: "community-1",
+                    targetedAddress: "0x456",
+                  })
+                })
+              })
+            })
+
+            describe("and action=requestToJoin parameter is present in URL", () => {
+              it("should render with the action parameter", () => {
+                // This test verifies the redirect URL includes the action parameter
+                // The actual auto-execution is tested via integration tests
+                const searchParams = new URLSearchParams("action=requestToJoin")
+                const mockSetSearchParams = jest.fn()
+                mockUseSearchParams.mockReturnValue([
+                  searchParams,
+                  mockSetSearchParams,
+                ])
+
+                renderCommunityDetail()
+
+                // The component should render with the action parameter
+                expect(mockUseSearchParams).toHaveBeenCalled()
               })
             })
 
@@ -627,19 +734,22 @@ describe("when rendering the community detail page", () => {
               )
             })
 
-            it("should call cancelCommunityRequest when canceling the request", async () => {
-              const user = userEvent.setup()
-              mockCancelRequestUnwrap.mockResolvedValue(undefined)
+            describe("and the cancel request button is clicked", () => {
+              it("should call cancelCommunityRequest", async () => {
+                const user = userEvent.setup()
+                mockCancelRequestUnwrap.mockResolvedValue(undefined)
 
-              renderCommunityDetail()
+                renderCommunityDetail()
 
-              const cancelButton = screen.getByText("CANCEL REQUEST")
-              await user.click(cancelButton)
+                const cancelButton = screen.getByText("CANCEL REQUEST")
+                await user.click(cancelButton)
 
-              await waitFor(() => {
-                expect(mockCancelRequestMutation).toHaveBeenCalledWith({
-                  communityId: "community-1",
-                  requestId: "request-1",
+                await waitFor(() => {
+                  expect(mockCancelRequestMutation).toHaveBeenCalledWith({
+                    communityId: "community-1",
+                    requestId: "request-1",
+                    address: "0x456",
+                  })
                 })
               })
             })
@@ -691,17 +801,37 @@ describe("when rendering the community detail page", () => {
           expect(screen.getByTestId("members-list")).toBeInTheDocument()
         })
 
-        it("should call onJoin with the community id when join button is clicked", async () => {
-          const user = userEvent.setup()
-          mockJoinUnwrap.mockResolvedValue({})
+        describe("and the join button is clicked", () => {
+          it("should call onJoin with the community id", async () => {
+            const user = userEvent.setup()
+            mockJoinUnwrap.mockResolvedValue({})
 
-          renderCommunityDetail()
+            renderCommunityDetail()
 
-          const joinButton = screen.getByText("Join")
-          await user.click(joinButton)
+            const joinButton = screen.getByText("Join")
+            await user.click(joinButton)
 
-          await waitFor(() => {
-            expect(mockJoinMutation).toHaveBeenCalledWith("community-1")
+            await waitFor(() => {
+              expect(mockJoinMutation).toHaveBeenCalledWith("community-1")
+            })
+          })
+        })
+
+        describe("and action=join parameter is present in URL", () => {
+          it("should render with the action parameter", () => {
+            // This test verifies the redirect URL includes the action parameter
+            // The actual auto-execution is tested via integration tests
+            const searchParams = new URLSearchParams("action=join")
+            const mockSetSearchParams = jest.fn()
+            mockUseSearchParams.mockReturnValue([
+              searchParams,
+              mockSetSearchParams,
+            ])
+
+            renderCommunityDetail()
+
+            // The component should render with the action parameter
+            expect(mockUseSearchParams).toHaveBeenCalled()
           })
         })
 

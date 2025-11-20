@@ -1,8 +1,14 @@
 import { useCallback } from "react"
-import { useNavigate } from "react-router-dom"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Icon, JumpIn, muiIcons } from "decentraland-ui2"
+import {
+  Icon,
+  JumpIn,
+  muiIcons,
+  useTabletAndBelowMediaQuery,
+} from "decentraland-ui2"
 import { Privacy } from "../../../../../features/communities/types"
+import { redirectToAuth } from "../../../../../utils/authRedirect"
+import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
 import {
   ActionButtons,
@@ -37,6 +43,7 @@ type CommunityInfoProps = {
   canViewContent: boolean
   onJoin: (communityId: string) => Promise<void>
   hasPendingRequest?: boolean
+  isLoadingMemberRequests?: boolean
   onRequestToJoin?: (communityId: string) => Promise<void>
   onCancelRequest?: (communityId: string) => Promise<void>
 }
@@ -50,34 +57,37 @@ export const CommunityInfo = ({
   canViewContent,
   onJoin,
   hasPendingRequest = false,
+  isLoadingMemberRequests = false,
   onRequestToJoin,
   onCancelRequest,
 }: CommunityInfoProps) => {
-  const navigate = useNavigate()
   const thumbnailUrl = getThumbnailUrl(community.id)
   const isPrivate = community.privacy === Privacy.PRIVATE
+  const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
-      const currentPath = `/communities/${community.id}`
-      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      redirectToAuth(`/communities/${community.id}`, {
+        action: AllowedAction.JOIN,
+      })
       return
     }
 
     onJoin(community.id)
-  }, [isLoggedIn, address, navigate, community.id, onJoin])
+  }, [isLoggedIn, address, community.id, onJoin])
 
   const handleRequestToJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
-      const currentPath = `/communities/${community.id}`
-      navigate(`/sign-in?redirectTo=${encodeURIComponent(currentPath)}`)
+      redirectToAuth(`/communities/${community.id}`, {
+        action: AllowedAction.REQUEST_TO_JOIN,
+      })
       return
     }
 
     if (onRequestToJoin) {
       onRequestToJoin(community.id)
     }
-  }, [isLoggedIn, address, navigate, community.id, onRequestToJoin])
+  }, [isLoggedIn, address, community.id, onRequestToJoin])
 
   const handleCancelRequestClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -147,19 +157,24 @@ export const CommunityInfo = ({
               </CTAButton>
             ) : !isLoggedIn ? (
               <CTAButton
-                variant="outlined"
+                variant="contained"
+                color="secondary"
                 onClick={() => {
-                  const currentPath = `/communities/${community.id}`
-                  navigate(
-                    `/sign-in?redirectTo=${encodeURIComponent(currentPath)}`
-                  )
+                  const action = isPrivate
+                    ? AllowedAction.REQUEST_TO_JOIN
+                    : AllowedAction.JOIN
+                  redirectToAuth(`/communities/${community.id}`, { action })
                 }}
               >
                 {t("community_info.sign_in_to_join")}
               </CTAButton>
             ) : isPrivate ? (
               <>
-                {hasPendingRequest ? (
+                {isLoadingMemberRequests ? (
+                  <CTAButton color="secondary" variant="contained" disabled>
+                    {t("global.loading")}
+                  </CTAButton>
+                ) : hasPendingRequest ? (
                   <CTAButton
                     color="secondary"
                     variant="contained"
@@ -182,7 +197,7 @@ export const CommunityInfo = ({
                       : t("community_info.request_to_join")}
                   </CTAButton>
                 )}
-                {isLoggedIn && (
+                {isLoggedIn && !isTabletOrMobile && (
                   <JumpIn
                     variant="button"
                     buttonText={t("community_info.jump_in")}
@@ -208,7 +223,8 @@ export const CommunityInfo = ({
               </>
             ) : (
               <CTAButton
-                variant="outlined"
+                color="secondary"
+                variant="contained"
                 onClick={handleJoinClick}
                 disabled={isPerformingCommunityAction}
               >

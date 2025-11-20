@@ -1,9 +1,11 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Box, CircularProgress, Typography } from "decentraland-ui2"
+import { Box, CircularProgress } from "decentraland-ui2"
+import { EmptyEventsIcon } from "./EmptyEventsIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import { formatEventTime } from "../../../../../utils/dateFormat"
 import {
   EmptyState,
+  EmptyStateText,
   EventCard,
   EventContent,
   EventImage,
@@ -32,6 +34,7 @@ type EventsListProps = {
   isFetchingMore?: boolean
   hasMore?: boolean
   onLoadMore: () => void
+  hideTitle?: boolean
 }
 
 export const EventsList = ({
@@ -40,6 +43,7 @@ export const EventsList = ({
   isFetchingMore = false,
   hasMore = false,
   onLoadMore,
+  hideTitle = false,
 }: EventsListProps) => {
   const sentinelRef = useInfiniteScroll({
     hasMore,
@@ -50,7 +54,9 @@ export const EventsList = ({
   if (isLoading) {
     return (
       <EventsSection>
-        <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+        {!hideTitle && (
+          <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+        )}
         <Box
           display="flex"
           justifyContent="center"
@@ -65,12 +71,13 @@ export const EventsList = ({
 
   return (
     <EventsSection>
-      <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+      {!hideTitle && <SectionTitle>{t("events.upcoming_events")}</SectionTitle>}
       {events.length === 0 ? (
         <EmptyState>
-          <Typography variant="body2" color="textSecondary">
-            {t("events.no_events_found")}
-          </Typography>
+          <EmptyEventsIcon />
+          <EmptyStateText color="textPrimary">
+            {t("events.no_upcoming_events")}
+          </EmptyStateText>
         </EmptyState>
       ) : (
         <EventsGrid>
