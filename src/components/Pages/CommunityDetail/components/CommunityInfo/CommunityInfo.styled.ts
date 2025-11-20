@@ -78,13 +78,13 @@ const OwnerRow = styled(Box)(() => ({
   gap: "10px",
 }))
 
-const OwnerAvatarContainer = styled(Box)(() => ({
+const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
   position: "relative",
   width: "28px",
   height: "28px",
   borderRadius: "50%",
-  backgroundColor: "#31C11A",
-  border: "2.286px solid rgba(255, 255, 255, 0.5)",
+  backgroundColor: theme.palette.success.main,
+  border: `2.286px solid ${theme.palette.divider}`,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -105,18 +105,18 @@ const OwnerText = styled(Box)(({ theme }) => ({
   fontSize: "16px",
   fontWeight: 400,
   lineHeight: 1.5,
-  color: "#fcfcfc",
+  color: theme.palette.common.white,
   fontFamily: theme.typography.fontFamily,
   "& .owner-name": {
-    color: "#ff2d55",
-    marginLeft: "4px",
+    color: theme.palette.secondary.main,
+    marginLeft: theme.spacing(0.5), // 4px
   },
 }))
 
 const ActionButtons = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "16px",
-  paddingTop: "12px",
+  gap: theme.spacing(2), // 16px
+  paddingTop: theme.spacing(1.5), // 12px
   paddingBottom: 0,
   paddingLeft: 0,
   paddingRight: 0,
@@ -133,37 +133,37 @@ const CTAButton = styled(Button)({
   height: "40px",
 })
 
-const TitleSubtitleContainer = styled(Box)(() => ({
+const TitleSubtitleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "12px",
+  gap: theme.spacing(1.5), // 12px
 }))
 
-const TitleRow = styled(Box)(() => ({
+const TitleRow = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
-  gap: "16px",
+  gap: theme.spacing(2), // 16px
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
   fontSize: "48px",
   fontWeight: 600,
   lineHeight: 1.167,
-  color: "#ffffff",
+  color: theme.palette.common.white,
   fontFamily: theme.typography.fontFamily,
 }))
 
-const PrivacyMembersRow = styled(Box)(() => ({
+const PrivacyMembersRow = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "4px",
+  gap: theme.spacing(0.5), // 4px
   flexWrap: "wrap",
 }))
 
-const PrivacyDivider = styled(Box)(() => ({
+const PrivacyDivider = styled(Box)(({ theme }) => ({
   width: "1px",
   height: "13.18px",
-  backgroundColor: "rgba(255, 255, 255, 0.3)",
+  backgroundColor: theme.palette.divider,
   flexShrink: 0,
 }))
 
@@ -171,7 +171,7 @@ const PrivacyMembersText = styled(Typography)(({ theme }) => ({
   fontSize: "16px",
   fontWeight: 400,
   lineHeight: 1.75,
-  color: "#fcfcfc",
+  color: theme.palette.common.white,
   fontFamily: theme.typography.fontFamily,
 }))
 

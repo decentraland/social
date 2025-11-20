@@ -11,11 +11,13 @@ import {
   CircularProgress,
   Snackbar,
   Typography,
+  useTabletAndBelowMediaQuery,
 } from "decentraland-ui2"
 import { CommunityInfo } from "./components/CommunityInfo"
 import { EventsList } from "./components/EventsList"
 import { MembersList } from "./components/MembersList"
 import { PrivateMessage } from "./components/PrivateMessage"
+import { type TabType, Tabs } from "./components/Tabs"
 import { isMember } from "./utils/communityUtils"
 import {
   getErrorMessage,
@@ -56,6 +58,8 @@ function CommunityDetail() {
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabType>("members")
+  const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
   // Skip query if wallet is still connecting to ensure state is ready for signing
   const shouldSkipQuery = !id || isWalletConnecting
@@ -389,35 +393,76 @@ function CommunityDetail() {
 
           {canViewContent && (
             <BottomSection>
-              <MembersColumn>
-                <MembersList
-                  members={members.map((member) => ({
-                    name: member.name || member.memberAddress,
-                    role: member.role,
-                    mutualFriends: 0,
-                  }))}
-                  isLoading={isLoadingMembers}
-                  isFetchingMore={isFetchingMoreMembers}
-                  hasMore={hasMoreMembers}
-                  onLoadMore={loadMoreMembers}
-                />
-              </MembersColumn>
+              {isTabletOrMobile ? (
+                <>
+                  <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+                  {activeTab === "members" ? (
+                    <MembersColumn>
+                      <MembersList
+                        members={members.map((member) => ({
+                          name: member.name || member.memberAddress,
+                          role: member.role,
+                          mutualFriends: 0,
+                        }))}
+                        isLoading={isLoadingMembers}
+                        isFetchingMore={isFetchingMoreMembers}
+                        hasMore={hasMoreMembers}
+                        onLoadMore={loadMoreMembers}
+                        hideTitle={true}
+                      />
+                    </MembersColumn>
+                  ) : (
+                    <EventsColumn>
+                      <EventsList
+                        events={events.map((event) => ({
+                          id: event.id,
+                          name: event.name,
+                          image: event.image || "",
+                          isLive: event.live || false,
+                          startTime: event.startAt,
+                        }))}
+                        isLoading={isLoadingEvents}
+                        isFetchingMore={isFetchingMoreEvents}
+                        hasMore={hasMoreEvents}
+                        onLoadMore={loadMoreEvents}
+                        hideTitle={true}
+                      />
+                    </EventsColumn>
+                  )}
+                </>
+              ) : (
+                <>
+                  <MembersColumn>
+                    <MembersList
+                      members={members.map((member) => ({
+                        name: member.name || member.memberAddress,
+                        role: member.role,
+                        mutualFriends: 0,
+                      }))}
+                      isLoading={isLoadingMembers}
+                      isFetchingMore={isFetchingMoreMembers}
+                      hasMore={hasMoreMembers}
+                      onLoadMore={loadMoreMembers}
+                    />
+                  </MembersColumn>
 
-              <EventsColumn>
-                <EventsList
-                  events={events.map((event) => ({
-                    id: event.id,
-                    name: event.name,
-                    image: event.image || "",
-                    isLive: event.live || false,
-                    startTime: event.startAt,
-                  }))}
-                  isLoading={isLoadingEvents}
-                  isFetchingMore={isFetchingMoreEvents}
-                  hasMore={hasMoreEvents}
-                  onLoadMore={loadMoreEvents}
-                />
-              </EventsColumn>
+                  <EventsColumn>
+                    <EventsList
+                      events={events.map((event) => ({
+                        id: event.id,
+                        name: event.name,
+                        image: event.image || "",
+                        isLive: event.live || false,
+                        startTime: event.startAt,
+                      }))}
+                      isLoading={isLoadingEvents}
+                      isFetchingMore={isFetchingMoreEvents}
+                      hasMore={hasMoreEvents}
+                      onLoadMore={loadMoreEvents}
+                    />
+                  </EventsColumn>
+                </>
+              )}
             </BottomSection>
           )}
         </ContentContainer>

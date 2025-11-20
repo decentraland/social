@@ -34,6 +34,7 @@ type EventsListProps = {
   isFetchingMore?: boolean
   hasMore?: boolean
   onLoadMore: () => void
+  hideTitle?: boolean
 }
 
 export const EventsList = ({
@@ -42,6 +43,7 @@ export const EventsList = ({
   isFetchingMore = false,
   hasMore = false,
   onLoadMore,
+  hideTitle = false,
 }: EventsListProps) => {
   const sentinelRef = useInfiniteScroll({
     hasMore,
@@ -52,7 +54,9 @@ export const EventsList = ({
   if (isLoading) {
     return (
       <EventsSection>
-        <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+        {!hideTitle && (
+          <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+        )}
         <Box
           display="flex"
           justifyContent="center"
@@ -67,7 +71,7 @@ export const EventsList = ({
 
   return (
     <EventsSection>
-      <SectionTitle>{t("events.upcoming_events")}</SectionTitle>
+      {!hideTitle && <SectionTitle>{t("events.upcoming_events")}</SectionTitle>}
       {events.length === 0 ? (
         <EmptyState>
           <EmptyEventsIcon />
