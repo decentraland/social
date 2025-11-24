@@ -24,8 +24,9 @@ import {
   isErrorWithMessage,
   isFetchBaseQueryError,
 } from "./utils/errorUtils"
-import { useAppSelector } from "../../../app/hooks"
+import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import {
+  communitiesApi,
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
@@ -37,6 +38,7 @@ import {
   RequestStatus,
   RequestType,
 } from "../../../features/communities/types"
+import { eventsApi } from "../../../features/events/events.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -54,10 +56,12 @@ import {
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
+  const dispatch = useAppDispatch()
   const wallet = useAppSelector(getWallet)
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
+  const previousAddressRef = useRef<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
@@ -94,6 +98,30 @@ function CommunityDetail() {
   const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
   const community = data?.data
+
+  // Refresh data when user signs out
+  // RTK Query automatically refetches active queries when their tags are invalidated
+  useEffect(() => {
+    const previousAddress = previousAddressRef.current
+    const currentAddress = address
+
+    // Detect sign out: address changed from non-null to null
+    if (previousAddress && !currentAddress && id) {
+      // Invalidate cache tags - RTK Query will automatically refetch active queries
+      dispatch(
+        communitiesApi.util.invalidateTags([
+          { type: "Communities", id },
+          "Communities",
+          "Members",
+          "MemberRequests",
+        ])
+      )
+      dispatch(eventsApi.util.invalidateTags(["Events"]))
+    }
+
+    // Update the ref for next comparison
+    previousAddressRef.current = currentAddress || null
+  }, [address, id, dispatch])
 
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === Privacy.PRIVATE
