@@ -4,7 +4,7 @@ import { baseQuery } from "./baseQuery"
 export const client = createApi({
   reducerPath: "client",
   baseQuery,
-  tagTypes: ["Communities", "Events", "Members", "MemberRequests"],
+  tagTypes: ["Communities", "Events", "Members", "MemberRequests", "Profile"],
   keepUnusedDataFor: 60,
   refetchOnFocus: true,
   refetchOnReconnect: true,

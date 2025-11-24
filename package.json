@@ -38,6 +38,8 @@
     "@dcl/single-sign-on-client": "0.1.0",
     "@dcl/ui-env": "^1.5.1",
     "@reduxjs/toolkit": "^1.9.5",
+    "@well-known-components/fetch-component": "^3.0.0",
+    "dcl-catalyst-client": "^21.9.0",
     "decentraland-dapps": "^25.6.0",
     "decentraland-ui2": "^0.41.1",
     "dotenv": "^17.2.3",

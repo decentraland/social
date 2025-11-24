@@ -66,7 +66,13 @@ function renderMembersList(
   props: Partial<React.ComponentProps<typeof MembersList>> = {}
 ) {
   const defaultProps = {
-    members: [] as Array<{ name: string; role: string; mutualFriends: number }>,
+    members: [] as Array<{
+      memberAddress: string
+      name: string
+      role: string
+      profilePictureUrl: string
+      mutualFriends: number
+    }>,
     isLoading: false,
     isFetchingMore: false,
     hasMore: false,
@@ -126,21 +132,27 @@ describe("when rendering the members list", () => {
 
   describe("and there are members", () => {
     let members: Array<{
+      memberAddress: string
       name: string
       role: string
+      profilePictureUrl: string
       mutualFriends: number
     }>
 
     beforeEach(() => {
       members = [
         {
+          memberAddress: "0x111",
           name: "John Doe",
           role: "admin",
+          profilePictureUrl: "https://example.com/john.jpg",
           mutualFriends: 0,
         },
         {
+          memberAddress: "0x222",
           name: "Jane Smith",
           role: Role.MEMBER,
+          profilePictureUrl: "https://example.com/jane.jpg",
           mutualFriends: 5,
         },
       ]
@@ -185,8 +197,10 @@ describe("when rendering the members list", () => {
     it("should not display mutual friends when count is zero", () => {
       const membersWithoutMutualFriends = [
         {
+          memberAddress: "0x111",
           name: "John Doe",
           role: "admin",
+          profilePictureUrl: "https://example.com/john.jpg",
           mutualFriends: 0,
         },
       ]
@@ -206,16 +220,20 @@ describe("when rendering the members list", () => {
 
   describe("and there are more members to load", () => {
     let members: Array<{
+      memberAddress: string
       name: string
       role: string
+      profilePictureUrl: string
       mutualFriends: number
     }>
 
     beforeEach(() => {
       members = [
         {
+          memberAddress: "0x111",
           name: "John Doe",
           role: "admin",
+          profilePictureUrl: "https://example.com/john.jpg",
           mutualFriends: 0,
         },
       ]
@@ -252,16 +270,20 @@ describe("when rendering the members list", () => {
 
   describe("and there are no more members to load", () => {
     let members: Array<{
+      memberAddress: string
       name: string
       role: string
+      profilePictureUrl: string
       mutualFriends: number
     }>
 
     beforeEach(() => {
       members = [
         {
+          memberAddress: "0x111",
           name: "John Doe",
           role: "admin",
+          profilePictureUrl: "https://example.com/john.jpg",
           mutualFriends: 0,
         },
       ]

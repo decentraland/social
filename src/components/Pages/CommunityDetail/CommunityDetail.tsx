@@ -405,8 +405,10 @@ function CommunityDetail() {
                     <MembersColumn>
                       <MembersList
                         members={members.map((member) => ({
+                          memberAddress: member.memberAddress,
                           name: member.name || member.memberAddress,
                           role: member.role,
+                          profilePictureUrl: member.profilePictureUrl || "",
                           mutualFriends: 0,
                         }))}
                         isLoading={isLoadingMembers}
@@ -440,6 +442,8 @@ function CommunityDetail() {
                   <MembersColumn>
                     <MembersList
                       members={members.map((member) => ({
+                        memberAddress: member.memberAddress,
+                        profilePictureUrl: member.profilePictureUrl || "",
                         name: member.name || member.memberAddress,
                         role: member.role,
                         mutualFriends: 0,

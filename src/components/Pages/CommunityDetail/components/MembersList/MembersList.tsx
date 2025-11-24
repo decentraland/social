@@ -17,8 +17,10 @@ import {
 } from "./MembersList.styled"
 
 type Member = {
+  memberAddress: string
   name: string
   role: string
+  profilePictureUrl: string
   mutualFriends: number
 }
 
@@ -72,12 +74,10 @@ export const MembersList = ({
         </EmptyState>
       ) : (
         <MemberListContainer>
-          {members.map((memberItem, index) => (
-            <MemberItem key={`${memberItem.name}-${index}`}>
+          {members.map((memberItem) => (
+            <MemberItem key={memberItem.memberAddress}>
               <MemberAvatarContainer>
-                <MemberAvatar
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${memberItem.name}-${index}`}
-                />
+                <MemberAvatar src={memberItem.profilePictureUrl} />
               </MemberAvatarContainer>
               <MemberInfo>
                 <Box display="flex" alignItems="center" gap={1}>
