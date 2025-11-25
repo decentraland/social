@@ -50,17 +50,13 @@ const PrivacyBadgeContainer = styled(Box)(() => ({
   height: "22.992px",
 }))
 
-const PrivacyIcon = styled(Box)(() => ({
+const PrivacyIconContainer = styled(Box)(() => ({
   width: "13.18px",
   height: "13.18px",
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  "& svg": {
-    width: "100%",
-    height: "100%",
-  },
 }))
 
 const PrivacyBadgeText = styled(Typography)(({ theme }) => ({
@@ -133,16 +129,22 @@ const CTAButton = styled(Button)({
   height: "40px",
 })
 
-const TitleSubtitleContainer = styled(Box)(({ theme }) => ({
+const TitleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   gap: theme.spacing(1.5), // 12px
 }))
 
-const TitleRow = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: theme.spacing(2), // 16px
+const CommunityLabel = styled(Typography)(({ theme }) => ({
+  fontFamily: theme.typography.fontFamily,
+  fontWeight: 400,
+  fontSize: "12px",
+  lineHeight: "100%",
+  letterSpacing: "1px",
+  verticalAlign: "middle",
+  textTransform: "uppercase",
+  color: theme.palette.text.secondary,
+  marginBottom: "12px",
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -190,6 +192,7 @@ export {
   CommunityDetails,
   CommunityImage,
   CommunityImageContent,
+  CommunityLabel,
   Description,
   InfoSection,
   CTAButton,
@@ -200,10 +203,9 @@ export {
   PrivacyBadgeContainer,
   PrivacyBadgeText,
   PrivacyDivider,
-  PrivacyIcon,
+  PrivacyIconContainer,
   PrivacyMembersRow,
   PrivacyMembersText,
   Title,
-  TitleRow,
-  TitleSubtitleContainer,
+  TitleContainer,
 }
