@@ -5,7 +5,7 @@ import { client } from "../../services/client"
 
 const profileApi = client.injectEndpoints({
   endpoints: (builder) => ({
-    getProfilePicture: builder.query<string, string>({
+    getProfilePicture: builder.query<string | null, string>({
       queryFn: async (address: string) => {
         try {
           const catalystLambdasUrl = config.get("CATALYST_LAMBDAS_URL")
@@ -24,10 +24,10 @@ const profileApi = client.injectEndpoints({
             return { data: profile.avatars[0].avatar.snapshots.face }
           }
 
-          return { data: "" }
+          return { data: null }
         } catch (error) {
           console.error("Failed to fetch profile picture:", error)
-          return { data: "" }
+          return { data: null }
         }
       },
       // Cache profile pictures for 5 minutes
