@@ -92,6 +92,9 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    SvgIcon: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
     muiIcons: {
       Check: CheckIcon,
     },
