@@ -55,8 +55,11 @@ jest.mock("decentraland-ui2", () => {
   )
 
   return {
-    Avatar: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
+    Avatar: ({
+      src,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & { src?: string }) => (
+      <img {...props} src={src || ""} alt="" />
     ),
     Box: ({
       children,
@@ -110,6 +113,11 @@ jest.mock("../../utils/communityUtils", () => ({
   ),
 }))
 
+const mockUseProfilePicture = jest.fn()
+jest.mock("../../../../../hooks/useProfilePicture", () => ({
+  useProfilePicture: (...args: unknown[]) => mockUseProfilePicture(...args),
+}))
+
 function renderCommunityInfo(
   props: Partial<React.ComponentProps<typeof CommunityInfo>> = {}
 ) {
@@ -146,6 +154,8 @@ describe("when rendering the community info", () => {
   beforeEach(() => {
     mockOnJoin = jest.fn()
     mockRedirectToAuth.mockClear()
+    mockUseProfilePicture.mockReset()
+    mockUseProfilePicture.mockReturnValue("")
     defaultCommunity = {
       id: "community-1",
       name: "Test Community",
@@ -210,6 +220,54 @@ describe("when rendering the community info", () => {
 
     expect(screen.getByText(/By/)).toBeInTheDocument()
     expect(screen.getByText("Test Owner")).toBeInTheDocument()
+  })
+
+  describe("and fetching the owner profile picture", () => {
+    it("should call useProfilePicture with the owner address", () => {
+      renderCommunityInfo({ community: defaultCommunity })
+
+      expect(mockUseProfilePicture).toHaveBeenCalledWith("0x123")
+    })
+
+    describe("and the profile picture is available", () => {
+      const profilePictureUrl = "https://example.com/profile.jpg"
+
+      beforeEach(() => {
+        mockUseProfilePicture.mockImplementation(() => profilePictureUrl)
+      })
+
+      it("should pass the profile picture URL to the avatar", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+        })
+
+        // Verify the mock was called
+        expect(mockUseProfilePicture).toHaveBeenCalledWith("0x123")
+
+        // Find the owner avatar specifically (not the community thumbnail)
+        // The owner avatar is inside the OwnerRow, which contains the "By" text
+        const ownerRow = screen.getByText(/By/)
+        const ownerAvatar = ownerRow.parentElement?.querySelector("img")
+        expect(ownerAvatar).toHaveAttribute("src", profilePictureUrl)
+      })
+    })
+
+    describe("and the profile picture is not available", () => {
+      beforeEach(() => {
+        mockUseProfilePicture.mockReturnValue("")
+      })
+
+      it("should pass empty string to the avatar", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+        })
+
+        // Find the owner avatar specifically
+        const ownerRow = screen.getByText(/By/)
+        const ownerAvatar = ownerRow.parentElement?.querySelector("img")
+        expect(ownerAvatar).toHaveAttribute("src", "")
+      })
+    })
   })
 
   describe("and content viewing is enabled", () => {

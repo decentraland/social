@@ -8,6 +8,7 @@ import {
 } from "decentraland-ui2"
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
+import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
@@ -65,6 +66,7 @@ export const CommunityInfo = ({
   const thumbnailUrl = getThumbnailUrl(community.id)
   const isPrivate = community.privacy === Privacy.PRIVATE
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
+  const ownerProfilePicture = useProfilePicture(community.ownerAddress)
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -131,9 +133,7 @@ export const CommunityInfo = ({
           </PrivacyMembersRow>
           <OwnerRow>
             <OwnerAvatarContainer>
-              <OwnerAvatar
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${community.ownerAddress}`}
-              />
+              <OwnerAvatar src={ownerProfilePicture} />
             </OwnerAvatarContainer>
             <OwnerText>
               {t("community_info.by")}{" "}

@@ -4,5 +4,6 @@
   "ASSETS_CDN_URL": "https://assets-cdn.decentraland.org",
   "EVENTS_API_URL": "https://events.decentraland.org/api",
   "NETWORK": "mainnet",
-  "CHAIN_ID": "1"
+  "CHAIN_ID": "1",
+  "CATALYST_LAMBDAS_URL": "https://peer.decentraland.org/lambdas"
 }
