@@ -17,8 +17,8 @@ const InfoSection = styled(Box)(({ theme }) => ({
 }))
 
 const CommunityImage = styled(Box)(({ theme }) => ({
-  width: "412px",
-  height: "412px",
+  width: "320px",
+  height: "320px",
   borderRadius: "23.712px",
   overflow: "hidden",
   flexShrink: 0,
@@ -148,11 +148,12 @@ const CommunityLabel = styled(Typography)(({ theme }) => ({
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-  fontSize: "48px",
-  fontWeight: 600,
-  lineHeight: 1.167,
+  fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+  fontWeight: 500,
+  fontSize: "32px",
+  lineHeight: "124%",
+  letterSpacing: 0,
   color: theme.palette.common.white,
-  fontFamily: theme.typography.fontFamily,
 }))
 
 const PrivacyMembersRow = styled(Box)(({ theme }) => ({
@@ -178,13 +179,14 @@ const PrivacyMembersText = styled(Typography)(({ theme }) => ({
 }))
 
 const Description = styled(Typography)(({ theme }) => ({
-  fontSize: "20px",
-  fontWeight: 500,
-  lineHeight: 1.6,
-  color: "#ecebed",
+  fontFamily: theme.typography.fontFamily,
+  fontSize: "16px",
+  fontWeight: 400,
+  lineHeight: "175%",
+  letterSpacing: 0,
+  color: theme.palette.text.primary,
   whiteSpace: "pre-wrap",
   marginTop: "0px",
-  fontFamily: theme.typography.fontFamily,
 }))
 
 export {
