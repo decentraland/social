@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { EventsList } from "./EventsList"
 import { formatEventTime } from "../../../../../utils/dateFormat"
+import type { Event } from "./EventsList.types"
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -47,9 +48,23 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    Icon: ({
+      component: Component,
+      ...props
+    }: {
+      component?: React.ComponentType<Record<string, unknown>>
+    } & React.HTMLAttributes<HTMLElement>) =>
+      Component ? <Component {...props} /> : <span {...props} />,
     SvgIcon: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
+    muiIcons: {
+      AccessTime: () => (
+        <svg data-testid="access-time-icon">
+          <path d="M12 2L2 12l10 10 10-10L12 2z" />
+        </svg>
+      ),
+    },
     styled: mockStyled,
   }
 })
@@ -58,17 +73,26 @@ jest.mock("../../../../../hooks/useInfiniteScroll", () => ({
   useInfiniteScroll: jest.fn(() => ({ current: null })),
 }))
 
+jest.mock("../../../../../hooks/useProfilePictures", () => ({
+  useProfilePictures: jest.fn(() => ({})),
+}))
+
+const createEvent = (overrides: Partial<Event> = {}): Event => ({
+  id: "event-1",
+  name: "Test Event 1",
+  image: "https://example.com/image1.jpg",
+  isLive: false,
+  startTime: "2024-01-01T10:00:00Z",
+  totalAttendees: 0,
+  latestAttendees: [],
+  ...overrides,
+})
+
 function renderEventsList(
   props: Partial<React.ComponentProps<typeof EventsList>> = {}
 ) {
   const defaultProps = {
-    events: [] as Array<{
-      id: string
-      name: string
-      image: string
-      isLive: boolean
-      startTime: string
-    }>,
+    events: [] as Event[],
     isLoading: false,
     isFetchingMore: false,
     hasMore: false,
@@ -127,30 +151,18 @@ describe("when rendering the events list", () => {
   })
 
   describe("and there are events", () => {
-    let events: Array<{
-      id: string
-      name: string
-      image: string
-      isLive: boolean
-      startTime: string
-    }>
+    let events: Event[]
 
     beforeEach(() => {
       events = [
-        {
-          id: "event-1",
-          name: "Test Event 1",
-          image: "https://example.com/image1.jpg",
-          isLive: false,
-          startTime: "2024-01-01T10:00:00Z",
-        },
-        {
+        createEvent({ id: "event-1", name: "Test Event 1" }),
+        createEvent({
           id: "event-2",
           name: "Test Event 2",
           image: "https://example.com/image2.jpg",
           isLive: true,
           startTime: "2024-01-02T10:00:00Z",
-        },
+        }),
       ]
     })
 
@@ -192,14 +204,8 @@ describe("when rendering the events list", () => {
     })
 
     it("should not display live badge for non-live events", () => {
-      const nonLiveEvents = [
-        {
-          id: "event-1",
-          name: "Test Event 1",
-          image: "https://example.com/image1.jpg",
-          isLive: false,
-          startTime: "2024-01-01T10:00:00Z",
-        },
+      const nonLiveEvents: Event[] = [
+        createEvent({ id: "event-1", name: "Test Event 1" }),
       ]
 
       renderEventsList({ events: nonLiveEvents })
@@ -220,24 +226,10 @@ describe("when rendering the events list", () => {
   })
 
   describe("and there are more events to load", () => {
-    let events: Array<{
-      id: string
-      name: string
-      image: string
-      isLive: boolean
-      startTime: string
-    }>
+    let events: Event[]
 
     beforeEach(() => {
-      events = [
-        {
-          id: "event-1",
-          name: "Test Event 1",
-          image: "https://example.com/image1.jpg",
-          isLive: false,
-          startTime: "2024-01-01T10:00:00Z",
-        },
-      ]
+      events = [createEvent({ id: "event-1", name: "Test Event 1" })]
     })
 
     afterEach(() => {
@@ -270,24 +262,10 @@ describe("when rendering the events list", () => {
   })
 
   describe("and there are no more events to load", () => {
-    let events: Array<{
-      id: string
-      name: string
-      image: string
-      isLive: boolean
-      startTime: string
-    }>
+    let events: Event[]
 
     beforeEach(() => {
-      events = [
-        {
-          id: "event-1",
-          name: "Test Event 1",
-          image: "https://example.com/image1.jpg",
-          isLive: false,
-          startTime: "2024-01-01T10:00:00Z",
-        },
-      ]
+      events = [createEvent({ id: "event-1", name: "Test Event 1" })]
     })
 
     afterEach(() => {

@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react"
 import { usePaginatedCommunityEvents } from "./usePaginatedCommunityEvents"
 import { useGetCommunityEventsQuery } from "../features/events/events.client"
-import { EventsResponse } from "../features/events/types"
+import type { Event, EventsResponse } from "../features/events/types"
 
 jest.mock("../features/events/events.client", () => ({
   useGetCommunityEventsQuery: jest.fn(),
@@ -11,6 +11,18 @@ const mockUseGetCommunityEventsQuery =
   useGetCommunityEventsQuery as jest.MockedFunction<
     typeof useGetCommunityEventsQuery
   >
+
+const createEvent = (overrides: Partial<Event> = {}): Event => ({
+  id: "event-1",
+  name: "Event 1",
+  startAt: "2024-01-01",
+  finishAt: "2024-01-02",
+  approved: true,
+  rejected: false,
+  totalAttendees: 0,
+  latestAttendees: [],
+  ...overrides,
+})
 
 describe("when using the paginated community events hook", () => {
   let mockEventsResponse: EventsResponse
@@ -96,22 +108,13 @@ describe("when using the paginated community events hook", () => {
         ok: true,
         data: {
           events: [
-            {
-              id: "event-1",
-              name: "Event 1",
-              startAt: "2024-01-01",
-              finishAt: "2024-01-02",
-              approved: true,
-              rejected: false,
-            },
-            {
+            createEvent({ id: "event-1", name: "Event 1" }),
+            createEvent({
               id: "event-2",
               name: "Event 2",
               startAt: "2024-01-03",
               finishAt: "2024-01-04",
-              approved: true,
-              rejected: false,
-            },
+            }),
           ],
           total: 10,
         },
@@ -190,16 +193,7 @@ describe("when using the paginated community events hook", () => {
       mockEventsResponse = {
         ok: true,
         data: {
-          events: [
-            {
-              id: "event-1",
-              name: "Event 1",
-              startAt: "2024-01-01",
-              finishAt: "2024-01-02",
-              approved: true,
-              rejected: false,
-            },
-          ],
+          events: [createEvent({ id: "event-1", name: "Event 1" })],
           total: 10,
         },
       }
@@ -225,22 +219,13 @@ describe("when using the paginated community events hook", () => {
         ok: true,
         data: {
           events: [
-            {
-              id: "event-1",
-              name: "Event 1",
-              startAt: "2024-01-01",
-              finishAt: "2024-01-02",
-              approved: true,
-              rejected: false,
-            },
-            {
+            createEvent({ id: "event-1", name: "Event 1" }),
+            createEvent({
               id: "event-2",
               name: "Event 2",
               startAt: "2024-01-03",
               finishAt: "2024-01-04",
-              approved: true,
-              rejected: false,
-            },
+            }),
           ],
           total: 2,
         },
@@ -311,16 +296,7 @@ describe("when using the paginated community events hook", () => {
       mockEventsResponse = {
         ok: true,
         data: {
-          events: [
-            {
-              id: "event-1",
-              name: "Event 1",
-              startAt: "2024-01-01",
-              finishAt: "2024-01-02",
-              approved: true,
-              rejected: false,
-            },
-          ],
+          events: [createEvent({ id: "event-1", name: "Event 1" })],
           total: 10,
         },
       }

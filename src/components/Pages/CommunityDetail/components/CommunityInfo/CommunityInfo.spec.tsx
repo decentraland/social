@@ -4,6 +4,7 @@ import { CommunityInfo } from "./CommunityInfo"
 import { Privacy, Visibility } from "../../../../../features/communities/types"
 import { AllowedAction } from "../../CommunityDetail.types"
 import type { Community } from "../../../../../features/communities/types"
+import type { Theme } from "@mui/material/styles"
 
 const mockRedirectToAuth = jest.fn()
 jest.mock("../../../../../utils/authRedirect", () => ({
@@ -11,6 +12,15 @@ jest.mock("../../../../../utils/authRedirect", () => ({
 }))
 
 const mockUseTabletAndBelowMediaQuery = jest.fn()
+const mockUseTabletMediaQuery = jest.fn()
+const mockTheme = {
+  palette: {
+    secondary: { main: "#FFFFFF" },
+    raritiesText: {
+      rare: "#34CE76",
+    },
+  },
+} as unknown as Theme
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -103,7 +113,10 @@ jest.mock("decentraland-ui2", () => {
     },
     useTabletAndBelowMediaQuery: (...args: unknown[]) =>
       mockUseTabletAndBelowMediaQuery(...args),
+    useTabletMediaQuery: (...args: unknown[]) =>
+      mockUseTabletMediaQuery(...args),
     styled: mockStyled,
+    useTheme: () => mockTheme,
   }
 })
 
@@ -117,6 +130,8 @@ const mockUseProfilePicture = jest.fn()
 jest.mock("../../../../../hooks/useProfilePicture", () => ({
   useProfilePicture: (...args: unknown[]) => mockUseProfilePicture(...args),
 }))
+
+const DESCRIPTION_ROW_TEST_ID = "community-description-row"
 
 function renderCommunityInfo(
   props: Partial<React.ComponentProps<typeof CommunityInfo>> = {}
@@ -169,6 +184,7 @@ describe("when rendering the community info", () => {
     }
     // Default to desktop (not tablet/mobile)
     mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
+    mockUseTabletMediaQuery.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -271,13 +287,37 @@ describe("when rendering the community info", () => {
   })
 
   describe("and content viewing is enabled", () => {
-    it("should display the community description", () => {
-      renderCommunityInfo({
-        community: defaultCommunity,
-        canViewContent: true,
+    describe("and the device is not tablet", () => {
+      beforeEach(() => {
+        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+        mockUseTabletMediaQuery.mockReturnValue(false)
       })
 
-      expect(screen.getByText("Test Description")).toBeInTheDocument()
+      it("should display the community description", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+          canViewContent: true,
+        })
+
+        expect(screen.getByText("Test Description")).toBeInTheDocument()
+      })
+    })
+
+    describe("and the device is tablet", () => {
+      beforeEach(() => {
+        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+        mockUseTabletMediaQuery.mockReturnValue(true)
+      })
+
+      it("should render the description row", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+          canViewContent: true,
+        })
+
+        expect(screen.getByTestId(DESCRIPTION_ROW_TEST_ID)).toBeInTheDocument()
+        expect(screen.getByText("Test Description")).toBeInTheDocument()
+      })
     })
   })
 
@@ -289,6 +329,9 @@ describe("when rendering the community info", () => {
       })
 
       expect(screen.queryByText("Test Description")).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId(DESCRIPTION_ROW_TEST_ID)
+      ).not.toBeInTheDocument()
     })
   })
 

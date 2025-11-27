@@ -1,6 +1,14 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Box, CircularProgress, Typography } from "decentraland-ui2"
+import {
+  Box,
+  CircularProgress,
+  Theme,
+  Typography,
+  useTheme,
+} from "decentraland-ui2"
+import { ClaimedNameIcon } from "./components/ClaimedNameIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
+import { getRandomRarityColor } from "../utils/getRandomRarityColor"
 import {
   EmptyState,
   LoadMoreSentinel,
@@ -9,7 +17,6 @@ import {
   MemberInfo,
   MemberItem,
   MemberList as MemberListContainer,
-  MemberMutualFriends,
   MemberName,
   MemberRole,
   MembersSection,
@@ -21,7 +28,7 @@ type Member = {
   name: string
   role: string
   profilePictureUrl: string
-  mutualFriends: number
+  hasClaimedName?: boolean
 }
 
 type MembersListProps = {
@@ -31,6 +38,8 @@ type MembersListProps = {
   hasMore?: boolean
   onLoadMore: () => void
   hideTitle?: boolean
+  total?: number
+  showCount?: boolean
 }
 
 export const MembersList = ({
@@ -40,22 +49,29 @@ export const MembersList = ({
   hasMore = false,
   onLoadMore,
   hideTitle = false,
+  total,
+  showCount = true,
 }: MembersListProps) => {
+  const membersCount = typeof total === "number" ? total : members.length
+  const baseTitle = t("members_list.title")
+  const membersTitle = showCount ? `${baseTitle} (${membersCount})` : baseTitle
   const sentinelRef = useInfiniteScroll({
     hasMore,
     isLoading: isFetchingMore,
     onLoadMore,
   })
+  const theme = useTheme<Theme>()
 
   if (isLoading) {
     return (
       <MembersSection>
-        {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
+        {!hideTitle && <SectionTitle>{membersTitle}</SectionTitle>}
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
           minHeight="200px"
+          width="100%"
         >
           <CircularProgress />
         </Box>
@@ -65,7 +81,7 @@ export const MembersList = ({
 
   return (
     <MembersSection>
-      {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
+      {!hideTitle && <SectionTitle>{membersTitle}</SectionTitle>}
       {members.length === 0 ? (
         <EmptyState>
           <Typography variant="body2" color="textSecondary">
@@ -77,19 +93,22 @@ export const MembersList = ({
           {members.map((memberItem) => (
             <MemberItem key={memberItem.memberAddress}>
               <MemberAvatarContainer>
-                <MemberAvatar src={memberItem.profilePictureUrl} />
+                <MemberAvatar
+                  src={memberItem.profilePictureUrl}
+                  backgroundColor={getRandomRarityColor(theme)}
+                />
               </MemberAvatarContainer>
               <MemberInfo>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" alignItems="center">
                   <MemberName>{memberItem.name}</MemberName>
+                  {memberItem.hasClaimedName && (
+                    <ClaimedNameIcon
+                      data-testid="claimed-name-icon"
+                      aria-label="Claimed name badge"
+                    />
+                  )}
                 </Box>
                 <MemberRole>{memberItem.role}</MemberRole>
-                {memberItem.mutualFriends > 0 && (
-                  <MemberMutualFriends>
-                    {memberItem.mutualFriends}{" "}
-                    {t("members_list.mutual_friends")}
-                  </MemberMutualFriends>
-                )}
               </MemberInfo>
             </MemberItem>
           ))}

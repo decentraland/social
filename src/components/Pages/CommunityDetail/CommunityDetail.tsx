@@ -160,6 +160,7 @@ function CommunityDetail() {
     isFetchingMore: isFetchingMoreMembers,
     hasMore: hasMoreMembers,
     loadMore: loadMoreMembers,
+    total: totalMembers,
   } = usePaginatedCommunityMembers({
     communityId: id || "",
     enabled: shouldFetchMembersAndEvents,
@@ -437,13 +438,15 @@ function CommunityDetail() {
                           name: member.name || member.memberAddress,
                           role: member.role,
                           profilePictureUrl: member.profilePictureUrl || "",
-                          mutualFriends: 0,
+                          hasClaimedName: member.hasClaimedName ?? false,
                         }))}
                         isLoading={isLoadingMembers}
                         isFetchingMore={isFetchingMoreMembers}
                         hasMore={hasMoreMembers}
                         onLoadMore={loadMoreMembers}
                         hideTitle={true}
+                        showCount={false}
+                        total={totalMembers}
                       />
                     </MembersColumn>
                   ) : (
@@ -455,6 +458,8 @@ function CommunityDetail() {
                           image: event.image || "",
                           isLive: event.live || false,
                           startTime: event.startAt,
+                          totalAttendees: event.totalAttendees,
+                          latestAttendees: event.latestAttendees,
                         }))}
                         isLoading={isLoadingEvents}
                         isFetchingMore={isFetchingMoreEvents}
@@ -474,12 +479,13 @@ function CommunityDetail() {
                         profilePictureUrl: member.profilePictureUrl || "",
                         name: member.name || member.memberAddress,
                         role: member.role,
-                        mutualFriends: 0,
+                        hasClaimedName: member.hasClaimedName ?? false,
                       }))}
                       isLoading={isLoadingMembers}
                       isFetchingMore={isFetchingMoreMembers}
                       hasMore={hasMoreMembers}
                       onLoadMore={loadMoreMembers}
+                      total={totalMembers}
                     />
                   </MembersColumn>
 
@@ -491,6 +497,8 @@ function CommunityDetail() {
                         image: event.image || "",
                         isLive: event.live || false,
                         startTime: event.startAt,
+                        totalAttendees: event.totalAttendees,
+                        latestAttendees: event.latestAttendees,
                       }))}
                       isLoading={isLoadingEvents}
                       isFetchingMore={isFetchingMoreEvents}

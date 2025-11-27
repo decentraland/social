@@ -4,7 +4,7 @@ const MembersSection = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
-  gap: "12px",
+  gap: theme.spacing(1.5),
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -16,16 +16,16 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   textTransform: "uppercase",
   color: theme.palette.common.white,
-  paddingBottom: "24px",
+  paddingBottom: theme.spacing(3),
   borderBottom: "1px solid rgba(255, 255, 255, 0.3)",
   lineHeight: 1,
   width: "100%",
 }))
 
 const MemberList = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: "10px",
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: theme.spacing(1.25),
   width: "100%",
   alignItems: "stretch",
   maxHeight: "600px",
@@ -38,24 +38,27 @@ const MemberList = styled(Box)(({ theme }) => ({
   },
   "&::-webkit-scrollbar-track": {
     background: "rgba(255, 255, 255, 0.1)",
-    borderRadius: "4px",
+    borderRadius: theme.spacing(0.5),
   },
   "&::-webkit-scrollbar-thumb": {
     background: "rgba(255, 255, 255, 0.3)",
-    borderRadius: "4px",
+    borderRadius: theme.spacing(0.5),
     "&:hover": {
       background: "rgba(255, 255, 255, 0.4)",
     },
   },
+  [theme.breakpoints.between("xs", "sm")]: {
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  },
 }))
 
-const MemberItem = styled(Box)(() => ({
+const MemberItem = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "10px",
-  padding: "10px",
+  gap: theme.spacing(1.25),
+  padding: theme.spacing(1.25),
   backgroundColor: "rgba(0, 0, 0, 0.3)",
-  borderRadius: "12px",
+  borderRadius: theme.spacing(1.5),
   width: "100%",
   boxSizing: "border-box",
 }))
@@ -75,17 +78,20 @@ const MemberAvatarContainer = styled(Box)(() => ({
   padding: "0",
 }))
 
-const MemberAvatar = styled(Avatar)(() => ({
+const MemberAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "backgroundColor",
+})<{ backgroundColor?: string }>(({ backgroundColor, theme }) => ({
   width: "100%",
   height: "100%",
   borderRadius: "50%",
+  backgroundColor: backgroundColor ?? theme.palette.secondary.main,
 }))
 
-const MemberInfo = styled(Box)(() => ({
+const MemberInfo = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: "2px",
+  gap: theme.spacing(0.25),
   minWidth: 0,
   width: "100%",
 }))
@@ -103,9 +109,9 @@ const MemberRole = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "flex-start",
   backgroundColor: "rgba(255, 255, 255, 0.1)",
-  borderRadius: "6px",
-  padding: "5px 4px",
-  gap: "4px",
+  borderRadius: theme.spacing(0.75),
+  padding: theme.spacing(0.625, 0.5),
+  gap: theme.spacing(0.5),
   width: "fit-content",
   fontSize: "12px",
   fontWeight: 400,
@@ -115,19 +121,9 @@ const MemberRole = styled(Box)(({ theme }) => ({
   textTransform: "capitalize",
 }))
 
-const MemberMutualFriends = styled(Typography)(({ theme }) => ({
-  alignSelf: "stretch",
-  fontSize: "12px",
-  fontWeight: 400,
-  lineHeight: "normal",
-  color: "rgba(255, 255, 255, 0.7)",
-  textTransform: "capitalize",
-  fontFamily: theme.typography.fontFamily,
-}))
-
-const LoadMoreSentinel = styled(Box)(() => ({
+const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   width: "100%",
-  minHeight: "20px",
+  minHeight: theme.spacing(2.5),
 }))
 
 const EmptyState = styled(Box)(({ theme }) => ({
@@ -146,7 +142,6 @@ export {
   MemberInfo,
   MemberItem,
   MemberList,
-  MemberMutualFriends,
   MemberName,
   MemberRole,
   MembersSection,

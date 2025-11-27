@@ -2,30 +2,75 @@ import { Avatar, Box, Button, Typography, styled } from "decentraland-ui2"
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "60px",
-  alignItems: "center",
-  paddingTop: "80px",
-  paddingBottom: "60px",
-  paddingLeft: "120px",
-  paddingRight: "120px",
+  flexDirection: "column",
+  gap: theme.spacing(7.5), // 60px
+  alignItems: "start",
+  paddingTop: theme.spacing(10), // 80px
+  paddingBottom: theme.spacing(7.5), // 60px
+  paddingLeft: theme.spacing(30), // 240px
+  paddingRight: theme.spacing(30), // 240px
   backgroundColor: "rgba(0, 0, 0, 0.3)",
+  [theme.breakpoints.between("lg", "xl")]: {
+    paddingLeft: theme.spacing(10), // 80px
+    paddingRight: theme.spacing(10), // 80px
+  },
+  [theme.breakpoints.between("md", "lg")]: {
+    paddingLeft: theme.spacing(3), // 24px
+    paddingRight: theme.spacing(3), // 24px
+  },
+  [theme.breakpoints.down("md")]: {
+    paddingLeft: theme.spacing(3), // 24px
+    paddingRight: theme.spacing(3), // 24px
+  },
   [theme.breakpoints.down("sm")]: {
-    flexDirection: "column",
-    padding: theme.spacing(4),
+    gap: theme.spacing(3),
+  },
+  [theme.breakpoints.down("xs")]: {
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingTop: 0,
     gap: theme.spacing(4),
   },
 }))
 
+const TopRow = styled(Box)(({ theme }) => ({
+  display: "flex",
+  width: "100%",
+  gap: theme.spacing(7.5),
+  alignItems: "start",
+  [theme.breakpoints.between("lg", "xl")]: {
+    gap: theme.spacing(5),
+  },
+  [theme.breakpoints.down("sm")]: {
+    gap: theme.spacing(3),
+  },
+  [theme.breakpoints.down("xs")]: {
+    flexDirection: "column",
+  },
+}))
+
+const DescriptionRow = styled(Box)(({ theme }) => ({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1.5),
+}))
+
 const CommunityImage = styled(Box)(({ theme }) => ({
-  width: "412px",
-  height: "412px",
+  width: "320px",
+  height: "320px",
   borderRadius: "23.712px",
   overflow: "hidden",
   flexShrink: 0,
   backgroundColor: theme.palette.background.default,
   [theme.breakpoints.down("sm")]: {
+    width: "210px",
+    height: "210px",
+  },
+  [theme.breakpoints.down(391)]: {
     width: "100%",
     height: "300px",
+    borderRadius: "0",
   },
 }))
 
@@ -35,12 +80,16 @@ const CommunityImageContent = styled("img")({
   objectFit: "cover",
 })
 
-const CommunityDetails = styled(Box)(() => ({
+const CommunityDetails = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: "48px",
+  gap: theme.spacing(6), // 48px
   minWidth: 0,
+  [theme.breakpoints.down("sm")]: {
+    paddingLeft: theme.spacing(2), // 16px
+    paddingRight: theme.spacing(2), // 16px
+  },
 }))
 
 const PrivacyBadgeContainer = styled(Box)(() => ({
@@ -68,10 +117,10 @@ const PrivacyBadgeText = styled(Typography)(({ theme }) => ({
   textTransform: "capitalize",
 }))
 
-const OwnerRow = styled(Box)(() => ({
+const OwnerRow = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  gap: "10px",
+  gap: theme.spacing(1.25), // 10px
 }))
 
 const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
@@ -89,10 +138,13 @@ const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
   padding: "0",
 }))
 
-const OwnerAvatar = styled(Avatar)(() => ({
+const OwnerAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "backgroundColor",
+})<{ backgroundColor?: string }>(({ backgroundColor, theme }) => ({
   width: "100%",
   height: "100%",
   borderRadius: "50%",
+  backgroundColor: backgroundColor ?? theme.palette.secondary.main,
 }))
 
 const OwnerText = styled(Box)(({ theme }) => ({
@@ -124,10 +176,13 @@ const ActionButtons = styled(Box)(({ theme }) => ({
   },
 }))
 
-const CTAButton = styled(Button)({
+const CTAButton = styled(Button)(({ theme }) => ({
   width: "184px",
   height: "40px",
-})
+  [theme.breakpoints.down("xs")]: {
+    width: "100%",
+  },
+}))
 
 const TitleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -144,15 +199,16 @@ const CommunityLabel = styled(Typography)(({ theme }) => ({
   verticalAlign: "middle",
   textTransform: "uppercase",
   color: theme.palette.text.secondary,
-  marginBottom: "12px",
+  marginBottom: theme.spacing(1.5), // 12px
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-  fontSize: "48px",
-  fontWeight: 600,
-  lineHeight: 1.167,
+  fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+  fontWeight: 500,
+  fontSize: "32px",
+  lineHeight: "124%",
+  letterSpacing: 0,
   color: theme.palette.common.white,
-  fontFamily: theme.typography.fontFamily,
 }))
 
 const PrivacyMembersRow = styled(Box)(({ theme }) => ({
@@ -178,13 +234,14 @@ const PrivacyMembersText = styled(Typography)(({ theme }) => ({
 }))
 
 const Description = styled(Typography)(({ theme }) => ({
-  fontSize: "20px",
-  fontWeight: 500,
-  lineHeight: 1.6,
-  color: "#ecebed",
+  fontFamily: theme.typography.fontFamily,
+  fontSize: "16px",
+  fontWeight: 400,
+  lineHeight: "175%",
+  letterSpacing: 0,
+  color: theme.palette.text.primary,
   whiteSpace: "pre-wrap",
   marginTop: "0px",
-  fontFamily: theme.typography.fontFamily,
 }))
 
 export {
@@ -208,4 +265,6 @@ export {
   PrivacyMembersText,
   Title,
   TitleContainer,
+  TopRow,
+  DescriptionRow,
 }

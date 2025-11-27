@@ -12,6 +12,8 @@ type Event = {
   approved: boolean
   rejected: boolean
   attending?: number
+  totalAttendees: number
+  latestAttendees: string[]
   url?: string
   live?: boolean
 }

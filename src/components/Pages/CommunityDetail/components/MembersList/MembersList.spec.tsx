@@ -1,6 +1,16 @@
 import { render, screen } from "@testing-library/react"
 import { MembersList } from "./MembersList"
 import { Role } from "../../../../../features/communities/types"
+import type { Theme } from "@mui/material/styles"
+
+const mockTheme = {
+  palette: {
+    secondary: { main: "#FFFFFF" },
+    raritiesText: {
+      common: "#73D3D3",
+    },
+  },
+} as unknown as Theme
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -55,6 +65,7 @@ jest.mock("decentraland-ui2", () => {
       <p {...props}>{children}</p>
     ),
     styled: mockStyled,
+    useTheme: () => mockTheme,
   }
 })
 
@@ -71,7 +82,7 @@ function renderMembersList(
       name: string
       role: string
       profilePictureUrl: string
-      mutualFriends: number
+      hasClaimedName?: boolean
     }>,
     isLoading: false,
     isFetchingMore: false,
@@ -90,13 +101,13 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ isLoading: true })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ isLoading: true, hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
     it("should display a loading indicator", () => {
@@ -114,13 +125,13 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ members: [] })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ members: [], hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
     it("should display an empty state message", () => {
@@ -136,7 +147,7 @@ describe("when rendering the members list", () => {
       name: string
       role: string
       profilePictureUrl: string
-      mutualFriends: number
+      hasClaimedName?: boolean
     }>
 
     beforeEach(() => {
@@ -146,14 +157,14 @@ describe("when rendering the members list", () => {
           name: "John Doe",
           role: "admin",
           profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
+          hasClaimedName: false,
         },
         {
           memberAddress: "0x222",
           name: "Jane Smith",
           role: Role.MEMBER,
           profilePictureUrl: "https://example.com/jane.jpg",
-          mutualFriends: 5,
+          hasClaimedName: false,
         },
       ]
     })
@@ -165,13 +176,26 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ members })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ members, hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
+    })
+
+    it("should display the total count when provided", () => {
+      renderMembersList({ members, total: 15 })
+
+      expect(screen.getByText("MEMBERS (15)")).toBeInTheDocument()
+    })
+
+    it("should hide the total count when showCount is false", () => {
+      renderMembersList({ members, total: 15, showCount: false })
+
+      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS \(\d+\)/)).not.toBeInTheDocument()
     })
 
     it("should render all members", () => {
@@ -188,26 +212,20 @@ describe("when rendering the members list", () => {
       expect(screen.getByText("member")).toBeInTheDocument()
     })
 
-    it("should display mutual friends count when greater than zero", () => {
-      renderMembersList({ members })
-
-      expect(screen.getByText("5 Mutual Friends")).toBeInTheDocument()
-    })
-
-    it("should not display mutual friends when count is zero", () => {
-      const membersWithoutMutualFriends = [
+    it("should show the claimed name icon when the member has claimed a name", () => {
+      const claimedMembers = [
         {
-          memberAddress: "0x111",
-          name: "John Doe",
-          role: "admin",
-          profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
+          memberAddress: "0x123",
+          name: "Claimed Member",
+          role: Role.MEMBER,
+          profilePictureUrl: "https://example.com/claimed.jpg",
+          hasClaimedName: true,
         },
       ]
 
-      renderMembersList({ members: membersWithoutMutualFriends })
+      renderMembersList({ members: claimedMembers })
 
-      expect(screen.queryByText(/Mutual Friends/)).not.toBeInTheDocument()
+      expect(screen.getByTestId("claimed-name-icon")).toBeInTheDocument()
     })
 
     it("should render member avatars", () => {

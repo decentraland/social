@@ -7,8 +7,9 @@ import { useGetProfilePictureQuery } from "../features/profile/profile.client"
  * @returns Profile picture URL or empty string if not available
  */
 export function useProfilePicture(address: string): string {
-  const { data } = useGetProfilePictureQuery(address, {
-    skip: !address,
+  const normalizedAddress = address.toLowerCase()
+  const { data } = useGetProfilePictureQuery(normalizedAddress, {
+    skip: !normalizedAddress,
   })
 
   return data || ""
