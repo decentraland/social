@@ -162,14 +162,17 @@ const EmptyState = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 }))
 
-const EmptyStateText = styled(Typography)(() => ({
-  fontFamily: "Inter",
+const EmptyStateText = styled(Typography)(({ theme }) => ({
+  fontFamily: theme.typography.fontFamily,
   fontWeight: 600,
+  fontStyle: "normal",
   fontSize: "18px",
   lineHeight: "100%",
   letterSpacing: "0%",
   textAlign: "center",
   verticalAlign: "middle",
+  color: theme.palette.text.primary,
+  "leading-trim": "none",
 }))
 
 export {
