@@ -2,12 +2,12 @@ import { Avatar, Box, Button, Typography, styled } from "decentraland-ui2"
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: "flex",
-  gap: "60px",
+  gap: theme.spacing(7.5), // 60px
   alignItems: "center",
-  paddingTop: "80px",
-  paddingBottom: "60px",
-  paddingLeft: "120px",
-  paddingRight: "120px",
+  paddingTop: theme.spacing(10), // 80px
+  paddingBottom: theme.spacing(7.5), // 60px
+  paddingLeft: theme.spacing(30), // 240px
+  paddingRight: theme.spacing(30), // 240px
   backgroundColor: "rgba(0, 0, 0, 0.3)",
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",

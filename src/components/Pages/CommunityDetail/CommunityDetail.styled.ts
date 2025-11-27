@@ -21,8 +21,8 @@ const BottomSection = styled(Box)(({ theme }) => ({
   gap: theme.spacing(7.5), // 60px
   paddingTop: theme.spacing(6), // 48px
   paddingBottom: theme.spacing(1.25), // 10px
-  paddingLeft: theme.spacing(15), // 120px
-  paddingRight: theme.spacing(15), // 120px
+  paddingLeft: theme.spacing(30), // 240px
+  paddingRight: theme.spacing(30), // 240px
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
     padding: theme.spacing(4),
@@ -42,8 +42,12 @@ const BottomSectionColumn = styled(Box)(({ theme }) => ({
   },
 }))
 
-const MembersColumn = styled(BottomSectionColumn)(() => ({
-  flex: "1 0 0",
+const MembersColumn = styled(BottomSectionColumn)(({ theme }) => ({
+  flex: "0 0 320px",
+  maxWidth: "320px",
+  [theme.breakpoints.down("sm")]: {
+    maxWidth: "100%",
+  },
 }))
 
 const EventsColumn = styled(BottomSectionColumn)(() => ({
