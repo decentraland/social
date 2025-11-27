@@ -2,6 +2,7 @@ import { Avatar, Box, Button, Typography, styled } from "decentraland-ui2"
 
 const InfoSection = styled(Box)(({ theme }) => ({
   display: "flex",
+  flexDirection: "column",
   gap: theme.spacing(7.5), // 60px
   alignItems: "start",
   paddingTop: theme.spacing(10), // 80px
@@ -25,10 +26,34 @@ const InfoSection = styled(Box)(({ theme }) => ({
     gap: theme.spacing(3),
   },
   [theme.breakpoints.down("xs")]: {
-    padding: 0,
-    flexDirection: "column",
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingTop: 0,
     gap: theme.spacing(4),
   },
+}))
+
+const TopRow = styled(Box)(({ theme }) => ({
+  display: "flex",
+  width: "100%",
+  gap: theme.spacing(7.5),
+  alignItems: "start",
+  [theme.breakpoints.between("lg", "xl")]: {
+    gap: theme.spacing(5),
+  },
+  [theme.breakpoints.down("sm")]: {
+    gap: theme.spacing(3),
+  },
+  [theme.breakpoints.down("xs")]: {
+    flexDirection: "column",
+  },
+}))
+
+const DescriptionRow = styled(Box)(({ theme }) => ({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1.5),
 }))
 
 const CommunityImage = styled(Box)(({ theme }) => ({
@@ -214,7 +239,6 @@ const Description = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
   whiteSpace: "pre-wrap",
   marginTop: "0px",
-  paddingBottom: theme.spacing(7.5),
 }))
 
 export {
@@ -238,4 +262,6 @@ export {
   PrivacyMembersText,
   Title,
   TitleContainer,
+  TopRow,
+  DescriptionRow,
 }

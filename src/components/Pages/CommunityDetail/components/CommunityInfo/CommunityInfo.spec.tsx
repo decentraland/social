@@ -11,6 +11,7 @@ jest.mock("../../../../../utils/authRedirect", () => ({
 }))
 
 const mockUseTabletAndBelowMediaQuery = jest.fn()
+const mockUseTabletMediaQuery = jest.fn()
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -103,6 +104,8 @@ jest.mock("decentraland-ui2", () => {
     },
     useTabletAndBelowMediaQuery: (...args: unknown[]) =>
       mockUseTabletAndBelowMediaQuery(...args),
+    useTabletMediaQuery: (...args: unknown[]) =>
+      mockUseTabletMediaQuery(...args),
     styled: mockStyled,
   }
 })
@@ -117,6 +120,8 @@ const mockUseProfilePicture = jest.fn()
 jest.mock("../../../../../hooks/useProfilePicture", () => ({
   useProfilePicture: (...args: unknown[]) => mockUseProfilePicture(...args),
 }))
+
+const DESCRIPTION_ROW_TEST_ID = "community-description-row"
 
 function renderCommunityInfo(
   props: Partial<React.ComponentProps<typeof CommunityInfo>> = {}
@@ -169,6 +174,7 @@ describe("when rendering the community info", () => {
     }
     // Default to desktop (not tablet/mobile)
     mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
+    mockUseTabletMediaQuery.mockReturnValue(false)
   })
 
   afterEach(() => {
@@ -289,6 +295,26 @@ describe("when rendering the community info", () => {
       })
 
       expect(screen.queryByText("Test Description")).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId(DESCRIPTION_ROW_TEST_ID)
+      ).not.toBeInTheDocument()
+    })
+
+    describe("and the device is tablet or smaller", () => {
+      beforeEach(() => {
+        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+        mockUseTabletMediaQuery.mockReturnValue(true)
+      })
+
+      it("should render the description row even though content is disabled", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+          canViewContent: false,
+        })
+
+        expect(screen.getByTestId(DESCRIPTION_ROW_TEST_ID)).toBeInTheDocument()
+        expect(screen.getByText("Test Description")).toBeInTheDocument()
+      })
     })
   })
 
