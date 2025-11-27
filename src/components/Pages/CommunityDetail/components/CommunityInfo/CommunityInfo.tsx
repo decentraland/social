@@ -273,7 +273,7 @@ export const CommunityInfo = ({
           )}
         </CommunityDetails>
       </TopRow>
-      {!canViewContent && isTablet && (
+      {canViewContent && isTablet && (
         <DescriptionRow data-testid="community-description-row">
           <Description>{community.description}</Description>
         </DescriptionRow>

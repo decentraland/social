@@ -287,13 +287,37 @@ describe("when rendering the community info", () => {
   })
 
   describe("and content viewing is enabled", () => {
-    it("should display the community description", () => {
-      renderCommunityInfo({
-        community: defaultCommunity,
-        canViewContent: true,
+    describe("and the device is not tablet", () => {
+      beforeEach(() => {
+        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+        mockUseTabletMediaQuery.mockReturnValue(false)
       })
 
-      expect(screen.getByText("Test Description")).toBeInTheDocument()
+      it("should display the community description", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+          canViewContent: true,
+        })
+
+        expect(screen.getByText("Test Description")).toBeInTheDocument()
+      })
+    })
+
+    describe("and the device is tablet", () => {
+      beforeEach(() => {
+        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+        mockUseTabletMediaQuery.mockReturnValue(true)
+      })
+
+      it("should render the description row", () => {
+        renderCommunityInfo({
+          community: defaultCommunity,
+          canViewContent: true,
+        })
+
+        expect(screen.getByTestId(DESCRIPTION_ROW_TEST_ID)).toBeInTheDocument()
+        expect(screen.getByText("Test Description")).toBeInTheDocument()
+      })
     })
   })
 
@@ -308,23 +332,6 @@ describe("when rendering the community info", () => {
       expect(
         screen.queryByTestId(DESCRIPTION_ROW_TEST_ID)
       ).not.toBeInTheDocument()
-    })
-
-    describe("and the device is tablet or smaller", () => {
-      beforeEach(() => {
-        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
-        mockUseTabletMediaQuery.mockReturnValue(true)
-      })
-
-      it("should render the description row even though content is disabled", () => {
-        renderCommunityInfo({
-          community: defaultCommunity,
-          canViewContent: false,
-        })
-
-        expect(screen.getByTestId(DESCRIPTION_ROW_TEST_ID)).toBeInTheDocument()
-        expect(screen.getByText("Test Description")).toBeInTheDocument()
-      })
     })
   })
 
