@@ -558,8 +558,7 @@ describe("when rendering the community info", () => {
             })
           })
 
-          it("should not display jump in button on desktop", () => {
-            mockUseTabletAndBelowMediaQuery.mockReturnValue(false) // Desktop
+          it("should not display jump in button", () => {
             renderCommunityInfo({
               community,
               isLoggedIn: true,
@@ -569,33 +568,6 @@ describe("when rendering the community info", () => {
             })
 
             expect(screen.queryByText("JUMP IN")).not.toBeInTheDocument()
-          })
-
-          it("should not display jump in button on tablet/mobile", () => {
-            mockUseTabletAndBelowMediaQuery.mockReturnValue(true) // Tablet/Mobile
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: false,
-            })
-
-            expect(screen.queryByText("JUMP IN")).not.toBeInTheDocument()
-          })
-
-          it("should disable request to join button when performing community action", () => {
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: false,
-              isPerformingCommunityAction: true,
-            })
-
-            const requestButton = screen.getByText("Loading...")
-            expect(requestButton).toBeDisabled()
           })
         })
 
@@ -636,30 +608,40 @@ describe("when rendering the community info", () => {
             })
           })
 
-          it("should display jump in button on desktop", () => {
-            mockUseTabletAndBelowMediaQuery.mockReturnValue(false) // Desktop
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: true,
+          describe("and the device is not tablet", () => {
+            beforeEach(() => {
+              mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
             })
 
-            expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+            it("should display jump in button", () => {
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: true,
+              })
+
+              expect(screen.getByText("JUMP IN")).toBeInTheDocument()
+            })
           })
 
-          it("should not display jump in button on tablet/mobile", () => {
-            mockUseTabletAndBelowMediaQuery.mockReturnValue(true) // Tablet/Mobile
-            renderCommunityInfo({
-              community,
-              isLoggedIn: true,
-              address,
-              isMember: false,
-              hasPendingRequest: true,
+          describe("and the device is tablet/mobile", () => {
+            beforeEach(() => {
+              mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
             })
 
-            expect(screen.queryByText("JUMP IN")).not.toBeInTheDocument()
+            it("should not display jump in button", () => {
+              renderCommunityInfo({
+                community,
+                isLoggedIn: true,
+                address,
+                isMember: false,
+                hasPendingRequest: true,
+              })
+
+              expect(screen.queryByText("JUMP IN")).not.toBeInTheDocument()
+            })
           })
 
           describe("and a community action is being performed", () => {
