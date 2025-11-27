@@ -1,10 +1,10 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
+import { Icon, muiIcons } from "decentraland-ui2"
 import { EventAttendees } from "./EventAttendees"
 import { formatEventTime } from "../../../../../utils/dateFormat"
 import type { Event } from "./EventsList.types"
 import {
   EventCard,
-  EventClockIcon,
   EventContent,
   EventImage,
   EventImageContainer,
@@ -36,7 +36,7 @@ export const EventItem = ({ event, attendeePictures }: EventItemProps) => {
       <EventContent>
         <EventInfoRow>
           <TimeWithIcon>
-            <EventClockIcon />
+            <Icon component={muiIcons.AccessTime} fontSize="small" />
             <EventTime data-testid={`event-time-${event.id}`}>
               {formatEventTime(event.startTime)}
             </EventTime>

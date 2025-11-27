@@ -1,4 +1,3 @@
-import AccessTimeIcon from "@mui/icons-material/AccessTime"
 import { Avatar, Box, Typography, styled } from "decentraland-ui2"
 
 const EventsSection = styled(Box)(({ theme }) => ({
@@ -105,11 +104,7 @@ const TimeWithIcon = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: theme.spacing(0.5),
-}))
-
-const EventClockIcon = styled(AccessTimeIcon)(() => ({
-  color: "#A09BA8",
-  fontSize: "18px",
+  color: theme.palette.text.secondary,
 }))
 
 const AttendeesRow = styled(Box)(({ theme }) => ({
@@ -243,7 +238,6 @@ export {
   SectionTitle,
   EventImageOverlay,
   EventInfoRow,
-  EventClockIcon,
   TimeWithIcon,
   AttendeesRow,
   AttendeeAvatar,

@@ -48,9 +48,23 @@ jest.mock("decentraland-ui2", () => {
     }: React.HTMLAttributes<HTMLParagraphElement>) => (
       <p {...props}>{children}</p>
     ),
+    Icon: ({
+      component: Component,
+      ...props
+    }: {
+      component?: React.ComponentType<Record<string, unknown>>
+    } & React.HTMLAttributes<HTMLElement>) =>
+      Component ? <Component {...props} /> : <span {...props} />,
     SvgIcon: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
+    muiIcons: {
+      AccessTime: () => (
+        <svg data-testid="access-time-icon">
+          <path d="M12 2L2 12l10 10 10-10L12 2z" />
+        </svg>
+      ),
+    },
     styled: mockStyled,
   }
 })
