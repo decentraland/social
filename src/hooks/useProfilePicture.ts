@@ -1,7 +1,5 @@
 import { useGetProfilePictureQuery } from "../features/profile/profile.client"
 
-// TODO: useProfilesPictures hook to fetch multiple profile pictures at once
-
 /**
  * Hook to fetch profile picture URL for a given address
  * Uses RTK Query for caching and consistent API patterns
