@@ -138,10 +138,13 @@ const OwnerAvatarContainer = styled(Box)(({ theme }) => ({
   padding: "0",
 }))
 
-const OwnerAvatar = styled(Avatar)(() => ({
+const OwnerAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "backgroundColor",
+})<{ backgroundColor?: string }>(({ backgroundColor, theme }) => ({
   width: "100%",
   height: "100%",
   borderRadius: "50%",
+  backgroundColor: backgroundColor ?? theme.palette.secondary.main,
 }))
 
 const OwnerText = styled(Box)(({ theme }) => ({

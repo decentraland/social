@@ -1,6 +1,16 @@
 import { render, screen } from "@testing-library/react"
 import { MembersList } from "./MembersList"
 import { Role } from "../../../../../features/communities/types"
+import type { Theme } from "@mui/material/styles"
+
+const mockTheme = {
+  palette: {
+    secondary: { main: "#FFFFFF" },
+    raritiesText: {
+      common: "#73D3D3",
+    },
+  },
+} as unknown as Theme
 
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -55,6 +65,7 @@ jest.mock("decentraland-ui2", () => {
       <p {...props}>{children}</p>
     ),
     styled: mockStyled,
+    useTheme: () => mockTheme,
   }
 })
 

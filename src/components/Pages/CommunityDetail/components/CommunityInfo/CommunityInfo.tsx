@@ -3,9 +3,11 @@ import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   Icon,
   JumpIn,
+  Theme,
   muiIcons,
   useTabletAndBelowMediaQuery,
   useTabletMediaQuery,
+  useTheme,
 } from "decentraland-ui2"
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
@@ -13,6 +15,7 @@ import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"
+import { getRandomRarityColor } from "../utils/getRandomRarityColor"
 import {
   ActionButtons,
   CTAButton,
@@ -71,6 +74,8 @@ export const CommunityInfo = ({
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
   const isTablet = useTabletMediaQuery()
   const ownerProfilePicture = useProfilePicture(community.ownerAddress)
+  const theme = useTheme<Theme>()
+  const ownerAvatarBackgroundColor = getRandomRarityColor(theme)
 
   const handleJoinClick = useCallback(() => {
     if (!isLoggedIn || !address) {
@@ -228,7 +233,10 @@ export const CommunityInfo = ({
             </PrivacyMembersRow>
             <OwnerRow>
               <OwnerAvatarContainer>
-                <OwnerAvatar src={ownerProfilePicture} />
+                <OwnerAvatar
+                  src={ownerProfilePicture}
+                  backgroundColor={ownerAvatarBackgroundColor}
+                />
               </OwnerAvatarContainer>
               <OwnerText>
                 {t("community_info.by")}{" "}

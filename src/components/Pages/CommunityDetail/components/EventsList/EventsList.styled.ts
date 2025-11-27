@@ -162,7 +162,9 @@ const EventName = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
-const AttendeeAvatar = styled(Avatar)(() => ({
+const AttendeeAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "backgroundColor",
+})<{ backgroundColor?: string }>(({ backgroundColor, theme }) => ({
   width: "24.38px",
   height: "24.38px",
   borderRadius: "25.64px",
@@ -172,6 +174,7 @@ const AttendeeAvatar = styled(Avatar)(() => ({
   backgroundSize: "cover",
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
+  backgroundColor: backgroundColor ?? theme.palette.secondary.main,
   "&:not(:first-of-type)": {
     marginLeft: "-8px",
   },

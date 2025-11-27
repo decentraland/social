@@ -4,6 +4,7 @@ import { CommunityInfo } from "./CommunityInfo"
 import { Privacy, Visibility } from "../../../../../features/communities/types"
 import { AllowedAction } from "../../CommunityDetail.types"
 import type { Community } from "../../../../../features/communities/types"
+import type { Theme } from "@mui/material/styles"
 
 const mockRedirectToAuth = jest.fn()
 jest.mock("../../../../../utils/authRedirect", () => ({
@@ -12,6 +13,14 @@ jest.mock("../../../../../utils/authRedirect", () => ({
 
 const mockUseTabletAndBelowMediaQuery = jest.fn()
 const mockUseTabletMediaQuery = jest.fn()
+const mockTheme = {
+  palette: {
+    secondary: { main: "#FFFFFF" },
+    raritiesText: {
+      rare: "#34CE76",
+    },
+  },
+} as unknown as Theme
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -107,6 +116,7 @@ jest.mock("decentraland-ui2", () => {
     useTabletMediaQuery: (...args: unknown[]) =>
       mockUseTabletMediaQuery(...args),
     styled: mockStyled,
+    useTheme: () => mockTheme,
   }
 })
 
