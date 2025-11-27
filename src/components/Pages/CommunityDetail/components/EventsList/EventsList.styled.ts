@@ -4,7 +4,7 @@ const EventsSection = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
-  gap: "12px",
+  gap: theme.spacing(1.5),
   width: "100%",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -114,12 +114,12 @@ const LiveBadgeText = styled(Box)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
-const EventContent = styled(Box)(() => ({
+const EventContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "flex-start",
-  gap: "2px",
+  gap: theme.spacing(0.25),
   width: "230px",
   minWidth: "230px",
   height: "126px",
@@ -145,9 +145,9 @@ const EventName = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }))
 
-const LoadMoreSentinel = styled(Box)(() => ({
+const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   width: "100%",
-  minHeight: "20px",
+  minHeight: theme.spacing(2.5),
   flex: "0 0 100%",
 }))
 

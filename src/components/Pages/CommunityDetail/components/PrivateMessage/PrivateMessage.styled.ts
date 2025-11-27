@@ -5,11 +5,11 @@ const PrivateMessage = styled(Box)(({ theme }) => ({
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  gap: "24px",
+  gap: theme.spacing(3),
   width: "1920px",
   maxWidth: "100%",
   height: "571px",
-  padding: "48px 120px 0 120px",
+  padding: theme.spacing(6, 15, 0, 15),
   borderTop: "1px solid rgba(255, 255, 255, 0.3)",
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -19,14 +19,14 @@ const PrivateMessage = styled(Box)(({ theme }) => ({
   },
 }))
 
-const PrivateMessageContent = styled(Box)(() => ({
+const PrivateMessageContent = styled(Box)(({ theme }) => ({
   width: "550px",
   height: "159px",
   flexShrink: 0,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  gap: "24px",
+  gap: theme.spacing(3),
 }))
 
 const PrivateMessageTitle = styled(Typography)(({ theme }) => ({

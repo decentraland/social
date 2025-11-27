@@ -23,11 +23,26 @@ const BottomSection = styled(Box)(({ theme }) => ({
   paddingBottom: theme.spacing(1.25), // 10px
   paddingLeft: theme.spacing(30), // 240px
   paddingRight: theme.spacing(30), // 240px
+  [theme.breakpoints.between("lg", "xl")]: {
+    paddingLeft: theme.spacing(10), // 80px
+    paddingRight: theme.spacing(10), // 80px
+  },
+  [theme.breakpoints.between("md", "lg")]: {
+    paddingLeft: theme.spacing(3), // 24px
+    paddingRight: theme.spacing(3), // 24px
+  },
+  [theme.breakpoints.down("md")]: {
+    paddingLeft: theme.spacing(3), // 24px
+    paddingRight: theme.spacing(3), // 24px
+  },
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
-    padding: theme.spacing(4),
     gap: theme.spacing(6),
-    paddingBottom: theme.spacing(4),
+  },
+  [theme.breakpoints.down("xs")]: {
+    paddingLeft: theme.spacing(2), // 16px
+    paddingRight: theme.spacing(2), // 16px
+    gap: theme.spacing(4), // 32px
   },
 }))
 

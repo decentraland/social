@@ -228,7 +228,9 @@ export const CommunityInfo = ({
             )}
           </ActionButtons>
         </TitleContainer>
-        {canViewContent && <Description>{community.description}</Description>}
+        {canViewContent && !isTabletOrMobile && (
+          <Description>{community.description}</Description>
+        )}
       </CommunityDetails>
     </InfoSection>
   )
