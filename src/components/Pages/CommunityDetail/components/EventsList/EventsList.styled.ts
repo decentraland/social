@@ -1,4 +1,5 @@
-import { Box, Typography, styled } from "decentraland-ui2"
+import AccessTimeIcon from "@mui/icons-material/AccessTime"
+import { Avatar, Box, Typography, styled } from "decentraland-ui2"
 
 const EventsSection = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -23,13 +24,11 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 }))
 
 const EventsGrid = styled(Box)(({ theme }) => ({
-  display: "flex",
-  gap: theme.spacing(1.125), // 9px
-  alignItems: "stretch",
-  flexWrap: "wrap",
-  rowGap: theme.spacing(2.5), // 20px
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(289px, 1fr))",
+  gap: theme.spacing(1.5),
   width: "100%",
-  maxHeight: "600px",
+  maxHeight: "680px",
   overflowY: "auto",
   overflowX: "hidden",
   scrollBehavior: "smooth",
@@ -49,100 +48,150 @@ const EventsGrid = styled(Box)(({ theme }) => ({
     },
   },
   [theme.breakpoints.down("xs")]: {
-    flexDirection: "column",
-    flexWrap: "nowrap",
+    gridTemplateColumns: "1fr",
     rowGap: theme.spacing(2.5),
   },
 }))
 
 const EventCard = styled(Box)(({ theme }) => ({
+  borderRadius: theme.spacing(2), // 16px
+  background: "rgba(0, 0, 0, 0.4)",
   display: "flex",
-  alignItems: "flex-start",
-  gap: theme.spacing(1.75), // 14px
-  flex: "0 0 calc((100% - 9px) / 2)",
-  minWidth: "424px",
-  height: "126px",
-  borderRadius: theme.spacing(1.5), // 12px
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "flex-start",
   cursor: "pointer",
+  overflow: "hidden",
   position: "relative",
-  overflow: "visible",
+  boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.35)",
+  padding: theme.spacing(1.5, 2, 3), // 12px 16px 24px
   [theme.breakpoints.down("xs")]: {
     width: "100%",
-    flex: "none",
-    minWidth: "100%",
   },
 }))
 
-const EventImage = styled("img")(({ theme }) => ({
-  width: "180px",
-  height: "126px",
+const EventImage = styled("img")({
+  width: "100%",
+  height: "100%",
   objectFit: "cover",
-  borderRadius: theme.spacing(1.25), // 10px
-  backgroundColor: theme.palette.background.default,
+})
+
+const EventImageContainer = styled(Box)(() => ({
+  position: "relative",
+  width: "100%",
+  height: "195px",
+  borderRadius: "16px 16px 0 0",
+  overflow: "hidden",
   flexShrink: 0,
 }))
 
-const EventImageContainer = styled(Box)(({ theme }) => ({
+const EventImageOverlay = styled(Box)(() => ({
+  position: "absolute",
+  inset: 0,
+  background:
+    "linear-gradient(180deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.6) 100%)",
+  zIndex: 1,
+  pointerEvents: "none",
+}))
+
+const EventInfoRow = styled(Box)(() => ({
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+}))
+
+const TimeWithIcon = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(0.5),
+}))
+
+const EventClockIcon = styled(AccessTimeIcon)(() => ({
+  color: "#A09BA8",
+  fontSize: "18px",
+}))
+
+const AttendeesRow = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
   position: "relative",
-  width: "180px",
-  height: "126px",
-  flexShrink: 0,
-  overflow: "hidden",
-  borderRadius: theme.spacing(1.25), // 10px
+  paddingRight: theme.spacing(0.75),
 }))
 
 const LiveBadgeContainer = styled(Box)(({ theme }) => ({
   position: "absolute",
-  top: theme.spacing(1.25), // 10px
-  left: theme.spacing(1.25), // 10px
-  zIndex: 1,
-}))
-
-const LiveBadgeText = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: theme.spacing(0.75), // 6px
-  height: "28px",
+  top: theme.spacing(1.25),
+  left: theme.spacing(1.25),
+  zIndex: 2,
   backgroundColor: theme.palette.error.main,
   color: theme.palette.common.white,
-  padding: theme.spacing(0.5, 1, 0.5, 0.75), // 4px 8px 4px 6px
-  borderRadius: theme.spacing(1), // 8px
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.spacing(1),
   fontSize: "14px",
   fontWeight: 600,
   textTransform: "uppercase",
-  lineHeight: "normal",
-  fontFamily: theme.typography.fontFamily,
 }))
 
 const EventContent = styled(Box)(({ theme }) => ({
+  width: "100%",
+  height: "102px",
+  padding: theme.spacing(1.5, 2),
   display: "flex",
   flexDirection: "column",
-  justifyContent: "center",
+  justifyContent: "space-between",
   alignItems: "flex-start",
-  gap: theme.spacing(0.25),
-  width: "230px",
-  minWidth: "230px",
-  height: "126px",
-  flexShrink: 0,
+  gap: theme.spacing(1),
 }))
 
 const EventTime = styled(Typography)(({ theme }) => ({
   fontSize: "14px",
-  fontWeight: 600,
-  lineHeight: "normal",
-  color: theme.palette.text.secondary,
-  textTransform: "uppercase",
-  whiteSpace: "nowrap",
+  fontWeight: 400,
+  lineHeight: 1.43,
+  color: "#A09BA8",
+  letterSpacing: "0px",
   fontFamily: theme.typography.fontFamily,
+  "leading-trim": "none",
 }))
 
 const EventName = styled(Typography)(({ theme }) => ({
-  fontSize: "18px",
-  fontWeight: 600,
-  lineHeight: "normal",
-  color: theme.palette.common.white,
-  whiteSpace: "pre-wrap",
+  fontSize: "20px",
+  fontWeight: 500,
+  lineHeight: "1.6",
+  color: "#FCFCFC",
   fontFamily: theme.typography.fontFamily,
+}))
+
+const AttendeeAvatar = styled(Avatar)(() => ({
+  width: "24.38px",
+  height: "24.38px",
+  borderRadius: "25.64px",
+  border: "1.74px solid rgba(255, 255, 255, 0.5)",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  "&:not(:first-of-type)": {
+    marginLeft: "-8px",
+  },
+}))
+
+const ParticipantsExtra = styled(Typography)(({ theme }) => ({
+  width: "35px",
+  height: "24px",
+  fontSize: "13px",
+  fontWeight: 700,
+  lineHeight: 1.38,
+  color: "#16141A",
+  background: "#FCFCFC",
+  borderRadius: "12px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginLeft: theme.spacing(-0.75),
+  position: "relative",
+  zIndex: 2,
 }))
 
 const LoadMoreSentinel = styled(Box)(({ theme }) => ({
@@ -188,6 +237,12 @@ export {
   EventTime,
   LoadMoreSentinel,
   LiveBadgeContainer,
-  LiveBadgeText,
   SectionTitle,
+  EventImageOverlay,
+  EventInfoRow,
+  EventClockIcon,
+  TimeWithIcon,
+  AttendeesRow,
+  AttendeeAvatar,
+  ParticipantsExtra,
 }

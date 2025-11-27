@@ -30,6 +30,8 @@ const eventsApi = client.injectEndpoints({
             scene_name?: string
             approved: boolean
             rejected: boolean
+            total_attendees: number
+            latest_attendees: string[]
             [key: string]: unknown
           }>
           total: number
@@ -40,12 +42,21 @@ const eventsApi = client.injectEndpoints({
           data: {
             ...response.data,
             events: response.data.events.map((event) => {
-              const { start_at, finish_at, scene_name, ...rest } = event
+              const {
+                start_at,
+                finish_at,
+                scene_name,
+                total_attendees,
+                latest_attendees,
+                ...rest
+              } = event
               return {
                 ...rest,
-                startAt: start_at, // add 6 months to the start time
+                startAt: start_at,
                 finishAt: finish_at,
                 sceneName: scene_name,
+                totalAttendees: total_attendees,
+                latestAttendees: latest_attendees,
               }
             }),
           },

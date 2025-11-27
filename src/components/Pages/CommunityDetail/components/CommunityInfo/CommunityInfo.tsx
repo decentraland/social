@@ -106,6 +106,93 @@ export const CommunityInfo = ({
     }
   }, [isLoggedIn, address, community.id, onCancelRequest])
 
+  const renderJoinedButton = () => (
+    <CTAButton variant="outlined" color="secondary" disabled>
+      <Icon component={muiIcons.Check} fontSize="small" />
+      {t("community_info.joined")}
+    </CTAButton>
+  )
+
+  const renderSignInButton = () => {
+    const action = isPrivate
+      ? AllowedAction.REQUEST_TO_JOIN
+      : AllowedAction.JOIN
+    return (
+      <CTAButton
+        color="primary"
+        variant="contained"
+        onClick={() =>
+          redirectToAuth(`/communities/${community.id}`, { action })
+        }
+      >
+        {t("community_info.sign_in_to_join")}
+      </CTAButton>
+    )
+  }
+
+  const renderJoinButton = () => (
+    <CTAButton
+      color="primary"
+      variant="contained"
+      onClick={handleJoinClick}
+      disabled={isPerformingCommunityAction}
+    >
+      {isPerformingCommunityAction
+        ? t("global.loading")
+        : t("community_info.join")}
+    </CTAButton>
+  )
+
+  const renderPrivateActionButton = () => {
+    if (isLoadingMemberRequests) {
+      return (
+        <CTAButton color="secondary" variant="contained" disabled>
+          {t("global.loading")}
+        </CTAButton>
+      )
+    }
+
+    const isPerformingRequest = isPerformingCommunityAction
+    const buttonLabel = isPerformingRequest
+      ? t("global.loading")
+      : hasPendingRequest
+        ? t("community_info.cancel_request")
+        : t("community_info.request_to_join")
+
+    const onClickAction = hasPendingRequest
+      ? handleCancelRequestClick
+      : handleRequestToJoinClick
+
+    return (
+      <CTAButton
+        color="secondary"
+        variant="contained"
+        onClick={onClickAction}
+        disabled={isPerformingRequest}
+      >
+        {buttonLabel}
+      </CTAButton>
+    )
+  }
+
+  const renderActionButton = () => {
+    if (isMember) {
+      return renderJoinedButton()
+    }
+
+    if (!isLoggedIn) {
+      return renderSignInButton()
+    }
+
+    if (isPrivate) {
+      return renderPrivateActionButton()
+    }
+
+    return renderJoinButton()
+  }
+
+  const shouldShowJumpIn = isPrivate && isLoggedIn && !isTabletOrMobile
+
   return (
     <InfoSection>
       <TopRow>
@@ -151,88 +238,25 @@ export const CommunityInfo = ({
               </OwnerText>
             </OwnerRow>
             <ActionButtons>
-              {isMember ? (
-                <CTAButton variant="contained" color="secondary" disabled>
-                  <Icon component={muiIcons.Check} fontSize="small" />
-                  {t("community_info.joined")}
-                </CTAButton>
-              ) : !isLoggedIn ? (
-                <CTAButton
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => {
-                    const action = isPrivate
-                      ? AllowedAction.REQUEST_TO_JOIN
-                      : AllowedAction.JOIN
-                    redirectToAuth(`/communities/${community.id}`, { action })
+              {renderActionButton()}
+              {shouldShowJumpIn && (
+                <JumpIn
+                  variant="button"
+                  buttonText={t("community_info.jump_in")}
+                  modalProps={{
+                    title: t("community_info.jump_in_modal.title"),
+                    description: t("community_info.jump_in_modal.description"),
+                    buttonLabel: t("community_info.jump_in_modal.button_label"),
                   }}
-                >
-                  {t("community_info.sign_in_to_join")}
-                </CTAButton>
-              ) : isPrivate ? (
-                <>
-                  {isLoadingMemberRequests ? (
-                    <CTAButton color="secondary" variant="contained" disabled>
-                      {t("global.loading")}
-                    </CTAButton>
-                  ) : hasPendingRequest ? (
-                    <CTAButton
-                      color="secondary"
-                      variant="contained"
-                      onClick={handleCancelRequestClick}
-                      disabled={isPerformingCommunityAction}
-                    >
-                      {isPerformingCommunityAction
-                        ? t("global.loading")
-                        : t("community_info.cancel_request")}
-                    </CTAButton>
-                  ) : (
-                    <CTAButton
-                      color="secondary"
-                      variant="contained"
-                      onClick={handleRequestToJoinClick}
-                      disabled={isPerformingCommunityAction}
-                    >
-                      {isPerformingCommunityAction
-                        ? t("global.loading")
-                        : t("community_info.request_to_join")}
-                    </CTAButton>
-                  )}
-                  {isLoggedIn && !isTabletOrMobile && (
-                    <JumpIn
-                      variant="button"
-                      buttonText={t("community_info.jump_in")}
-                      modalProps={{
-                        title: t("community_info.jump_in_modal.title"),
-                        description: t(
-                          "community_info.jump_in_modal.description"
-                        ),
-                        buttonLabel: t(
-                          "community_info.jump_in_modal.button_label"
-                        ),
-                      }}
-                      buttonProps={{
-                        variant: "contained",
-                        sx: {
-                          maxWidth: "175px",
-                          minWidth: "auto",
-                          height: "40px",
-                        },
-                      }}
-                    />
-                  )}
-                </>
-              ) : (
-                <CTAButton
-                  color="secondary"
-                  variant="contained"
-                  onClick={handleJoinClick}
-                  disabled={isPerformingCommunityAction}
-                >
-                  {isPerformingCommunityAction
-                    ? t("global.loading")
-                    : t("community_info.join")}
-                </CTAButton>
+                  buttonProps={{
+                    variant: "contained",
+                    sx: {
+                      maxWidth: "175px",
+                      minWidth: "auto",
+                      height: "40px",
+                    },
+                  }}
+                />
               )}
             </ActionButtons>
           </TitleContainer>

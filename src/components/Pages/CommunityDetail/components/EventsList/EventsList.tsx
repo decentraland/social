@@ -1,41 +1,19 @@
+import { useMemo } from "react"
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, CircularProgress } from "decentraland-ui2"
 import { EmptyEventsIcon } from "./EmptyEventsIcon"
+import { EventItem } from "./EventItem"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
-import { formatEventTime } from "../../../../../utils/dateFormat"
+import { useProfilePictures } from "../../../../../hooks/useProfilePictures"
+import type { EventsListProps } from "./EventsList.types"
 import {
   EmptyState,
   EmptyStateText,
-  EventCard,
-  EventContent,
-  EventImage,
-  EventImageContainer,
-  EventName,
-  EventTime,
   EventsGrid,
   EventsSection,
-  LiveBadgeContainer,
-  LiveBadgeText,
   LoadMoreSentinel,
   SectionTitle,
 } from "./EventsList.styled"
-
-type Event = {
-  id: string
-  name: string
-  image: string
-  isLive: boolean
-  startTime: string
-}
-
-type EventsListProps = {
-  events: Event[]
-  isLoading?: boolean
-  isFetchingMore?: boolean
-  hasMore?: boolean
-  onLoadMore: () => void
-  hideTitle?: boolean
-}
 
 export const EventsList = ({
   events,
@@ -45,6 +23,23 @@ export const EventsList = ({
   onLoadMore,
   hideTitle = false,
 }: EventsListProps) => {
+  const attendeeAddresses = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          events.flatMap((event) =>
+            event.latestAttendees
+              .slice(0, 3)
+              .filter(Boolean)
+              .map((address) => address.toLowerCase())
+          )
+        )
+      ),
+    [events]
+  )
+
+  const attendeePictures = useProfilePictures(attendeeAddresses)
+
   const sentinelRef = useInfiniteScroll({
     hasMore,
     isLoading: isFetchingMore,
@@ -83,22 +78,11 @@ export const EventsList = ({
       ) : (
         <EventsGrid>
           {events.map((event) => (
-            <EventCard key={event.id}>
-              <EventImageContainer>
-                <EventImage src={event.image} alt={event.name} />
-                {event.isLive && (
-                  <LiveBadgeContainer>
-                    <LiveBadgeText>{t("events.live")}</LiveBadgeText>
-                  </LiveBadgeContainer>
-                )}
-              </EventImageContainer>
-              <EventContent>
-                <EventTime data-testid={`event-time-${event.id}`}>
-                  {formatEventTime(event.startTime)}
-                </EventTime>
-                <EventName>{event.name}</EventName>
-              </EventContent>
-            </EventCard>
+            <EventItem
+              key={event.id}
+              event={event}
+              attendeePictures={attendeePictures}
+            />
           ))}
           {hasMore && (
             <LoadMoreSentinel ref={sentinelRef}>
