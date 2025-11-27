@@ -71,7 +71,7 @@ function renderMembersList(
       name: string
       role: string
       profilePictureUrl: string
-      mutualFriends: number
+      hasClaimedName?: boolean
     }>,
     isLoading: false,
     isFetchingMore: false,
@@ -136,7 +136,7 @@ describe("when rendering the members list", () => {
       name: string
       role: string
       profilePictureUrl: string
-      mutualFriends: number
+      hasClaimedName?: boolean
     }>
 
     beforeEach(() => {
@@ -146,14 +146,14 @@ describe("when rendering the members list", () => {
           name: "John Doe",
           role: "admin",
           profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
+          hasClaimedName: false,
         },
         {
           memberAddress: "0x222",
           name: "Jane Smith",
           role: Role.MEMBER,
           profilePictureUrl: "https://example.com/jane.jpg",
-          mutualFriends: 5,
+          hasClaimedName: false,
         },
       ]
     })
@@ -201,26 +201,20 @@ describe("when rendering the members list", () => {
       expect(screen.getByText("member")).toBeInTheDocument()
     })
 
-    it("should display mutual friends count when greater than zero", () => {
-      renderMembersList({ members })
-
-      expect(screen.getByText("5 Mutual Friends")).toBeInTheDocument()
-    })
-
-    it("should not display mutual friends when count is zero", () => {
-      const membersWithoutMutualFriends = [
+    it("should show the claimed name icon when the member has claimed a name", () => {
+      const claimedMembers = [
         {
-          memberAddress: "0x111",
-          name: "John Doe",
-          role: "admin",
-          profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
+          memberAddress: "0x123",
+          name: "Claimed Member",
+          role: Role.MEMBER,
+          profilePictureUrl: "https://example.com/claimed.jpg",
+          hasClaimedName: true,
         },
       ]
 
-      renderMembersList({ members: membersWithoutMutualFriends })
+      renderMembersList({ members: claimedMembers })
 
-      expect(screen.queryByText(/Mutual Friends/)).not.toBeInTheDocument()
+      expect(screen.getByTestId("claimed-name-icon")).toBeInTheDocument()
     })
 
     it("should render member avatars", () => {

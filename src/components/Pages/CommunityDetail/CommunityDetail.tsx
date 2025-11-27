@@ -410,7 +410,7 @@ function CommunityDetail() {
                           name: member.name || member.memberAddress,
                           role: member.role,
                           profilePictureUrl: member.profilePictureUrl || "",
-                          mutualFriends: 0,
+                          hasClaimedName: member.hasClaimedName ?? false,
                         }))}
                         isLoading={isLoadingMembers}
                         isFetchingMore={isFetchingMoreMembers}
@@ -449,7 +449,7 @@ function CommunityDetail() {
                         profilePictureUrl: member.profilePictureUrl || "",
                         name: member.name || member.memberAddress,
                         role: member.role,
-                        mutualFriends: 0,
+                        hasClaimedName: member.hasClaimedName ?? false,
                       }))}
                       isLoading={isLoadingMembers}
                       isFetchingMore={isFetchingMoreMembers}

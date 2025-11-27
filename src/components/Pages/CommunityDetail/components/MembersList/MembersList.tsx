@@ -1,5 +1,6 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, CircularProgress, Typography } from "decentraland-ui2"
+import { ClaimedNameIcon } from "./components/ClaimedNameIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import {
   EmptyState,
@@ -9,7 +10,6 @@ import {
   MemberInfo,
   MemberItem,
   MemberList as MemberListContainer,
-  MemberMutualFriends,
   MemberName,
   MemberRole,
   MembersSection,
@@ -21,7 +21,7 @@ type Member = {
   name: string
   role: string
   profilePictureUrl: string
-  mutualFriends: number
+  hasClaimedName?: boolean
 }
 
 type MembersListProps = {
@@ -88,16 +88,16 @@ export const MembersList = ({
                 <MemberAvatar src={memberItem.profilePictureUrl} />
               </MemberAvatarContainer>
               <MemberInfo>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" alignItems="center">
                   <MemberName>{memberItem.name}</MemberName>
+                  {memberItem.hasClaimedName && (
+                    <ClaimedNameIcon
+                      data-testid="claimed-name-icon"
+                      aria-label="Claimed name badge"
+                    />
+                  )}
                 </Box>
                 <MemberRole>{memberItem.role}</MemberRole>
-                {memberItem.mutualFriends > 0 && (
-                  <MemberMutualFriends>
-                    {memberItem.mutualFriends}{" "}
-                    {t("members_list.mutual_friends")}
-                  </MemberMutualFriends>
-                )}
               </MemberInfo>
             </MemberItem>
           ))}

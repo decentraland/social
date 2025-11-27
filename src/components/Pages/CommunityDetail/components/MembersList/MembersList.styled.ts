@@ -115,16 +115,6 @@ const MemberRole = styled(Box)(({ theme }) => ({
   textTransform: "capitalize",
 }))
 
-const MemberMutualFriends = styled(Typography)(({ theme }) => ({
-  alignSelf: "stretch",
-  fontSize: "12px",
-  fontWeight: 400,
-  lineHeight: "normal",
-  color: "rgba(255, 255, 255, 0.7)",
-  textTransform: "capitalize",
-  fontFamily: theme.typography.fontFamily,
-}))
-
 const LoadMoreSentinel = styled(Box)(() => ({
   width: "100%",
   minHeight: "20px",
@@ -146,7 +136,6 @@ export {
   MemberInfo,
   MemberItem,
   MemberList,
-  MemberMutualFriends,
   MemberName,
   MemberRole,
   MembersSection,
