@@ -25,6 +25,8 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 
+// Store mock dispatch function
+const mockDispatch = jest.fn()
 const mockUseTabletAndBelowMediaQuery = jest.fn()
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
@@ -107,6 +109,25 @@ jest.mock("../../../features/communities/communities.client", () => ({
   useGetMemberRequestsQuery: jest.fn(),
   useCreateCommunityRequestMutation: jest.fn(),
   useCancelCommunityRequestMutation: jest.fn(),
+  communitiesApi: {
+    util: {
+      invalidateTags: jest.fn((tags) => ({
+        type: "invalidateTags",
+        payload: tags,
+      })),
+    },
+  },
+}))
+
+jest.mock("../../../features/events/events.client", () => ({
+  eventsApi: {
+    util: {
+      invalidateTags: jest.fn((tags) => ({
+        type: "invalidateTags",
+        payload: tags,
+      })),
+    },
+  },
 }))
 
 jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
@@ -123,6 +144,7 @@ jest.mock("../../../utils/identity", () => ({
 
 jest.mock("../../../app/hooks", () => ({
   useAppSelector: jest.fn(),
+  useAppDispatch: jest.fn(() => mockDispatch),
 }))
 
 jest.mock("./components/CommunityInfo", () => ({
@@ -238,6 +260,13 @@ describe("when rendering the community detail page", () => {
     mockJoinMutation = jest.fn(() => ({
       unwrap: mockJoinUnwrap,
     }))
+
+    // Reset all mocks
+    jest.clearAllMocks()
+    mockDispatch.mockClear()
+
+    // Setup dispatch to return the action
+    mockDispatch.mockImplementation((action) => action)
 
     // Default to desktop (not tablet/mobile)
     mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
@@ -973,6 +1002,214 @@ describe("when rendering the community detail page", () => {
 
         expect(screen.getByText("John Doe")).toBeInTheDocument()
         expect(screen.getByText("Jane Smith")).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("when user signs out", () => {
+    let community: {
+      id: string
+      name: string
+      description: string
+      privacy: string
+      visibility: string
+      active: boolean
+      membersCount: number
+      ownerAddress: string
+      ownerName: string
+    }
+
+    const setupWalletState = (wallet: { address: string } | null) => {
+      mockUseAppSelector.mockImplementation((selector) => {
+        if (selector === isConnecting) {
+          return false
+        }
+        if (selector === getWallet) {
+          return wallet
+        }
+        return null
+      })
+      mockHasValidIdentity.mockReturnValue(!!wallet)
+    }
+
+    beforeEach(() => {
+      community = {
+        id: "community-1",
+        name: "Test Community",
+        description: "Test Description",
+        privacy: Privacy.PUBLIC,
+        visibility: Visibility.ALL,
+        active: true,
+        membersCount: 100,
+        ownerAddress: "0x123",
+        ownerName: "Test Owner",
+      }
+
+      mockUseGetCommunityByIdQuery.mockReturnValue({
+        data: { data: community },
+        isLoading: false,
+        error: undefined,
+        isError: false,
+      })
+
+      mockUsePaginatedCommunityEvents.mockReturnValue({
+        events: [],
+        isLoading: false,
+        isFetchingMore: false,
+        hasMore: false,
+        loadMore: jest.fn(),
+      })
+
+      mockUsePaginatedCommunityMembers.mockReturnValue({
+        members: [],
+        isLoading: false,
+        isFetchingMore: false,
+        hasMore: false,
+        loadMore: jest.fn(),
+      })
+
+      // Setup dispatch to return the action
+      mockDispatch.mockImplementation((action) => action)
+
+      // Ensure useAppDispatch returns mockDispatch
+      const { useAppDispatch } = jest.requireMock("../../../app/hooks")
+      useAppDispatch.mockReturnValue(mockDispatch)
+    })
+
+    describe("and address changes from non-null to null", () => {
+      beforeEach(() => {
+        setupWalletState({ address: "0x456" })
+      })
+
+      it("should dispatch invalidate actions", async () => {
+        const { rerender } = renderCommunityDetail()
+
+        // Clear mocks to only track the sign-out action
+        mockDispatch.mockClear()
+
+        // Update to no wallet (user signs out)
+        setupWalletState(null)
+
+        // Rerender to trigger the sign-out detection
+        rerender(<CommunityDetail />)
+
+        // Wait for the effect to run and verify dispatch was called
+        await waitFor(
+          () => {
+            expect(mockDispatch).toHaveBeenCalled()
+          },
+          { timeout: 3000 }
+        )
+
+        // Verify dispatch was called with invalidate actions
+        // We test behavior (dispatch is called) not implementation details (exact tags)
+        expect(mockDispatch).toHaveBeenCalledTimes(2)
+      })
+    })
+
+    describe("and address changes from null to non-null", () => {
+      beforeEach(() => {
+        setupWalletState(null)
+      })
+
+      it("should not dispatch invalidate actions", () => {
+        const { rerender } = renderCommunityDetail()
+
+        // Clear mocks after initial render
+        mockDispatch.mockClear()
+
+        // Update to have wallet (user signs in)
+        setupWalletState({ address: "0x456" })
+
+        // Rerender to trigger the address change
+        rerender(<CommunityDetail />)
+
+        // Verify that dispatch was NOT called for invalidate actions (sign in doesn't trigger refresh)
+        const invalidateCalls = mockDispatch.mock.calls.filter(
+          (call) =>
+            call[0]?.type === "invalidateTags" ||
+            call[0]?.payload?.type === "invalidateTags"
+        )
+        expect(invalidateCalls).toHaveLength(0)
+      })
+    })
+
+    describe("and address changes from null to null", () => {
+      beforeEach(() => {
+        setupWalletState(null)
+      })
+
+      it("should not dispatch invalidate actions", () => {
+        const { rerender } = renderCommunityDetail()
+
+        // Clear mocks after initial render
+        mockDispatch.mockClear()
+
+        // Rerender with still no wallet
+        rerender(<CommunityDetail />)
+
+        // Verify that dispatch was NOT called for invalidate actions
+        const invalidateCalls = mockDispatch.mock.calls.filter(
+          (call) =>
+            call[0]?.type === "invalidateTags" ||
+            call[0]?.payload?.type === "invalidateTags"
+        )
+        expect(invalidateCalls).toHaveLength(0)
+      })
+    })
+
+    describe("and address changes from one address to another", () => {
+      beforeEach(() => {
+        setupWalletState({ address: "0x456" })
+      })
+
+      it("should not dispatch invalidate actions", () => {
+        const { rerender } = renderCommunityDetail()
+
+        // Clear mocks after initial render
+        mockDispatch.mockClear()
+
+        // Update to different wallet (switch account)
+        setupWalletState({ address: "0x789" })
+
+        // Rerender to trigger the address change
+        rerender(<CommunityDetail />)
+
+        // Verify that dispatch was NOT called for invalidate actions (switching accounts doesn't trigger refresh)
+        const invalidateCalls = mockDispatch.mock.calls.filter(
+          (call) =>
+            call[0]?.type === "invalidateTags" ||
+            call[0]?.payload?.type === "invalidateTags"
+        )
+        expect(invalidateCalls).toHaveLength(0)
+      })
+    })
+
+    describe("and community id is not provided", () => {
+      beforeEach(() => {
+        mockUseParams.mockReturnValue({ id: undefined })
+        setupWalletState({ address: "0x456" })
+      })
+
+      it("should not dispatch invalidate actions", () => {
+        const { rerender } = renderCommunityDetail()
+
+        // Clear mocks after initial render
+        mockDispatch.mockClear()
+
+        // Update to no wallet (user signs out)
+        setupWalletState(null)
+
+        // Rerender to trigger the sign-out detection
+        rerender(<CommunityDetail />)
+
+        // Verify that dispatch was NOT called for invalidate actions when id is undefined
+        const invalidateCalls = mockDispatch.mock.calls.filter(
+          (call) =>
+            call[0]?.type === "invalidateTags" ||
+            call[0]?.payload?.type === "invalidateTags"
+        )
+        expect(invalidateCalls).toHaveLength(0)
       })
     })
   })
