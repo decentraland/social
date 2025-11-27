@@ -31,6 +31,8 @@ type MembersListProps = {
   hasMore?: boolean
   onLoadMore: () => void
   hideTitle?: boolean
+  total?: number
+  showCount?: boolean
 }
 
 export const MembersList = ({
@@ -40,7 +42,12 @@ export const MembersList = ({
   hasMore = false,
   onLoadMore,
   hideTitle = false,
+  total,
+  showCount = true,
 }: MembersListProps) => {
+  const membersCount = typeof total === "number" ? total : members.length
+  const baseTitle = t("members_list.title")
+  const membersTitle = showCount ? `${baseTitle} (${membersCount})` : baseTitle
   const sentinelRef = useInfiniteScroll({
     hasMore,
     isLoading: isFetchingMore,
@@ -50,7 +57,7 @@ export const MembersList = ({
   if (isLoading) {
     return (
       <MembersSection>
-        {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
+        {!hideTitle && <SectionTitle>{membersTitle}</SectionTitle>}
         <Box
           display="flex"
           justifyContent="center"
@@ -65,7 +72,7 @@ export const MembersList = ({
 
   return (
     <MembersSection>
-      {!hideTitle && <SectionTitle>{t("members_list.title")}</SectionTitle>}
+      {!hideTitle && <SectionTitle>{membersTitle}</SectionTitle>}
       {members.length === 0 ? (
         <EmptyState>
           <Typography variant="body2" color="textSecondary">

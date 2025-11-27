@@ -132,6 +132,7 @@ function CommunityDetail() {
     isFetchingMore: isFetchingMoreMembers,
     hasMore: hasMoreMembers,
     loadMore: loadMoreMembers,
+    total: totalMembers,
   } = usePaginatedCommunityMembers({
     communityId: id || "",
     enabled: shouldFetchMembersAndEvents,
@@ -416,6 +417,8 @@ function CommunityDetail() {
                         hasMore={hasMoreMembers}
                         onLoadMore={loadMoreMembers}
                         hideTitle={true}
+                        showCount={false}
+                        total={totalMembers}
                       />
                     </MembersColumn>
                   ) : (
@@ -452,6 +455,7 @@ function CommunityDetail() {
                       isFetchingMore={isFetchingMoreMembers}
                       hasMore={hasMoreMembers}
                       onLoadMore={loadMoreMembers}
+                      total={totalMembers}
                     />
                   </MembersColumn>
 

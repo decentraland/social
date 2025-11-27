@@ -90,13 +90,13 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ isLoading: true })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ isLoading: true, hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
     it("should display a loading indicator", () => {
@@ -114,13 +114,13 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ members: [] })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ members: [], hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
     it("should display an empty state message", () => {
@@ -165,13 +165,26 @@ describe("when rendering the members list", () => {
     it("should display the section title", () => {
       renderMembersList({ members })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
     it("should not display the section title when hideTitle is true", () => {
       renderMembersList({ members, hideTitle: true })
 
-      expect(screen.queryByText("MEMBERS")).not.toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
+    })
+
+    it("should display the total count when provided", () => {
+      renderMembersList({ members, total: 15 })
+
+      expect(screen.getByText("MEMBERS (15)")).toBeInTheDocument()
+    })
+
+    it("should hide the total count when showCount is false", () => {
+      renderMembersList({ members, total: 15, showCount: false })
+
+      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.queryByText(/^MEMBERS \(\d+\)/)).not.toBeInTheDocument()
     })
 
     it("should render all members", () => {
