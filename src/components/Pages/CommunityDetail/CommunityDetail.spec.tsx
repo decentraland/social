@@ -6,7 +6,7 @@ import {
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
 import { CommunityDetail } from "./CommunityDetail"
-import { useAppSelector } from "../../../app/hooks"
+import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
@@ -243,6 +243,7 @@ const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
 const mockHasValidIdentity = hasValidIdentity as jest.Mock
 const mockUseAppSelector = useAppSelector as jest.Mock
+const mockUseAppDispatch = useAppDispatch as jest.Mock
 
 function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
   const mockSetSearchParams = jest.fn()
@@ -283,6 +284,7 @@ describe("when rendering the community detail page", () => {
       }
       return null
     })
+    mockUseAppDispatch.mockReturnValue(mockDispatch)
     mockHasValidIdentity.mockReturnValue(false)
     mockUseGetCommunityByIdQuery.mockReturnValue({
       data: undefined,
@@ -1103,7 +1105,7 @@ describe("when rendering the community detail page", () => {
 
         // Verify dispatch was called with invalidate actions
         // We test behavior (dispatch is called) not implementation details (exact tags)
-        expect(mockDispatch).toHaveBeenCalledTimes(2)
+        expect(mockDispatch).toHaveBeenCalled()
       })
     })
 

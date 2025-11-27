@@ -196,7 +196,8 @@ export const CommunityInfo = ({
     return renderJoinButton()
   }
 
-  const shouldShowJumpIn = isPrivate && isLoggedIn && !isTabletOrMobile
+  const shouldShowJumpIn =
+    isLoggedIn && !isTabletOrMobile && (isMember || hasPendingRequest)
 
   return (
     <InfoSection>
