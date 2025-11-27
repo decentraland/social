@@ -1,7 +1,14 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { Box, CircularProgress, Typography } from "decentraland-ui2"
+import {
+  Box,
+  CircularProgress,
+  Theme,
+  Typography,
+  useTheme,
+} from "decentraland-ui2"
 import { ClaimedNameIcon } from "./components/ClaimedNameIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
+import { getRandomRarityColor } from "../utils/getRandomRarityColor"
 import {
   EmptyState,
   LoadMoreSentinel,
@@ -53,6 +60,7 @@ export const MembersList = ({
     isLoading: isFetchingMore,
     onLoadMore,
   })
+  const theme = useTheme<Theme>()
 
   if (isLoading) {
     return (
@@ -85,7 +93,10 @@ export const MembersList = ({
           {members.map((memberItem) => (
             <MemberItem key={memberItem.memberAddress}>
               <MemberAvatarContainer>
-                <MemberAvatar src={memberItem.profilePictureUrl} />
+                <MemberAvatar
+                  src={memberItem.profilePictureUrl}
+                  backgroundColor={getRandomRarityColor(theme)}
+                />
               </MemberAvatarContainer>
               <MemberInfo>
                 <Box display="flex" alignItems="center">

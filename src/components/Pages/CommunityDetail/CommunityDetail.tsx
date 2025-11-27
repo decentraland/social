@@ -430,6 +430,8 @@ function CommunityDetail() {
                           image: event.image || "",
                           isLive: event.live || false,
                           startTime: event.startAt,
+                          totalAttendees: event.totalAttendees,
+                          latestAttendees: event.latestAttendees,
                         }))}
                         isLoading={isLoadingEvents}
                         isFetchingMore={isFetchingMoreEvents}
@@ -467,6 +469,8 @@ function CommunityDetail() {
                         image: event.image || "",
                         isLive: event.live || false,
                         startTime: event.startAt,
+                        totalAttendees: event.totalAttendees,
+                        latestAttendees: event.latestAttendees,
                       }))}
                       isLoading={isLoadingEvents}
                       isFetchingMore={isFetchingMoreEvents}

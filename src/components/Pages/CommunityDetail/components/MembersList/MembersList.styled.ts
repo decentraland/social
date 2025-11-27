@@ -78,10 +78,13 @@ const MemberAvatarContainer = styled(Box)(() => ({
   padding: "0",
 }))
 
-const MemberAvatar = styled(Avatar)(() => ({
+const MemberAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "backgroundColor",
+})<{ backgroundColor?: string }>(({ backgroundColor, theme }) => ({
   width: "100%",
   height: "100%",
   borderRadius: "50%",
+  backgroundColor: backgroundColor ?? theme.palette.secondary.main,
 }))
 
 const MemberInfo = styled(Box)(({ theme }) => ({
