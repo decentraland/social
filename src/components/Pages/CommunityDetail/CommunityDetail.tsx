@@ -38,7 +38,6 @@ import {
   RequestStatus,
   RequestType,
 } from "../../../features/communities/types"
-import { eventsApi } from "../../../features/events/events.client"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
@@ -105,21 +104,17 @@ function CommunityDetail() {
     const previousAddress = previousAddressRef.current
     const currentAddress = address
 
-    // Detect sign out: address changed from non-null to null
-    if (previousAddress && !currentAddress && id) {
-      // Invalidate cache tags - RTK Query will automatically refetch active queries
+    const shouldInvalidateCommunity =
+      id &&
+      previousAddress !== currentAddress &&
+      (previousAddress !== null || currentAddress !== null)
+
+    if (shouldInvalidateCommunity) {
       dispatch(
-        communitiesApi.util.invalidateTags([
-          { type: "Communities", id },
-          "Communities",
-          "Members",
-          "MemberRequests",
-        ])
+        communitiesApi.util.invalidateTags([{ type: "Communities", id }])
       )
-      dispatch(eventsApi.util.invalidateTags(["Events"]))
     }
 
-    // Update the ref for next comparison
     previousAddressRef.current = currentAddress || null
   }, [address, id, dispatch])
 
