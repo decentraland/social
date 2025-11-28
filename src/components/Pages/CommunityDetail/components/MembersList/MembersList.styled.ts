@@ -28,7 +28,7 @@ const MemberList = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.25),
   width: "100%",
   alignItems: "stretch",
-  maxHeight: "600px",
+  maxHeight: "350px",
   overflowY: "auto",
   overflowX: "hidden",
   scrollBehavior: "smooth",

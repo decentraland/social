@@ -4,7 +4,6 @@ const PageContainer = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  minHeight: "100vh",
   alignItems: "flex-start",
   background:
     "radial-gradient(103.89% 95.21% at 95.21% 9.85%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)",
@@ -19,8 +18,8 @@ const ContentContainer = styled(Box)(() => ({
 const BottomSection = styled(Box)(({ theme }) => ({
   display: "flex",
   gap: theme.spacing(7.5), // 60px
-  paddingTop: theme.spacing(6), // 48px
-  paddingBottom: theme.spacing(1.25), // 10px
+  paddingTop: theme.spacing(2.5), // 20px
+  paddingBottom: theme.spacing(1), // 8px
   paddingLeft: theme.spacing(30), // 240px
   paddingRight: theme.spacing(30), // 240px
   [theme.breakpoints.between("lg", "xl")]: {
