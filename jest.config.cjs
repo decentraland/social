@@ -1,5 +1,4 @@
 module.exports = {
-  preset: "ts-jest",
   testEnvironment: "jsdom",
   roots: ["<rootDir>/src"],
   testMatch: [
@@ -10,30 +9,17 @@ module.exports = {
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   transform: {
-    "^.+\\.(ts|tsx)$": [
-      "ts-jest",
-      {
-        tsconfig: {
-          jsx: "react-jsx",
-          esModuleInterop: true,
-          allowSyntheticDefaultImports: true,
-          resolveJsonModule: true,
-          types: ["@types/jest", "@types/node", "@testing-library/jest-dom"],
-        },
-        isolatedModules: false,
-      },
-    ],
-    "^.+/node_modules/flat/.+\\.js$": [
+    "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
+      "<rootDir>/src/tests/config/fileTransformer.cjs",
+    "^.+\\.(t|j)sx?$": [
       "@swc/jest",
       {
         jsc: {
-          parser: {
-            syntax: "ecmascript",
+          transform: {
+            react: {
+              runtime: "automatic",
+            },
           },
-          target: "es2020",
-        },
-        module: {
-          type: "commonjs",
         },
       },
     ],
@@ -42,7 +28,7 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(decentraland-ui2|@emotion|@mui|flat)/)",
+    "node_modules/(?!(multiformats|uint8arrays|@dcl/single-sign-on-client|decentraland-connect|uuid|decentraland-dapps|decentraland-ui2|@mui|@babel|@emotion|flat)/)",
   ],
   setupFiles: ["<rootDir>/src/tests/beforeSetupTests.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/tests/afterSetupTest.ts"],

@@ -1,5 +1,5 @@
+import { Theme } from "decentraland-ui2"
 import { getRandomRarityColor } from "./getRandomRarityColor"
-import type { Theme } from "@mui/material/styles"
 
 describe("getRandomRarityColor", () => {
   afterEach(() => {
