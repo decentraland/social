@@ -6,10 +6,8 @@ import {
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
 import {
-  Alert,
   Box,
   CircularProgress,
-  Snackbar,
   Typography,
   useTabletAndBelowMediaQuery,
 } from "decentraland-ui2"
@@ -42,6 +40,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { hasValidIdentity } from "../../../utils/identity"
 import { PageLayout } from "../../PageLayout"
+import { NotFound } from "../NotFound"
 import { AllowedAction } from "./CommunityDetail.types"
 import {
   BottomSection,
@@ -73,25 +72,15 @@ function CommunityDetail() {
     error: queryError,
     isError,
   } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
-  const [
-    joinCommunity,
-    { isLoading: isJoining, error: joinError, reset: resetJoinMutation },
-  ] = useJoinCommunityMutation()
+  const [joinCommunity, { isLoading: isJoining, error: joinError }] =
+    useJoinCommunityMutation()
   const [
     createCommunityRequest,
-    {
-      isLoading: isCreatingRequest,
-      error: createRequestError,
-      reset: resetCreateRequestMutation,
-    },
+    { isLoading: isCreatingRequest, error: createRequestError },
   ] = useCreateCommunityRequestMutation()
   const [
     cancelCommunityRequest,
-    {
-      isLoading: isCancellingRequest,
-      error: cancelRequestError,
-      reset: resetCancelRequestMutation,
-    },
+    { isLoading: isCancellingRequest, error: cancelRequestError },
   ] = useCancelCommunityRequestMutation()
 
   const isLoggedIn = hasValidIdentity(wallet)
@@ -250,17 +239,6 @@ function CommunityDetail() {
     [isLoggedIn, address, cancelCommunityRequest]
   )
 
-  const handleErrorClose = useCallback(() => {
-    setError(null)
-    resetJoinMutation()
-    resetCreateRequestMutation()
-    resetCancelRequestMutation()
-  }, [
-    resetJoinMutation,
-    resetCreateRequestMutation,
-    resetCancelRequestMutation,
-  ])
-
   // Auto-execute action after authentication redirect
   useEffect(() => {
     const action = searchParams.get("action") as AllowedAction | null
@@ -366,21 +344,16 @@ function CommunityDetail() {
     )
   }
 
-  if (displayError) {
+  if (displayError || !community) {
     return (
-      <ContentContainer>
-        <Snackbar
-          open={!!displayError}
-          autoHideDuration={6000}
-          onClose={handleErrorClose}
-        >
-          <Alert severity="error">{displayError}</Alert>
-        </Snackbar>
-      </ContentContainer>
+      <NotFound
+        title={t("community_detail.not_found")}
+        description={t("community_detail.not_found_description")}
+      />
     )
   }
 
-  if (!community) {
+  if (displayError || !community) {
     return (
       <ContentContainer>
         <CenteredContainer>

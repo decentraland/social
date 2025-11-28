@@ -1,24 +1,31 @@
 import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import { NotFoundIcon } from "./NotFoundIcon"
+import { Icon, muiIcons, useTheme } from "decentraland-ui2"
 import { PageLayout } from "../../PageLayout"
+import { NotFoundProps } from "./NotFound.types"
 import {
-  EmptyState,
-  EmptyStateDescription,
-  EmptyStateText,
+  NotFoundContainer,
+  NotFoundDescription,
+  NotFoundTitle,
 } from "./NotFound.styled"
 
-const NotFound = () => {
+const NotFound = (props: NotFoundProps) => {
+  const { title, description } = props
+  const theme = useTheme()
+
   return (
     <PageLayout>
-      <EmptyState>
-        <NotFoundIcon />
-        <EmptyStateText color="textPrimary">
-          {t("not_found.title")}
-        </EmptyStateText>
-        <EmptyStateDescription color="textSecondary">
-          {t("not_found.description")}
-        </EmptyStateDescription>
-      </EmptyState>
+      <NotFoundContainer>
+        <Icon
+          component={muiIcons.ErrorOutline}
+          sx={{ fontSize: theme.spacing(9) }}
+        />
+        <NotFoundTitle color="textPrimary">
+          {title || t("not_found.title")}
+        </NotFoundTitle>
+        <NotFoundDescription color="textSecondary">
+          {description || t("not_found.description")}
+        </NotFoundDescription>
+      </NotFoundContainer>
     </PageLayout>
   )
 }

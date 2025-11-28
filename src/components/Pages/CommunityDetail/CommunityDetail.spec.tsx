@@ -5,6 +5,7 @@ import {
   getData as getWallet,
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
+import type { Theme } from "decentraland-ui2"
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import {
@@ -28,6 +29,17 @@ import { hasValidIdentity } from "../../../utils/identity"
 // Store mock dispatch function
 const mockDispatch = jest.fn()
 const mockUseTabletAndBelowMediaQuery = jest.fn()
+const mockTheme = {
+  spacing: (value: number) => `${value * 8}px`, // MUI spacing multiplies by 8
+  typography: {
+    fontFamily: "Inter",
+  },
+  palette: {
+    text: {
+      primary: "#000000",
+    },
+  },
+} as unknown as Theme
 jest.mock("decentraland-ui2", () => {
   type StyleObject = Record<string, unknown>
   type StyleFunction = (props: { theme: unknown }) => StyleObject
@@ -89,6 +101,17 @@ jest.mock("decentraland-ui2", () => {
     ),
     useTabletAndBelowMediaQuery: (...args: unknown[]) =>
       mockUseTabletAndBelowMediaQuery(...args),
+    useTheme: () => mockTheme,
+    Icon: ({
+      component: Component,
+      ...props
+    }: {
+      component?: React.ComponentType<Record<string, unknown>>
+    } & React.HTMLAttributes<HTMLElement>) =>
+      Component ? <Component {...props} /> : <span {...props} />,
+    muiIcons: {
+      ErrorOutline: () => <svg data-testid="error-outline-icon" />,
+    },
     styled: mockStyled,
   }
 })
@@ -374,7 +397,10 @@ describe("when rendering the community detail page", () => {
     it("should display an error message", () => {
       renderCommunityDetail()
 
-      expect(screen.getByText("Failed to fetch community")).toBeInTheDocument()
+      expect(screen.getByText("Community not found")).toBeInTheDocument()
+      expect(
+        screen.getByText("The community you are looking for does not exist.")
+      ).toBeInTheDocument()
     })
   })
 
@@ -718,7 +744,12 @@ describe("when rendering the community detail page", () => {
 
                 await waitFor(() => {
                   expect(
-                    screen.getByText("Failed to create request")
+                    screen.getByText("Community not found")
+                  ).toBeInTheDocument()
+                  expect(
+                    screen.getByText(
+                      "The community you are looking for does not exist."
+                    )
                   ).toBeInTheDocument()
                 })
               })
@@ -802,7 +833,12 @@ describe("when rendering the community detail page", () => {
 
                 await waitFor(() => {
                   expect(
-                    screen.getByText("Failed to cancel request")
+                    screen.getByText("Community not found")
+                  ).toBeInTheDocument()
+                  expect(
+                    screen.getByText(
+                      "The community you are looking for does not exist."
+                    )
                   ).toBeInTheDocument()
                 })
               })
@@ -882,7 +918,14 @@ describe("when rendering the community detail page", () => {
             await user.click(joinButton)
 
             await waitFor(() => {
-              expect(screen.getByText("Failed to join")).toBeInTheDocument()
+              expect(
+                screen.getByText("Community not found")
+              ).toBeInTheDocument()
+              expect(
+                screen.getByText(
+                  "The community you are looking for does not exist."
+                )
+              ).toBeInTheDocument()
             })
           })
         })
