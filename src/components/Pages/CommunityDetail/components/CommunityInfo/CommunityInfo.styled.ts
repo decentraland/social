@@ -203,7 +203,7 @@ const CommunityLabel = styled(Typography)(({ theme }) => ({
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+  fontFamily: theme.typography.fontFamily,
   fontWeight: 500,
   fontSize: "32px",
   lineHeight: "124%",

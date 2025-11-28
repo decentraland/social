@@ -12,8 +12,8 @@ const EmptyState = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 }))
 
-const EmptyStateText = styled(Typography)(() => ({
-  fontFamily: "Inter",
+const EmptyStateText = styled(Typography)(({ theme }) => ({
+  fontFamily: theme.typography.fontFamily,
   fontWeight: 600,
   fontSize: "18px",
   lineHeight: "100%",
@@ -22,8 +22,8 @@ const EmptyStateText = styled(Typography)(() => ({
   verticalAlign: "middle",
 }))
 
-const EmptyStateDescription = styled(Typography)(() => ({
-  fontFamily: "Inter",
+const EmptyStateDescription = styled(Typography)(({ theme }) => ({
+  fontFamily: theme.typography.fontFamily,
   fontWeight: 400,
   fontSize: "14px",
   lineHeight: "140%",
