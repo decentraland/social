@@ -5,8 +5,8 @@ const InfoSection = styled(Box)(({ theme }) => ({
   flexDirection: "column",
   gap: theme.spacing(7.5), // 60px
   alignItems: "start",
-  paddingTop: theme.spacing(10), // 80px
-  paddingBottom: theme.spacing(7.5), // 60px
+  paddingTop: theme.spacing(6), // 48px
+  paddingBottom: theme.spacing(4), // 32px
   paddingLeft: theme.spacing(30), // 240px
   paddingRight: theme.spacing(30), // 240px
   backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -84,7 +84,7 @@ const CommunityDetails = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  gap: theme.spacing(6), // 48px
+  gap: theme.spacing(3), // 24px
   minWidth: 0,
   [theme.breakpoints.down("sm")]: {
     paddingLeft: theme.spacing(2), // 16px
@@ -190,6 +190,12 @@ const TitleContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.5), // 12px
 }))
 
+const TitleHeader = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(0.25), // 2px
+}))
+
 const CommunityLabel = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   fontWeight: 400,
@@ -199,7 +205,6 @@ const CommunityLabel = styled(Typography)(({ theme }) => ({
   verticalAlign: "middle",
   textTransform: "uppercase",
   color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(1.5), // 12px
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -265,6 +270,7 @@ export {
   PrivacyMembersText,
   Title,
   TitleContainer,
+  TitleHeader,
   TopRow,
   DescriptionRow,
 }
