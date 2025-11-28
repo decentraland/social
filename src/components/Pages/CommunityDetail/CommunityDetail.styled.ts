@@ -1,4 +1,4 @@
-import { Box, styled } from "decentraland-ui2"
+import { Box, Icon, styled } from "decentraland-ui2"
 
 const PageContainer = styled(Box)(() => ({
   display: "flex",
@@ -77,6 +77,10 @@ const CenteredContainer = styled(Box)(() => ({
   minHeight: "400px",
 }))
 
+const NotFoundIcon = styled(Icon)(({ theme }) => ({
+  fontSize: theme.spacing(9), // 72px
+}))
+
 export {
   BottomSection,
   BottomSectionColumn,
@@ -85,4 +89,5 @@ export {
   MembersColumn,
   PageContainer,
   CenteredContainer,
+  NotFoundIcon,
 }

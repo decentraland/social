@@ -1,6 +1,6 @@
 import { Box, Typography, styled } from "decentraland-ui2"
 
-const EmptyState = styled(Box)(({ theme }) => ({
+const NotFoundContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -12,7 +12,7 @@ const EmptyState = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 }))
 
-const EmptyStateText = styled(Typography)(({ theme }) => ({
+const NotFoundTitle = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   fontWeight: 600,
   fontSize: "18px",
@@ -22,7 +22,7 @@ const EmptyStateText = styled(Typography)(({ theme }) => ({
   verticalAlign: "middle",
 }))
 
-const EmptyStateDescription = styled(Typography)(({ theme }) => ({
+const NotFoundDescription = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   fontWeight: 400,
   fontSize: "14px",
@@ -32,4 +32,4 @@ const EmptyStateDescription = styled(Typography)(({ theme }) => ({
   verticalAlign: "middle",
 }))
 
-export { EmptyState, EmptyStateText, EmptyStateDescription }
+export { NotFoundContainer, NotFoundTitle, NotFoundDescription }
