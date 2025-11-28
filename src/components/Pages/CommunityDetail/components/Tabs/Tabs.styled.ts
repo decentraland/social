@@ -8,7 +8,9 @@ const TabsContainer = styled(Box)(({ theme }) => ({
   paddingBottom: 0,
 }))
 
-const Tab = styled(Box)<{ active: boolean }>(({ active, theme }) => ({
+const Tab = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "active",
+})<{ active: boolean }>(({ active, theme }) => ({
   display: "flex",
   alignItems: "center",
   height: "46px",
@@ -26,14 +28,14 @@ const TabButton = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 1.25), // 0 10px
 }))
 
-const TabText = styled(Typography)<{ active: boolean }>(
-  ({ active, theme }) => ({
-    fontSize: theme.typography.body1.fontSize,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    color: active ? theme.palette.common.white : theme.palette.text.secondary,
-    fontFamily: theme.typography.fontFamily,
-  })
-)
+const TabText = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== "active",
+})<{ active: boolean }>(({ active, theme }) => ({
+  fontSize: theme.typography.body1.fontSize,
+  fontWeight: 600,
+  textTransform: "uppercase",
+  color: active ? theme.palette.common.white : theme.palette.text.secondary,
+  fontFamily: theme.typography.fontFamily,
+}))
 
 export { Tab, TabButton, TabText, TabsContainer }

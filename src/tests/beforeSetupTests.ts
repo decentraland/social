@@ -1,3 +1,4 @@
+import * as React from "react"
 import { TextDecoder, TextEncoder } from "util"
 import { flatten } from "flat"
 import * as locales from "../modules/translation/locales"
@@ -11,27 +12,66 @@ jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({
   t: (key: string) => translations[key] || key,
 }))
 
-jest.mock("decentraland-ui2", () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    ...jest.requireActual("decentraland-ui2"),
-    Navbar2: () => jest.fn().mockReturnValue(null),
-  }
-})
+// Mock lottie-react to avoid canvas issues
+jest.mock("lottie-react", () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue(null),
+}))
+
+jest.mock("decentraland-ui2", () => ({
+  ...jest.requireActual("decentraland-ui2"),
+  Navbar: jest.fn().mockReturnValue(null),
+  JumpIn: ({
+    buttonText,
+    buttonProps,
+  }: {
+    buttonText?: string
+    buttonProps?: Record<string, unknown>
+  }) =>
+    React.createElement(
+      "button",
+      { ...buttonProps, "data-testid": "jump-in-button" },
+      buttonText || "JUMP IN"
+    ),
+}))
+
+// Store the matchMedia state - can be controlled by tests
+let matchMediaMatches = false
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => undefined,
-    removeListener: () => undefined,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-    dispatchEvent: () => undefined,
-  }),
+  configurable: true,
+  value: (query: string) => {
+    // Check if this is a tablet/mobile query (typically contains max-width for smaller screens)
+    const isTabletMobileQuery =
+      query.includes("max-width") ||
+      query.includes("768") ||
+      query.includes("tablet") ||
+      query.includes("mobile")
+
+    // For tablet/mobile queries, return matches based on our mode
+    // For other queries (like min-width for desktop), return the opposite
+    const matches = isTabletMobileQuery ? matchMediaMatches : !matchMediaMatches
+
+    return {
+      matches,
+      media: query,
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => undefined,
+    }
+  },
 })
+
+// Export function to control matchMedia from tests
+;(
+  global as { setMatchMedia?: (isTabletOrMobile: boolean) => void }
+).setMatchMedia = (isTabletOrMobile: boolean) => {
+  matchMediaMatches = isTabletOrMobile
+}
 
 global.TextEncoder = TextEncoder as typeof global.TextEncoder
 global.TextDecoder = TextDecoder as typeof global.TextDecoder

@@ -1,7 +1,9 @@
-import { render, screen } from "@testing-library/react"
+import * as React from "react"
+import { screen } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityInfo } from "./CommunityInfo"
 import { Privacy, Visibility } from "../../../../../features/communities/types"
+import { renderWithProviders } from "../../../../../tests/testUtils"
 import { AllowedAction } from "../../CommunityDetail.types"
 import type { Community } from "../../../../../features/communities/types"
 import type { Theme } from "@mui/material/styles"
@@ -11,112 +13,37 @@ jest.mock("../../../../../utils/authRedirect", () => ({
   redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args),
 }))
 
+// Create mock functions for the hooks that we can control
 const mockUseTabletAndBelowMediaQuery = jest.fn()
 const mockUseTabletMediaQuery = jest.fn()
-const mockTheme = {
-  palette: {
-    secondary: { main: "#FFFFFF" },
-    raritiesText: {
-      rare: "#34CE76",
-    },
-  },
-} as unknown as Theme
+const mockUseTheme = jest.fn()
+
 jest.mock("decentraland-ui2", () => {
-  type StyleObject = Record<string, unknown>
-  type StyleFunction = (props: { theme: unknown }) => StyleObject
-  type Styles = StyleObject | StyleFunction
-
-  const mockStyled = <T extends React.ComponentType<React.ComponentProps<T>>>(
-    component: T
-  ) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return (_styles: Styles) => {
-      return component
-    }
-  }
-
-  const filterStyleProps = (props: Record<string, unknown>) => {
-    const {
-      display: _display,
-      justifyContent: _justifyContent,
-      alignItems: _alignItems,
-      minHeight: _minHeight,
-      padding: _padding,
-      modalProps: _modalProps,
-      buttonProps: _buttonProps,
-      sx: _sx,
-      ...rest
-    } = props
-    void _display
-    void _justifyContent
-    void _alignItems
-    void _minHeight
-    void _padding
-    void _modalProps
-    void _buttonProps
-    void _sx
-    return rest
-  }
-
-  const CheckIcon = () => (
-    <svg data-testid="check-icon">
-      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-    </svg>
-  )
-
+  const actual = jest.requireActual("decentraland-ui2")
   return {
-    Avatar: ({
-      src,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> & { src?: string }) => (
-      <img {...props} src={src || ""} alt="" />
+    ...actual,
+    Navbar: jest.fn().mockReturnValue(null),
+    JumpIn: jest.fn(
+      ({
+        buttonText,
+        buttonProps,
+      }: {
+        buttonText?: string
+        buttonProps?: Record<string, unknown>
+      }) => {
+        // eslint-disable-next-line react/display-name
+        return React.createElement(
+          "button",
+          { ...buttonProps, "data-testid": "jump-in-button" },
+          buttonText || "JUMP IN"
+        )
+      }
     ),
-    Box: ({
-      children,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
-      <div {...filterStyleProps(props)}>{children}</div>
-    ),
-    Button: ({
-      children,
-      ...props
-    }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-      <button {...props}>{children}</button>
-    ),
-    Icon: ({
-      component: Component,
-      ...props
-    }: {
-      component?: React.ComponentType<Record<string, unknown>>
-    } & React.HTMLAttributes<HTMLElement>) =>
-      Component ? <Component {...props} /> : <span {...props} />,
-    JumpIn: ({
-      buttonText,
-      ...props
-    }: {
-      buttonText: string
-    } & React.ButtonHTMLAttributes<HTMLButtonElement> &
-      Record<string, unknown>) => (
-      <button {...filterStyleProps(props)}>{buttonText}</button>
-    ),
-    Typography: ({
-      children,
-      ...props
-    }: React.HTMLAttributes<HTMLParagraphElement>) => (
-      <p {...props}>{children}</p>
-    ),
-    SvgIcon: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
-    ),
-    muiIcons: {
-      Check: CheckIcon,
-    },
     useTabletAndBelowMediaQuery: (...args: unknown[]) =>
       mockUseTabletAndBelowMediaQuery(...args),
     useTabletMediaQuery: (...args: unknown[]) =>
       mockUseTabletMediaQuery(...args),
-    styled: mockStyled,
-    useTheme: () => mockTheme,
+    useTheme: (...args: unknown[]) => mockUseTheme(...args),
   }
 })
 
@@ -148,7 +75,7 @@ function renderCommunityInfo(
     ownerName: "Test Owner",
   }
 
-  return render(
+  return renderWithProviders(
     <CommunityInfo
       community={defaultCommunity}
       isLoggedIn={false}
@@ -161,6 +88,20 @@ function renderCommunityInfo(
     />
   )
 }
+
+// Export the mock functions so we can control them in tests
+const useTabletAndBelowMediaQuerySpy = mockUseTabletAndBelowMediaQuery
+const useTabletMediaQuerySpy = mockUseTabletMediaQuery
+const useThemeSpy = mockUseTheme
+
+const mockTheme = {
+  palette: {
+    secondary: { main: "#FFFFFF" },
+    raritiesText: {
+      rare: "#34CE76",
+    },
+  },
+} as unknown as Theme
 
 describe("when rendering the community info", () => {
   let mockOnJoin: jest.Mock
@@ -183,12 +124,13 @@ describe("when rendering the community info", () => {
       ownerName: "Test Owner",
     }
     // Default to desktop (not tablet/mobile)
-    mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
-    mockUseTabletMediaQuery.mockReturnValue(false)
+    useTabletAndBelowMediaQuerySpy.mockReturnValue(false)
+    useTabletMediaQuerySpy.mockReturnValue(false)
+    useThemeSpy.mockReturnValue(mockTheme)
   })
 
   afterEach(() => {
-    jest.resetAllMocks()
+    jest.clearAllMocks()
   })
 
   it("should display the community name", () => {
@@ -280,8 +222,12 @@ describe("when rendering the community info", () => {
 
         // Find the owner avatar specifically
         const ownerRow = screen.getByText(/By/)
-        const ownerAvatar = ownerRow.parentElement?.querySelector("img")
-        expect(ownerAvatar).toHaveAttribute("src", "")
+        const ownerAvatar =
+          ownerRow.parentElement?.querySelector("img") ||
+          ownerRow.parentElement
+            ?.querySelector('[data-testid="PersonIcon"]')
+            ?.closest("div")
+        expect(ownerAvatar).toBeInTheDocument()
       })
     })
   })
@@ -289,8 +235,8 @@ describe("when rendering the community info", () => {
   describe("and content viewing is enabled", () => {
     describe("and the device is not tablet", () => {
       beforeEach(() => {
-        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
-        mockUseTabletMediaQuery.mockReturnValue(false)
+        useTabletAndBelowMediaQuerySpy.mockReturnValue(false)
+        useTabletMediaQuerySpy.mockReturnValue(false)
       })
 
       it("should display the community description", () => {
@@ -305,8 +251,8 @@ describe("when rendering the community info", () => {
 
     describe("and the device is tablet", () => {
       beforeEach(() => {
-        mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
-        mockUseTabletMediaQuery.mockReturnValue(true)
+        useTabletAndBelowMediaQuerySpy.mockReturnValue(true)
+        useTabletMediaQuerySpy.mockReturnValue(true)
       })
 
       it("should render the description row", () => {
@@ -610,7 +556,7 @@ describe("when rendering the community info", () => {
 
           describe("and the device is not tablet", () => {
             beforeEach(() => {
-              mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
+              useTabletAndBelowMediaQuerySpy.mockReturnValue(false)
             })
 
             it("should display jump in button", () => {
@@ -628,7 +574,7 @@ describe("when rendering the community info", () => {
 
           describe("and the device is tablet/mobile", () => {
             beforeEach(() => {
-              mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+              useTabletAndBelowMediaQuerySpy.mockReturnValue(true)
             })
 
             it("should not display jump in button", () => {
@@ -689,7 +635,7 @@ describe("when rendering the community info", () => {
         })
 
         expect(screen.getByText("JOINED")).toBeInTheDocument()
-        expect(screen.getByTestId("check-icon")).toBeInTheDocument()
+        expect(screen.getByTestId("CheckIcon")).toBeInTheDocument()
       })
 
       it("should have joined button disabled", () => {
@@ -706,7 +652,7 @@ describe("when rendering the community info", () => {
 
       describe("and the device is not tablet", () => {
         it("should display the jump in button", () => {
-          mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
+          useTabletAndBelowMediaQuerySpy.mockReturnValue(false)
           renderCommunityInfo({
             community: memberCommunity,
             isLoggedIn: true,
@@ -720,7 +666,7 @@ describe("when rendering the community info", () => {
 
       describe("and the device is tablet", () => {
         it("should not display the jump in button", () => {
-          mockUseTabletAndBelowMediaQuery.mockReturnValue(true)
+          useTabletAndBelowMediaQuerySpy.mockReturnValue(true)
           renderCommunityInfo({
             community: memberCommunity,
             isLoggedIn: true,
