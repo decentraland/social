@@ -38,6 +38,7 @@ import {
   PrivacyMembersText,
   Title,
   TitleContainer,
+  TitleHeader,
   TopRow,
 } from "./CommunityInfo.styled"
 import type { Community } from "../../../../../features/communities/types"
@@ -210,28 +211,28 @@ export const CommunityInfo = ({
         </CommunityImage>
         <CommunityDetails>
           <TitleContainer>
-            <span>
-              <CommunityLabel>
-                {t("community_info.decentraland_community")}
-              </CommunityLabel>
+            <CommunityLabel>
+              {t("community_info.decentraland_community")}
+            </CommunityLabel>
+            <TitleHeader>
               <Title>{community.name}</Title>
-            </span>
-            <PrivacyMembersRow>
-              <PrivacyBadgeContainer>
-                <PrivacyIconContainer>
-                  <PrivacyIcon />
-                </PrivacyIconContainer>
-                <PrivacyBadgeText>{community.privacy}</PrivacyBadgeText>
-              </PrivacyBadgeContainer>
-              <PrivacyDivider />
-              <PrivacyMembersText>
-                {new Intl.NumberFormat("en-US", {
-                  notation: "compact",
-                  compactDisplay: "short",
-                }).format(community.membersCount)}{" "}
-                {t("community_info.members")}
-              </PrivacyMembersText>
-            </PrivacyMembersRow>
+              <PrivacyMembersRow>
+                <PrivacyBadgeContainer>
+                  <PrivacyIconContainer>
+                    <PrivacyIcon />
+                  </PrivacyIconContainer>
+                  <PrivacyBadgeText>{community.privacy}</PrivacyBadgeText>
+                </PrivacyBadgeContainer>
+                <PrivacyDivider />
+                <PrivacyMembersText>
+                  {new Intl.NumberFormat("en-US", {
+                    notation: "compact",
+                    compactDisplay: "short",
+                  }).format(community.membersCount)}{" "}
+                  {t("community_info.members")}
+                </PrivacyMembersText>
+              </PrivacyMembersRow>
+            </TitleHeader>
             <OwnerRow>
               <OwnerAvatarContainer>
                 <OwnerAvatar

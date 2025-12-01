@@ -310,7 +310,10 @@ describe("when rendering the community detail page", () => {
     it("should display an error message", () => {
       renderCommunityDetail()
 
-      expect(screen.getByText("Failed to fetch community")).toBeInTheDocument()
+      expect(screen.getByText("Community not found")).toBeInTheDocument()
+      expect(
+        screen.getByText("The community you are looking for does not exist.")
+      ).toBeInTheDocument()
     })
   })
 
@@ -654,7 +657,12 @@ describe("when rendering the community detail page", () => {
 
                 await waitFor(() => {
                   expect(
-                    screen.getByText("Failed to create request")
+                    screen.getByText("Community not found")
+                  ).toBeInTheDocument()
+                  expect(
+                    screen.getByText(
+                      "The community you are looking for does not exist."
+                    )
                   ).toBeInTheDocument()
                 })
               })
@@ -738,7 +746,12 @@ describe("when rendering the community detail page", () => {
 
                 await waitFor(() => {
                   expect(
-                    screen.getByText("Failed to cancel request")
+                    screen.getByText("Community not found")
+                  ).toBeInTheDocument()
+                  expect(
+                    screen.getByText(
+                      "The community you are looking for does not exist."
+                    )
                   ).toBeInTheDocument()
                 })
               })
@@ -818,7 +831,14 @@ describe("when rendering the community detail page", () => {
             await user.click(joinButton)
 
             await waitFor(() => {
-              expect(screen.getByText("Failed to join")).toBeInTheDocument()
+              expect(
+                screen.getByText("Community not found")
+              ).toBeInTheDocument()
+              expect(
+                screen.getByText(
+                  "The community you are looking for does not exist."
+                )
+              ).toBeInTheDocument()
             })
           })
         })

@@ -27,7 +27,7 @@ const EventsGrid = styled(Box)(({ theme }) => ({
   gridTemplateColumns: "repeat(auto-fill, minmax(289px, 1fr))",
   gap: theme.spacing(1.5),
   width: "100%",
-  maxHeight: "680px",
+  maxHeight: "350px",
   overflowY: "auto",
   overflowX: "hidden",
   scrollBehavior: "smooth",
