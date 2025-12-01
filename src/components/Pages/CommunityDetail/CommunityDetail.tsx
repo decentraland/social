@@ -63,14 +63,23 @@ function CommunityDetail() {
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
-  // Skip query if wallet is still connecting to ensure state is ready for signing
-  const shouldSkipQuery = !id || isWalletConnecting
+  // Skip query logic:
+  // 1. Skip if no community id
+  // 2. Skip if wallet is still connecting (to avoid race conditions)
+  // 3. Skip if wallet exists but identity is not available yet (to ensure signed requests)
+  //    This ensures the first request is signed and includes membership information (role field)
+  // Note: If user is not logged in (no wallet), query proceeds (allows unsigned requests for public communities)
+  const isLoggedIn = hasValidIdentity(wallet)
+  const hasWallet = !!wallet?.address
+  const shouldSkipQuery =
+    !id || isWalletConnecting || (hasWallet && !isLoggedIn)
 
   const {
     data,
     isLoading,
     error: queryError,
     isError,
+    refetch: refetchCommunity,
   } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
   const [joinCommunity, { isLoading: isJoining, error: joinError }] =
     useJoinCommunityMutation()
@@ -83,9 +92,31 @@ function CommunityDetail() {
     { isLoading: isCancellingRequest, error: cancelRequestError },
   ] = useCancelCommunityRequestMutation()
 
-  const isLoggedIn = hasValidIdentity(wallet)
   const address = wallet?.address
   const community = data?.data
+
+  // Track previous identity state to detect when it becomes available
+  const previousIdentityRef = useRef<boolean>(false)
+
+  // Refetch community when identity becomes available after initial load
+  useEffect(() => {
+    const previousIdentity = previousIdentityRef.current
+    const currentIdentity = isLoggedIn
+
+    // If identity transitions from unavailable to available, refetch the community
+    // This ensures we get signed data with membership information
+    if (
+      id &&
+      wallet &&
+      !previousIdentity &&
+      currentIdentity &&
+      !isWalletConnecting
+    ) {
+      refetchCommunity()
+    }
+
+    previousIdentityRef.current = currentIdentity
+  }, [id, wallet, isLoggedIn, isWalletConnecting, refetchCommunity])
 
   // Refresh data when user signs out
   // RTK Query automatically refetches active queries when their tags are invalidated
