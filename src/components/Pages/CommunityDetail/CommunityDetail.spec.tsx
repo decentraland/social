@@ -5,7 +5,6 @@ import {
   getData as getWallet,
   isConnecting,
 } from "decentraland-dapps/dist/modules/wallet/selectors"
-import type { Theme } from "decentraland-ui2"
 import { CommunityDetail } from "./CommunityDetail"
 import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import {
@@ -29,92 +28,6 @@ import { hasValidIdentity } from "../../../utils/identity"
 // Store mock dispatch function
 const mockDispatch = jest.fn()
 const mockUseTabletAndBelowMediaQuery = jest.fn()
-const mockTheme = {
-  spacing: (value: number) => `${value * 8}px`, // MUI spacing multiplies by 8
-  typography: {
-    fontFamily: "Inter",
-  },
-  palette: {
-    text: {
-      primary: "#000000",
-    },
-  },
-} as unknown as Theme
-jest.mock("decentraland-ui2", () => {
-  type StyleObject = Record<string, unknown>
-  type StyleFunction = (props: { theme: unknown }) => StyleObject
-  type Styles = StyleObject | StyleFunction
-
-  const mockStyled = <T extends React.ComponentType<React.ComponentProps<T>>>(
-    component: T
-  ) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return (_styles: Styles) => {
-      return component
-    }
-  }
-
-  const filterStyleProps = (props: Record<string, unknown>) => {
-    const {
-      display: _display,
-      justifyContent: _justifyContent,
-      alignItems: _alignItems,
-      minHeight: _minHeight,
-      padding: _padding,
-      autoHideDuration: _autoHideDuration,
-      flexDirection: _flexDirection,
-      ...rest
-    } = props
-    void _display
-    void _justifyContent
-    void _alignItems
-    void _minHeight
-    void _padding
-    void _autoHideDuration
-    void _flexDirection
-    return rest
-  }
-
-  return {
-    Alert: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
-    ),
-    Box: ({
-      children,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>) => (
-      <div {...filterStyleProps(props)}>{children}</div>
-    ),
-    CircularProgress: () => <div role="progressbar" />,
-    Snackbar: ({
-      children,
-      open,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> &
-      Record<string, unknown> & { open?: boolean }) =>
-      open ? <div {...filterStyleProps(props)}>{children}</div> : null,
-    Typography: ({
-      children,
-      ...props
-    }: React.HTMLAttributes<HTMLParagraphElement>) => (
-      <p {...props}>{children}</p>
-    ),
-    useTabletAndBelowMediaQuery: (...args: unknown[]) =>
-      mockUseTabletAndBelowMediaQuery(...args),
-    useTheme: () => mockTheme,
-    Icon: ({
-      component: Component,
-      ...props
-    }: {
-      component?: React.ComponentType<Record<string, unknown>>
-    } & React.HTMLAttributes<HTMLElement>) =>
-      Component ? <Component {...props} /> : <span {...props} />,
-    muiIcons: {
-      ErrorOutline: () => <svg data-testid="error-outline-icon" />,
-    },
-    styled: mockStyled,
-  }
-})
 
 jest.mock("react-router-dom", () => ({
   useParams: jest.fn(),
