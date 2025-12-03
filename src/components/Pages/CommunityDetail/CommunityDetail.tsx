@@ -90,11 +90,6 @@ function CommunityDetail() {
 
   const community = data?.data
 
-  // Note: No manual refetch needed! RTK Query automatically handles refetching when
-  // the query argument changes. Since we include `isSigned` in the query arg, when the
-  // user signs in/out, `isLoggedIn` changes, which changes `isSigned`, causing RTK Query
-  // to treat it as a new query and automatically fetch the correct signed/unsigned data.
-
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === Privacy.PRIVATE
   const canViewContent = member || !isPrivate
