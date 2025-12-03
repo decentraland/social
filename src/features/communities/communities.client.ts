@@ -87,7 +87,7 @@ const communitiesApi = client.injectEndpoints({
         const patchResult = dispatch(
           communitiesApi.util.updateQueryData(
             "getCommunityById",
-            communityId,
+            { id: communityId, isSigned: true },
             (draft) => {
               if (draft?.data) {
                 draft.data.role = Role.MEMBER
@@ -131,8 +131,11 @@ const communitiesApi = client.injectEndpoints({
             queries?: Record<string, { data?: CommunityResponse }>
           }
         }
-        const queryKey =
-          communitiesApi.endpoints.getCommunityById.select(communityId)
+        // This mutation requires auth, so we need to use the signed query key
+        const queryKey = communitiesApi.endpoints.getCommunityById.select({
+          id: communityId,
+          isSigned: true,
+        })
         const queryState = queryKey(state as never)
         const community = queryState?.data?.data
 
