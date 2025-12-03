@@ -13,12 +13,20 @@ import { client } from "../../services/client"
 
 const communitiesApi = client.injectEndpoints({
   endpoints: (builder) => ({
-    getCommunityById: builder.query<CommunityResponse, string>({
-      query: (id: string) => `/v1/communities/${id}`,
+    getCommunityById: builder.query<
+      CommunityResponse,
+      { id: string; isSigned: boolean }
+    >({
+      query: ({ id }) => `/v1/communities/${id}`,
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { id, isSigned } = queryArgs
+        // Include auth state in cache key so signed/unsigned requests don't share cache
+        return { id, isSigned }
+      },
       providesTags: (
         result: CommunityResponse | undefined,
         _error: unknown,
-        id: string
+        { id }: { id: string; isSigned: boolean }
       ) =>
         result
           ? [{ type: "Communities" as const, id }, "Communities"]

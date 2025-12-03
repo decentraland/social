@@ -8,7 +8,6 @@ import {
 import {
   Box,
   CircularProgress,
-  Typography,
   useTabletAndBelowMediaQuery,
 } from "decentraland-ui2"
 import { CommunityInfo } from "./components/CommunityInfo"
@@ -22,9 +21,8 @@ import {
   isErrorWithMessage,
   isFetchBaseQueryError,
 } from "./utils/errorUtils"
-import { useAppDispatch, useAppSelector } from "../../../app/hooks"
+import { useAppSelector } from "../../../app/hooks"
 import {
-  communitiesApi,
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
@@ -44,7 +42,6 @@ import { NotFound } from "../NotFound"
 import { AllowedAction } from "./CommunityDetail.types"
 import {
   BottomSection,
-  CenteredContainer,
   ContentContainer,
   EventsColumn,
   MembersColumn,
@@ -54,33 +51,32 @@ import {
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
-  const dispatch = useAppDispatch()
   const wallet = useAppSelector(getWallet)
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
-  const previousAddressRef = useRef<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
-  // Skip query logic:
-  // 1. Skip if no community id
-  // 2. Skip if wallet is still connecting (to avoid race conditions)
-  // 3. Skip if wallet exists but identity is not available yet (to ensure signed requests)
-  //    This ensures the first request is signed and includes membership information (role field)
-  // Note: If user is not logged in (no wallet), query proceeds (allows unsigned requests for public communities)
   const isLoggedIn = hasValidIdentity(wallet)
-  const hasWallet = !!wallet?.address
-  const shouldSkipQuery =
-    !id || isWalletConnecting || (hasWallet && !isLoggedIn)
+  const address = wallet?.address
+
+  // Skip query only when:
+  // 1. No community id provided
+  // 2. Wallet is connecting (to avoid race conditions)
+  // Note: We include isSigned in query arg so RTK Query treats signed/unsigned as different queries
+  //       This prevents using cached signed data for unsigned requests and vice versa
+  const shouldSkipQuery = !id || isWalletConnecting
 
   const {
     data,
     isLoading,
     error: queryError,
     isError,
-    refetch: refetchCommunity,
-  } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
+  } = useGetCommunityByIdQuery(
+    { id: id || "", isSigned: isLoggedIn },
+    { skip: shouldSkipQuery }
+  )
   const [joinCommunity, { isLoading: isJoining, error: joinError }] =
     useJoinCommunityMutation()
   const [
@@ -92,51 +88,12 @@ function CommunityDetail() {
     { isLoading: isCancellingRequest, error: cancelRequestError },
   ] = useCancelCommunityRequestMutation()
 
-  const address = wallet?.address
   const community = data?.data
 
-  // Track previous identity state to detect when it becomes available
-  const previousIdentityRef = useRef<boolean>(false)
-
-  // Refetch community when identity becomes available after initial load
-  useEffect(() => {
-    const previousIdentity = previousIdentityRef.current
-    const currentIdentity = isLoggedIn
-
-    // If identity transitions from unavailable to available, refetch the community
-    // This ensures we get signed data with membership information
-    if (
-      id &&
-      wallet &&
-      !previousIdentity &&
-      currentIdentity &&
-      !isWalletConnecting
-    ) {
-      refetchCommunity()
-    }
-
-    previousIdentityRef.current = currentIdentity
-  }, [id, wallet, isLoggedIn, isWalletConnecting, refetchCommunity])
-
-  // Refresh data when user signs out
-  // RTK Query automatically refetches active queries when their tags are invalidated
-  useEffect(() => {
-    const previousAddress = previousAddressRef.current
-    const currentAddress = address
-
-    const shouldInvalidateCommunity =
-      id &&
-      previousAddress !== currentAddress &&
-      (previousAddress !== null || currentAddress !== null)
-
-    if (shouldInvalidateCommunity) {
-      dispatch(
-        communitiesApi.util.invalidateTags([{ type: "Communities", id }])
-      )
-    }
-
-    previousAddressRef.current = currentAddress || null
-  }, [address, id, dispatch])
+  // Note: No manual refetch needed! RTK Query automatically handles refetching when
+  // the query argument changes. Since we include `isSigned` in the query arg, when the
+  // user signs in/out, `isLoggedIn` changes, which changes `isSigned`, causing RTK Query
+  // to treat it as a new query and automatically fetch the correct signed/unsigned data.
 
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === Privacy.PRIVATE
@@ -381,21 +338,6 @@ function CommunityDetail() {
         title={t("community_detail.not_found")}
         description={t("community_detail.not_found_description")}
       />
-    )
-  }
-
-  if (displayError || !community) {
-    return (
-      <ContentContainer>
-        <CenteredContainer>
-          <Typography variant="h4">
-            {t("community_detail.not_found")}
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            {t("community_detail.not_found_description")}
-          </Typography>
-        </CenteredContainer>
-      </ContentContainer>
     )
   }
 

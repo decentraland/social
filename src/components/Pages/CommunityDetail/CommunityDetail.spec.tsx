@@ -27,7 +27,6 @@ import { hasValidIdentity } from "../../../utils/identity"
 
 // Store mock dispatch function
 const mockDispatch = jest.fn()
-const mockUseTabletAndBelowMediaQuery = jest.fn()
 
 jest.mock("react-router-dom", () => ({
   useParams: jest.fn(),
@@ -205,9 +204,6 @@ describe("when rendering the community detail page", () => {
     // Setup dispatch to return the action
     mockDispatch.mockImplementation((action) => action)
 
-    // Default to desktop (not tablet/mobile)
-    mockUseTabletAndBelowMediaQuery.mockReturnValue(false)
-
     mockUseParams.mockReturnValue({ id: "community-1" })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()])
     // Mock useAppSelector to return different values based on selector
@@ -272,9 +268,10 @@ describe("when rendering the community detail page", () => {
     it("should skip the query", () => {
       renderCommunityDetail()
 
-      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith("", {
-        skip: true,
-      })
+      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+        { id: "", isSigned: false },
+        { skip: true }
+      )
     })
   })
 
@@ -301,10 +298,8 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: true,
-          }
+          { id: "community-1", isSigned: true },
+          { skip: true }
         )
       })
     })
@@ -323,14 +318,12 @@ describe("when rendering the community detail page", () => {
         mockHasValidIdentity.mockReturnValue(false) // Identity not available
       })
 
-      it("should skip the query", () => {
+      it("should not skip the query (will refetch when identity becomes available)", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: true,
-          }
+          { id: "community-1", isSigned: false },
+          { skip: false }
         )
       })
     })
@@ -353,10 +346,8 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: false,
-          }
+          { id: "community-1", isSigned: true },
+          { skip: false }
         )
       })
     })
@@ -379,10 +370,8 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: false,
-          }
+          { id: "community-1", isSigned: false },
+          { skip: false }
         )
       })
     })
@@ -443,7 +432,7 @@ describe("when rendering the community detail page", () => {
       })
     })
 
-    it("should refetch community when identity becomes available", async () => {
+    it("should automatically refetch community when identity becomes available", async () => {
       const wallet = { address: "0x456" }
 
       // Initial state: wallet exists but identity is not available
@@ -458,36 +447,32 @@ describe("when rendering the community detail page", () => {
       })
       mockHasValidIdentity.mockReturnValue(false)
 
-      // Mock the query to return refetch (RTK Query returns refetch even when skipped)
-      mockUseGetCommunityByIdQuery.mockReturnValue({
-        data: { data: community },
-        isLoading: false,
-        error: undefined,
-        isError: false,
-        refetch: mockRefetch,
-      })
-
       const { rerender } = renderCommunityDetail()
 
-      // Verify query was skipped initially because identity is not available
-      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith("community-1", {
-        skip: true,
-      })
+      // Verify query was called with isSigned: false initially
+      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+        { id: "community-1", isSigned: false },
+        { skip: false }
+      )
 
-      // Clear the mock to track the refetch call
-      mockRefetch.mockClear()
+      // Clear the mock to track the new query call
+      mockUseGetCommunityByIdQuery.mockClear()
 
-      // Identity becomes available - this should trigger refetch in useEffect
+      // Identity becomes available - RTK Query will automatically refetch
+      // because isSigned changes from false to true
       mockHasValidIdentity.mockReturnValue(true)
 
-      // Rerender to trigger the useEffect that checks for identity transition
+      // Rerender to trigger the query with new isSigned value
       rerender(<CommunityDetail />)
 
-      // Wait for the effect to run and verify refetch was called
+      // Wait for RTK Query to automatically refetch with isSigned: true
       // This ensures we get signed data with membership information
       await waitFor(
         () => {
-          expect(mockRefetch).toHaveBeenCalled()
+          expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+            { id: "community-1", isSigned: true },
+            { skip: false }
+          )
         },
         { timeout: 3000 }
       )
@@ -571,10 +556,8 @@ describe("when rendering the community detail page", () => {
 
         // Verify the community data includes the role field
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: false, // Query should not be skipped when signed
-          }
+          { id: "community-1", isSigned: true },
+          { skip: false } // Query should not be skipped when signed
         )
 
         // The component should render with membership information
@@ -597,10 +580,8 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: false,
-          }
+          { id: "community-1", isSigned: true },
+          { skip: false }
         )
 
         expect(screen.getByTestId("community-info")).toBeInTheDocument()
@@ -622,10 +603,8 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          "community-1",
-          {
-            skip: false,
-          }
+          { id: "community-1", isSigned: true },
+          { skip: false }
         )
 
         expect(screen.getByTestId("community-info")).toBeInTheDocument()
@@ -1391,13 +1370,6 @@ describe("when rendering the community detail page", () => {
         hasMore: false,
         loadMore: jest.fn(),
       })
-
-      // Setup dispatch to return the action
-      mockDispatch.mockImplementation((action) => action)
-
-      // Ensure useAppDispatch returns mockDispatch
-      const { useAppDispatch } = jest.requireMock("../../../app/hooks")
-      useAppDispatch.mockReturnValue(mockDispatch)
     })
 
     describe("and address changes from non-null to null", () => {
@@ -1405,29 +1377,34 @@ describe("when rendering the community detail page", () => {
         setupWalletState({ address: "0x456" })
       })
 
-      it("should dispatch invalidate actions", async () => {
+      it("should automatically refetch the community to get unsigned data", async () => {
         const { rerender } = renderCommunityDetail()
 
-        // Clear mocks to only track the sign-out action
-        mockDispatch.mockClear()
+        // Verify initial query was called with isSigned: true
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "community-1", isSigned: true },
+          { skip: false }
+        )
+
+        // Clear the mock to track the new query call
+        mockUseGetCommunityByIdQuery.mockClear()
 
         // Update to no wallet (user signs out)
         setupWalletState(null)
 
-        // Rerender to trigger the sign-out detection
+        // Rerender to trigger the query with new isSigned value
         rerender(<CommunityDetail />)
 
-        // Wait for the effect to run and verify dispatch was called
+        // Wait for RTK Query to automatically refetch with isSigned: false
         await waitFor(
           () => {
-            expect(mockDispatch).toHaveBeenCalled()
+            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+              { id: "community-1", isSigned: false },
+              { skip: false }
+            )
           },
           { timeout: 3000 }
         )
-
-        // Verify dispatch was called with invalidate actions
-        // We test behavior (dispatch is called) not implementation details (exact tags)
-        expect(mockDispatch).toHaveBeenCalled()
       })
     })
 
@@ -1436,25 +1413,34 @@ describe("when rendering the community detail page", () => {
         setupWalletState(null)
       })
 
-      it("should not dispatch invalidate actions", () => {
+      it("should automatically refetch when signing in (isSigned changes)", async () => {
         const { rerender } = renderCommunityDetail()
 
-        // Clear mocks after initial render
-        mockDispatch.mockClear()
+        // Verify initial query was called with isSigned: false
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "community-1", isSigned: false },
+          { skip: false }
+        )
+
+        // Clear the mock to track the new query call
+        mockUseGetCommunityByIdQuery.mockClear()
 
         // Update to have wallet (user signs in)
         setupWalletState({ address: "0x456" })
 
-        // Rerender to trigger the address change
+        // Rerender to trigger the query with new isSigned value
         rerender(<CommunityDetail />)
 
-        // Verify that dispatch was NOT called for invalidate actions (sign in doesn't trigger refresh)
-        const invalidateCalls = mockDispatch.mock.calls.filter(
-          (call) =>
-            call[0]?.type === "invalidateTags" ||
-            call[0]?.payload?.type === "invalidateTags"
+        // Wait for RTK Query to automatically refetch with isSigned: true
+        await waitFor(
+          () => {
+            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+              { id: "community-1", isSigned: true },
+              { skip: false }
+            )
+          },
+          { timeout: 3000 }
         )
-        expect(invalidateCalls).toHaveLength(0)
       })
     })
 
@@ -1463,22 +1449,33 @@ describe("when rendering the community detail page", () => {
         setupWalletState(null)
       })
 
-      it("should not dispatch invalidate actions", () => {
+      it("should not refetch when auth state doesn't change", () => {
         const { rerender } = renderCommunityDetail()
 
-        // Clear mocks after initial render
-        mockDispatch.mockClear()
+        // Verify initial query was called
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "community-1", isSigned: false },
+          { skip: false }
+        )
 
-        // Rerender with still no wallet
+        // Get the initial call count
+        const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
+
+        // Rerender with still no wallet (same auth state)
         rerender(<CommunityDetail />)
 
-        // Verify that dispatch was NOT called for invalidate actions
-        const invalidateCalls = mockDispatch.mock.calls.filter(
-          (call) =>
-            call[0]?.type === "invalidateTags" ||
-            call[0]?.payload?.type === "invalidateTags"
+        // Verify that query was called again (hooks run on every render)
+        // but RTK Query will deduplicate since args are the same
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
+          initialCallCount
         )
-        expect(invalidateCalls).toHaveLength(0)
+        // Verify the last call has the same args (RTK Query will deduplicate)
+        const lastCall =
+          mockUseGetCommunityByIdQuery.mock.calls[
+            mockUseGetCommunityByIdQuery.mock.calls.length - 1
+          ]
+        expect(lastCall[0]).toEqual({ id: "community-1", isSigned: false })
+        expect(lastCall[1]).toEqual({ skip: false })
       })
     })
 
@@ -1487,25 +1484,36 @@ describe("when rendering the community detail page", () => {
         setupWalletState({ address: "0x456" })
       })
 
-      it("should not dispatch invalidate actions", () => {
+      it("should not refetch when switching accounts (same isSigned value)", () => {
         const { rerender } = renderCommunityDetail()
 
-        // Clear mocks after initial render
-        mockDispatch.mockClear()
+        // Verify initial query was called with isSigned: true
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "community-1", isSigned: true },
+          { skip: false }
+        )
 
-        // Update to different wallet (switch account)
+        // Get the initial call count
+        const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
+
+        // Update to different wallet (switch account, but still signed)
         setupWalletState({ address: "0x789" })
 
         // Rerender to trigger the address change
         rerender(<CommunityDetail />)
 
-        // Verify that dispatch was NOT called for invalidate actions (switching accounts doesn't trigger refresh)
-        const invalidateCalls = mockDispatch.mock.calls.filter(
-          (call) =>
-            call[0]?.type === "invalidateTags" ||
-            call[0]?.payload?.type === "invalidateTags"
+        // Verify that query was called again (hooks run on every render)
+        // but RTK Query will deduplicate since isSigned is still true
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
+          initialCallCount
         )
-        expect(invalidateCalls).toHaveLength(0)
+        // Verify the last call has the same isSigned value (RTK Query will deduplicate)
+        const lastCall =
+          mockUseGetCommunityByIdQuery.mock.calls[
+            mockUseGetCommunityByIdQuery.mock.calls.length - 1
+          ]
+        expect(lastCall[0]).toEqual({ id: "community-1", isSigned: true })
+        expect(lastCall[1]).toEqual({ skip: false })
       })
     })
 
@@ -1515,11 +1523,17 @@ describe("when rendering the community detail page", () => {
         setupWalletState({ address: "0x456" })
       })
 
-      it("should not dispatch invalidate actions", () => {
+      it("should not refetch when id is undefined", () => {
         const { rerender } = renderCommunityDetail()
 
-        // Clear mocks after initial render
-        mockDispatch.mockClear()
+        // Verify query was skipped (no id)
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "", isSigned: true },
+          { skip: true }
+        )
+
+        // Get the initial call count
+        const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
 
         // Update to no wallet (user signs out)
         setupWalletState(null)
@@ -1527,13 +1541,18 @@ describe("when rendering the community detail page", () => {
         // Rerender to trigger the sign-out detection
         rerender(<CommunityDetail />)
 
-        // Verify that dispatch was NOT called for invalidate actions when id is undefined
-        const invalidateCalls = mockDispatch.mock.calls.filter(
-          (call) =>
-            call[0]?.type === "invalidateTags" ||
-            call[0]?.payload?.type === "invalidateTags"
+        // Verify that query was called again (hooks run on every render)
+        // but since id is undefined and skip is true, RTK Query won't make a request
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
+          initialCallCount
         )
-        expect(invalidateCalls).toHaveLength(0)
+        // Verify the last call still has skip: true
+        const lastCall =
+          mockUseGetCommunityByIdQuery.mock.calls[
+            mockUseGetCommunityByIdQuery.mock.calls.length - 1
+          ]
+        expect(lastCall[0]).toEqual({ id: "", isSigned: false })
+        expect(lastCall[1]).toEqual({ skip: true })
       })
     })
   })
