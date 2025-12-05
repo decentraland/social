@@ -298,7 +298,7 @@ describe("when rendering the community detail page", () => {
         renderCommunityDetail()
 
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
+          { id: "community-1", isSigned: false },
           { skip: true }
         )
       })

@@ -65,8 +65,11 @@ function CommunityDetail() {
   // 1. No community id provided
   // 2. Wallet is connecting (to avoid race conditions)
   // Note: We include isSigned in query arg so RTK Query treats signed/unsigned as different queries
-  //       This prevents using cached signed data for unsigned requests and vice versa
+  //       This prevents using cached signed data for unsigned requests and vice versa.
+  //       RTK Query will automatically refetch when isSigned changes (e.g., when identity becomes available)
+  //       isSigned should be false when wallet is connecting, even if identity exists, because connection isn't complete
   const shouldSkipQuery = !id || isWalletConnecting
+  const isSigned = isLoggedIn && !isWalletConnecting
 
   const {
     data,
@@ -74,7 +77,7 @@ function CommunityDetail() {
     error: queryError,
     isError,
   } = useGetCommunityByIdQuery(
-    { id: id || "", isSigned: isLoggedIn },
+    { id: id || "", isSigned },
     { skip: shouldSkipQuery }
   )
   const [joinCommunity, { isLoading: isJoining, error: joinError }] =
