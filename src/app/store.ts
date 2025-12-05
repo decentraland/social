@@ -1,8 +1,10 @@
+import { localStorageGetIdentity } from "@dcl/single-sign-on-client"
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import { creditsReducer as credits } from "decentraland-dapps/dist/modules/credits/reducer"
 import { featuresReducer as features } from "decentraland-dapps/dist/modules/features/reducer"
 import { modalReducer as modal } from "decentraland-dapps/dist/modules/modal/reducer"
 import { profileReducer as profile } from "decentraland-dapps/dist/modules/profile/reducer"
+import { createProfileSaga } from "decentraland-dapps/dist/modules/profile/sagas"
 import { createStorageMiddleware } from "decentraland-dapps/dist/modules/storage/middleware"
 import {
   storageReducer as storage,
@@ -23,6 +25,7 @@ import {
   INITIAL_STATE as walletInitialState,
 } from "decentraland-dapps/dist/modules/wallet/reducer"
 import { createWalletSaga } from "decentraland-dapps/dist/modules/wallet/sagas"
+import { getAddress } from "decentraland-dapps/dist/modules/wallet/selectors"
 import { flatten } from "flat"
 import createSagasMiddleware from "redux-saga"
 import { all } from "redux-saga/effects"
@@ -37,6 +40,16 @@ function* rootSaga() {
       CHAIN_ID: Number(config.get("CHAIN_ID")),
       POLL_INTERVAL: 0,
       TRANSACTIONS_API_URL: "https://transactions-api.decentraland.org/v1",
+    })(),
+    createProfileSaga({
+      getIdentity: () => {
+        const state = store.getState()
+        const address = getAddress(state)
+        return address
+          ? localStorageGetIdentity(address.toLowerCase()) || undefined
+          : undefined
+      },
+      peerUrl: config.get("PEER_URL"),
     })(),
     translationSaga(),
   ])

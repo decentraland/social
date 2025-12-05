@@ -5,5 +5,6 @@
   "EVENTS_API_URL": "https://events.decentraland.zone/api",
   "NETWORK": "sepolia",
   "CHAIN_ID": "11155111",
-  "CATALYST_LAMBDAS_URL": "https://peer.decentraland.zone/lambdas"
+  "CATALYST_LAMBDAS_URL": "https://peer.decentraland.zone/lambdas",
+  "PEER_URL": "https://peer-testing.decentraland.org"
 }
