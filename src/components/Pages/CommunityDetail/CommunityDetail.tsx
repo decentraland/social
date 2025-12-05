@@ -8,7 +8,6 @@ import {
 import {
   Box,
   CircularProgress,
-  Typography,
   useTabletAndBelowMediaQuery,
 } from "decentraland-ui2"
 import { CommunityInfo } from "./components/CommunityInfo"
@@ -22,9 +21,8 @@ import {
   isErrorWithMessage,
   isFetchBaseQueryError,
 } from "./utils/errorUtils"
-import { useAppDispatch, useAppSelector } from "../../../app/hooks"
+import { useAppSelector } from "../../../app/hooks"
 import {
-  communitiesApi,
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
@@ -44,7 +42,6 @@ import { NotFound } from "../NotFound"
 import { AllowedAction } from "./CommunityDetail.types"
 import {
   BottomSection,
-  CenteredContainer,
   ContentContainer,
   EventsColumn,
   MembersColumn,
@@ -54,24 +51,35 @@ import {
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
-  const dispatch = useAppDispatch()
   const wallet = useAppSelector(getWallet)
   const isWalletConnecting = useAppSelector(isConnecting)
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
-  const previousAddressRef = useRef<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
-  // Skip query if wallet is still connecting to ensure state is ready for signing
+  const isLoggedIn = hasValidIdentity(wallet)
+  const address = wallet?.address
+
+  // Skip query only when:
+  // 1. No community id provided
+  // 2. Wallet is connecting (to avoid race conditions)
+  // Note: We include isSigned in query arg so RTK Query treats signed/unsigned as different queries
+  //       This prevents using cached signed data for unsigned requests and vice versa.
+  //       RTK Query will automatically refetch when isSigned changes (e.g., when identity becomes available)
+  //       isSigned should be false when wallet is connecting, even if identity exists, because connection isn't complete
   const shouldSkipQuery = !id || isWalletConnecting
+  const isSigned = isLoggedIn && !isWalletConnecting
 
   const {
     data,
     isLoading,
     error: queryError,
     isError,
-  } = useGetCommunityByIdQuery(id || "", { skip: shouldSkipQuery })
+  } = useGetCommunityByIdQuery(
+    { id: id || "", isSigned },
+    { skip: shouldSkipQuery }
+  )
   const [joinCommunity, { isLoading: isJoining, error: joinError }] =
     useJoinCommunityMutation()
   const [
@@ -83,29 +91,7 @@ function CommunityDetail() {
     { isLoading: isCancellingRequest, error: cancelRequestError },
   ] = useCancelCommunityRequestMutation()
 
-  const isLoggedIn = hasValidIdentity(wallet)
-  const address = wallet?.address
   const community = data?.data
-
-  // Refresh data when user signs out
-  // RTK Query automatically refetches active queries when their tags are invalidated
-  useEffect(() => {
-    const previousAddress = previousAddressRef.current
-    const currentAddress = address
-
-    const shouldInvalidateCommunity =
-      id &&
-      previousAddress !== currentAddress &&
-      (previousAddress !== null || currentAddress !== null)
-
-    if (shouldInvalidateCommunity) {
-      dispatch(
-        communitiesApi.util.invalidateTags([{ type: "Communities", id }])
-      )
-    }
-
-    previousAddressRef.current = currentAddress || null
-  }, [address, id, dispatch])
 
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === Privacy.PRIVATE
@@ -350,21 +336,6 @@ function CommunityDetail() {
         title={t("community_detail.not_found")}
         description={t("community_detail.not_found_description")}
       />
-    )
-  }
-
-  if (displayError || !community) {
-    return (
-      <ContentContainer>
-        <CenteredContainer>
-          <Typography variant="h4">
-            {t("community_detail.not_found")}
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            {t("community_detail.not_found_description")}
-          </Typography>
-        </CenteredContainer>
-      </ContentContainer>
     )
   }
 

@@ -13,12 +13,20 @@ import { client } from "../../services/client"
 
 const communitiesApi = client.injectEndpoints({
   endpoints: (builder) => ({
-    getCommunityById: builder.query<CommunityResponse, string>({
-      query: (id: string) => `/v1/communities/${id}`,
+    getCommunityById: builder.query<
+      CommunityResponse,
+      { id: string; isSigned: boolean }
+    >({
+      query: ({ id }) => `/v1/communities/${id}`,
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { id, isSigned } = queryArgs
+        // Include auth state in cache key so signed/unsigned requests don't share cache
+        return { id, isSigned }
+      },
       providesTags: (
         result: CommunityResponse | undefined,
         _error: unknown,
-        id: string
+        { id }: { id: string; isSigned: boolean }
       ) =>
         result
           ? [{ type: "Communities" as const, id }, "Communities"]
@@ -79,7 +87,7 @@ const communitiesApi = client.injectEndpoints({
         const patchResult = dispatch(
           communitiesApi.util.updateQueryData(
             "getCommunityById",
-            communityId,
+            { id: communityId, isSigned: true },
             (draft) => {
               if (draft?.data) {
                 draft.data.role = Role.MEMBER
@@ -123,8 +131,11 @@ const communitiesApi = client.injectEndpoints({
             queries?: Record<string, { data?: CommunityResponse }>
           }
         }
-        const queryKey =
-          communitiesApi.endpoints.getCommunityById.select(communityId)
+        // This mutation requires auth, so we need to use the signed query key
+        const queryKey = communitiesApi.endpoints.getCommunityById.select({
+          id: communityId,
+          isSigned: true,
+        })
         const queryState = queryKey(state as never)
         const community = queryState?.data?.data
 
