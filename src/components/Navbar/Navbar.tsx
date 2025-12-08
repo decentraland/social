@@ -78,7 +78,7 @@ const Navbar = memo(() => {
         isSwitchingNetwork,
 
         // UI config
-        activePage: "social",
+        activePage: "extra", // "social" doesn't exist in NavbarPages enum
 
         // Event handlers
         onClickSignIn: handleSignIn,

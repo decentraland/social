@@ -1,3 +1,4 @@
+import { WALLET_LOADING_STATES } from "./constants"
 import type { RootState } from "../../app/store"
 
 const getState = (state: RootState) => state.wallet
@@ -11,13 +12,13 @@ const getError = (state: RootState) => getState(state).error
 const isConnected = (state: RootState): boolean => getData(state) !== null
 
 const isConnecting = (state: RootState): boolean =>
-  getLoading(state).includes("[Request] Connect Wallet")
+  getLoading(state).includes(WALLET_LOADING_STATES.CONNECT)
 
 const isDisconnecting = (state: RootState): boolean =>
-  getLoading(state).includes("[Request] Disconnect Wallet")
+  getLoading(state).includes(WALLET_LOADING_STATES.DISCONNECT)
 
 const isSwitchingNetwork = (state: RootState): boolean =>
-  getLoading(state).includes("[Request] Switch Network")
+  getLoading(state).includes(WALLET_LOADING_STATES.SWITCH_NETWORK)
 
 const getAddress = (state: RootState): `0x${string}` | undefined =>
   isConnected(state) ? getData(state)!.address : undefined
@@ -31,16 +32,16 @@ const getWalletError = (state: RootState): string | null =>
   getState(state).error
 
 export {
-  getState,
+  getAddress,
+  getAppChainId,
+  getChainId,
   getData,
-  getLoading,
   getError,
+  getLoading,
+  getState,
+  getWalletError,
   isConnected,
   isConnecting,
   isDisconnecting,
   isSwitchingNetwork,
-  getAddress,
-  getChainId,
-  getAppChainId,
-  getWalletError,
 }

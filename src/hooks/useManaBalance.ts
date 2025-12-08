@@ -34,10 +34,11 @@ export function useManaBalance({
       ? ChainId.ETHEREUM_MAINNET
       : ChainId.ETHEREUM_SEPOLIA
 
+  // Use Amoy for testnet, Polygon mainnet for prod
   const maticChainId =
     chainId === ChainId.ETHEREUM_MAINNET
       ? ChainId.MATIC_MAINNET
-      : ChainId.MATIC_MUMBAI
+      : ChainId.MATIC_AMOY
 
   // Get MANA contracts from decentraland-transactions
   let ethereumContract: ReturnType<typeof getContract> | undefined

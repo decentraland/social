@@ -1,5 +1,6 @@
 import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
+import { WALLET_LOADING_STATES } from "./constants"
 import { config } from "../../config"
 
 // Match dcl-dapps Wallet type shape for compatibility with dcl-dapps selectors
@@ -31,9 +32,8 @@ const walletSlice = createSlice({
   initialState,
   reducers: {
     setWalletConnecting: (state) => {
-      // Add to loading array like dcl-dapps does
-      if (!state.loading.includes("[Request] Connect Wallet")) {
-        state.loading.push("[Request] Connect Wallet")
+      if (!state.loading.includes(WALLET_LOADING_STATES.CONNECT)) {
+        state.loading.push(WALLET_LOADING_STATES.CONNECT)
       }
       state.error = null
     },
@@ -45,9 +45,8 @@ const walletSlice = createSlice({
         address: action.payload.address,
         chainId: action.payload.chainId as ChainId,
       }
-      // Remove from loading array
       state.loading = state.loading.filter(
-        (l) => l !== "[Request] Connect Wallet"
+        (l) => l !== WALLET_LOADING_STATES.CONNECT
       )
       state.error = null
     },
@@ -67,23 +66,23 @@ const walletSlice = createSlice({
     },
     setSwitchingNetwork: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes("[Request] Switch Network")) {
-          state.loading.push("[Request] Switch Network")
+        if (!state.loading.includes(WALLET_LOADING_STATES.SWITCH_NETWORK)) {
+          state.loading.push(WALLET_LOADING_STATES.SWITCH_NETWORK)
         }
       } else {
         state.loading = state.loading.filter(
-          (l) => l !== "[Request] Switch Network"
+          (l) => l !== WALLET_LOADING_STATES.SWITCH_NETWORK
         )
       }
     },
     setDisconnecting: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes("[Request] Disconnect Wallet")) {
-          state.loading.push("[Request] Disconnect Wallet")
+        if (!state.loading.includes(WALLET_LOADING_STATES.DISCONNECT)) {
+          state.loading.push(WALLET_LOADING_STATES.DISCONNECT)
         }
       } else {
         state.loading = state.loading.filter(
-          (l) => l !== "[Request] Disconnect Wallet"
+          (l) => l !== WALLET_LOADING_STATES.DISCONNECT
         )
       }
     },

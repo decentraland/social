@@ -1,56 +1,17 @@
 import { Profile } from "dcl-catalyst-client/dist/client/specs/lambdas-client"
-import { config } from "../../config"
+import {
+  fetchProfile,
+  getLambdasClient,
+  getProfileSnapshot,
+} from "./profile.helpers"
 import { client } from "../../services/client"
-
-const catalystLambdasUrl = config.get("CATALYST_LAMBDAS_URL")
-
-const getProfileSnapshot = (profile?: Profile): string | undefined =>
-  profile?.avatars?.[0]?.avatar?.snapshots?.face256
-
-// Fetch profile directly using native fetch to avoid "Illegal invocation" with createFetchComponent
-async function fetchProfile(address: string): Promise<Profile | null> {
-  try {
-    const response = await fetch(
-      `${catalystLambdasUrl}/profiles/${address.toLowerCase()}`
-    )
-    if (!response.ok) {
-      return null
-    }
-    const data = await response.json()
-    return data as Profile
-  } catch {
-    return null
-  }
-}
-
-async function fetchProfilesBatch(
-  addresses: string[]
-): Promise<Record<string, Profile>> {
-  try {
-    const response = await fetch(`${catalystLambdasUrl}/profiles`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: addresses }),
-    })
-    if (!response.ok) {
-      return {}
-    }
-    const profiles: Profile[] = await response.json()
-    return profiles.reduce<Record<string, Profile>>((acc, profile, index) => {
-      const address = addresses[index]
-      if (address) {
-        acc[address] = profile
-      }
-      return acc
-    }, {})
-  } catch {
-    return {}
-  }
-}
 
 const profileApi = client.injectEndpoints({
   endpoints: (builder) => ({
-    // Get full profile for Navbar avatar
+    /**
+     * Get full profile for Navbar avatar.
+     * Uses queryFn because we need to call Catalyst lambdas (different server than social service).
+     */
     getProfile: builder.query<Profile | null, string | undefined>({
       queryFn: async (address) => {
         if (!address) {
@@ -59,62 +20,69 @@ const profileApi = client.injectEndpoints({
         try {
           const profile = await fetchProfile(address)
           return { data: profile }
-        } catch (error) {
-          console.error("Failed to fetch profile:", error)
+        } catch {
           return { data: null }
         }
       },
       keepUnusedDataFor: 300,
     }),
+
+    /**
+     * Get profile picture URL for a single address.
+     * Uses queryFn to call Catalyst lambdas and extract just the snapshot URL.
+     */
     getProfilePicture: builder.query<string | null, string>({
-      queryFn: async (address: string) => {
+      queryFn: async (address) => {
         try {
-          const profile = await fetchProfile(address)
-          const snapshot = getProfileSnapshot(profile ?? undefined)
-
-          if (snapshot) {
-            return { data: snapshot }
-          }
-
-          return { data: null }
-        } catch (error) {
-          console.error("Failed to fetch profile picture:", error)
+          const lambdasClient = getLambdasClient()
+          const profile = await lambdasClient.getAvatarDetails(
+            address.toLowerCase()
+          )
+          const snapshot = getProfileSnapshot(profile)
+          return { data: snapshot ?? null }
+        } catch {
           return { data: null }
         }
       },
-      // Cache profile pictures for 5 minutes
       keepUnusedDataFor: 300,
     }),
+
+    /**
+     * Get profile pictures for multiple addresses in a batch.
+     * Uses queryFn with batch endpoint for efficiency.
+     */
     getProfilePicturesBatch: builder.query<Record<string, string>, string[]>({
-      queryFn: async (addresses: string[]) => {
+      queryFn: async (addresses) => {
         if (!addresses.length) {
           return { data: {} }
         }
 
-        const normalizedAddresses = Array.from(
-          new Set(addresses.map((address) => address.toLowerCase()))
-        )
-
-        if (!normalizedAddresses.length) {
-          return { data: {} }
-        }
+        const normalizedAddresses = [
+          ...new Set(addresses.map((a) => a.toLowerCase())),
+        ]
 
         try {
-          const profilesMap = await fetchProfilesBatch(normalizedAddresses)
+          const lambdasClient = getLambdasClient()
+          const profiles = await lambdasClient.getAvatarsDetailsByPost({
+            ids: normalizedAddresses,
+          })
 
-          const result = Object.entries(profilesMap).reduce<
-            Record<string, string>
-          >((acc, [address, profile]) => {
-            const snapshot = getProfileSnapshot(profile)
-            if (snapshot) {
-              acc[address] = snapshot
-            }
-            return acc
-          }, {})
+          const result = profiles.reduce<Record<string, string>>(
+            (acc, profile, index) => {
+              const address = normalizedAddresses[index]
+              const snapshot = getProfileSnapshot(profile)
+
+              if (address && snapshot) {
+                acc[address] = snapshot
+              }
+
+              return acc
+            },
+            {}
+          )
 
           return { data: result }
-        } catch (error) {
-          console.error("Failed to fetch profile pictures batch:", error)
+        } catch {
           return { data: {} }
         }
       },
@@ -130,7 +98,7 @@ const useGetProfilePicturesBatchQuery =
 
 export {
   profileApi,
-  useGetProfileQuery,
   useGetProfilePictureQuery,
   useGetProfilePicturesBatchQuery,
+  useGetProfileQuery,
 }
