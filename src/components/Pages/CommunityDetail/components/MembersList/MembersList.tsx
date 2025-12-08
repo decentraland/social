@@ -1,4 +1,3 @@
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   Box,
   CircularProgress,
@@ -8,6 +7,7 @@ import {
 } from "decentraland-ui2"
 import { ClaimedNameIcon } from "./components/ClaimedNameIcon"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
+import { t } from "../../../../../modules/translation"
 import { getRandomRarityColor } from "../utils/getRandomRarityColor"
 import {
   EmptyState,

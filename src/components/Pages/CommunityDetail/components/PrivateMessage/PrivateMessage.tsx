@@ -1,4 +1,4 @@
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
+import { t } from "../../../../../modules/translation"
 import {
   LockIcon,
   PrivateMessage as PrivateMessageContainer,

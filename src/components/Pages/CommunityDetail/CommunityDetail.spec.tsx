@@ -1,12 +1,8 @@
 import { useParams, useSearchParams } from "react-router-dom"
 import { render, screen, waitFor } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
-import {
-  getData as getWallet,
-  isConnecting,
-} from "decentraland-dapps/dist/modules/wallet/selectors"
 import { CommunityDetail } from "./CommunityDetail"
-import { useAppDispatch, useAppSelector } from "../../../app/hooks"
+import { useAppDispatch } from "../../../app/hooks"
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
@@ -23,7 +19,7 @@ import {
 } from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
-import { hasValidIdentity } from "../../../utils/identity"
+import { useWallet } from "../../../modules/wallet/hooks"
 
 // Store mock dispatch function
 const mockDispatch = jest.fn()
@@ -33,9 +29,8 @@ jest.mock("react-router-dom", () => ({
   useSearchParams: jest.fn(),
 }))
 
-jest.mock("decentraland-dapps/dist/modules/wallet/selectors", () => ({
-  getData: jest.fn(),
-  isConnecting: jest.fn(),
+jest.mock("../../../modules/wallet/hooks", () => ({
+  useWallet: jest.fn(),
 }))
 
 jest.mock("../../../features/communities/communities.client", () => ({
@@ -71,10 +66,6 @@ jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
 
 jest.mock("../../../hooks/usePaginatedCommunityMembers", () => ({
   usePaginatedCommunityMembers: jest.fn(),
-}))
-
-jest.mock("../../../utils/identity", () => ({
-  hasValidIdentity: jest.fn(),
 }))
 
 jest.mock("../../../app/hooks", () => ({
@@ -166,6 +157,7 @@ jest.mock("../../PageLayout", () => ({
 
 const mockUseParams = useParams as jest.Mock
 const mockUseSearchParams = useSearchParams as jest.Mock
+const mockUseWallet = useWallet as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
 const mockUseGetMemberRequestsQuery = useGetMemberRequestsQuery as jest.Mock
@@ -176,8 +168,6 @@ const mockUseCancelCommunityRequestMutation =
 const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
 const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
-const mockHasValidIdentity = hasValidIdentity as jest.Mock
-const mockUseAppSelector = useAppSelector as jest.Mock
 const mockUseAppDispatch = useAppDispatch as jest.Mock
 
 function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
@@ -185,6 +175,25 @@ function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
   mockUseSearchParams.mockReturnValue([searchParamsValue, mockSetSearchParams])
   const result = render(<CommunityDetail />)
   return { ...result, mockSetSearchParams, rerender: result.rerender }
+}
+
+// Helper to setup wallet mock state
+function setupWalletState(options: {
+  address?: string | null
+  isConnecting?: boolean
+  hasValidIdentity?: boolean
+}) {
+  mockUseWallet.mockReturnValue({
+    address: options.address ?? null,
+    isConnecting: options.isConnecting ?? false,
+    hasValidIdentity: options.hasValidIdentity ?? false,
+    isConnected: !!options.address && options.hasValidIdentity,
+    chainId: 1,
+    identity: options.hasValidIdentity ? {} : undefined,
+    connectors: [],
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+  })
 }
 
 describe("when rendering the community detail page", () => {
@@ -206,18 +215,13 @@ describe("when rendering the community detail page", () => {
 
     mockUseParams.mockReturnValue({ id: "community-1" })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()])
-    // Mock useAppSelector to return different values based on selector
-    mockUseAppSelector.mockImplementation((selector) => {
-      if (selector === isConnecting) {
-        return false // isWalletConnecting should be false
-      }
-      if (selector === getWallet) {
-        return null // wallet should be null by default
-      }
-      return null
+    // Default wallet state: not connected
+    setupWalletState({
+      address: null,
+      isConnecting: false,
+      hasValidIdentity: false,
     })
     mockUseAppDispatch.mockReturnValue(mockDispatch)
-    mockHasValidIdentity.mockReturnValue(false)
     mockUseGetCommunityByIdQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -282,16 +286,11 @@ describe("when rendering the community detail page", () => {
 
     describe("when wallet is connecting", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return true // isWalletConnecting is true
-          }
-          if (selector === getWallet) {
-            return { address: "0x456" }
-          }
-          return null
+        setupWalletState({
+          address: "0x456",
+          isConnecting: true,
+          hasValidIdentity: true,
         })
-        mockHasValidIdentity.mockReturnValue(true)
       })
 
       it("should skip the query", () => {
@@ -306,16 +305,11 @@ describe("when rendering the community detail page", () => {
 
     describe("when wallet exists but identity is not available", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return { address: "0x456" }
-          }
-          return null
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: false,
         })
-        mockHasValidIdentity.mockReturnValue(false) // Identity not available
       })
 
       it("should not skip the query (will refetch when identity becomes available)", () => {
@@ -330,16 +324,11 @@ describe("when rendering the community detail page", () => {
 
     describe("when wallet is connected and identity is available", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return { address: "0x456" }
-          }
-          return null
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
         })
-        mockHasValidIdentity.mockReturnValue(true)
       })
 
       it("should not skip the query", () => {
@@ -354,16 +343,11 @@ describe("when rendering the community detail page", () => {
 
     describe("when user is not logged in", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return null // No wallet
-          }
-          return null
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
         })
-        mockHasValidIdentity.mockReturnValue(false)
       })
 
       it("should not skip the query (allows unsigned requests for public communities)", () => {
@@ -433,19 +417,12 @@ describe("when rendering the community detail page", () => {
     })
 
     it("should automatically refetch community when identity becomes available", async () => {
-      const wallet = { address: "0x456" }
-
       // Initial state: wallet exists but identity is not available
-      mockUseAppSelector.mockImplementation((selector) => {
-        if (selector === isConnecting) {
-          return false
-        }
-        if (selector === getWallet) {
-          return wallet
-        }
-        return null
+      setupWalletState({
+        address: "0x456",
+        isConnecting: false,
+        hasValidIdentity: false,
       })
-      mockHasValidIdentity.mockReturnValue(false)
 
       const { rerender } = renderCommunityDetail()
 
@@ -460,7 +437,11 @@ describe("when rendering the community detail page", () => {
 
       // Identity becomes available - RTK Query will automatically refetch
       // because isSigned changes from false to true
-      mockHasValidIdentity.mockReturnValue(true)
+      setupWalletState({
+        address: "0x456",
+        isConnecting: false,
+        hasValidIdentity: true,
+      })
 
       // Rerender to trigger the query with new isSigned value
       rerender(<CommunityDetail />)
@@ -526,17 +507,11 @@ describe("when rendering the community detail page", () => {
 
     describe("when request is signed (user is logged in)", () => {
       beforeEach(() => {
-        const wallet = { address: "0x456" }
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return wallet
-          }
-          return null
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
         })
-        mockHasValidIdentity.mockReturnValue(true)
       })
 
       it("should include role field in community data when user is a member", () => {
@@ -717,16 +692,11 @@ describe("when rendering the community detail page", () => {
 
     describe("and the user is not logged in", () => {
       beforeEach(() => {
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return null
-          }
-          return null
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
         })
-        mockHasValidIdentity.mockReturnValue(false)
       })
 
       it("should not check if user is a member", () => {
@@ -783,19 +753,11 @@ describe("when rendering the community detail page", () => {
           isError: false,
           refetch: jest.fn(),
         })
-        const wallet = {
+        setupWalletState({
           address: "0x456",
-        }
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return wallet
-          }
-          return null
+          isConnecting: false,
+          hasValidIdentity: true,
         })
-        mockHasValidIdentity.mockReturnValue(true)
       })
 
       it("should handle invalid action parameter", () => {
@@ -813,22 +775,12 @@ describe("when rendering the community detail page", () => {
     })
 
     describe("and the user is logged in", () => {
-      let wallet: { address: string }
-
       beforeEach(() => {
-        wallet = {
+        setupWalletState({
           address: "0x456",
-        }
-        mockUseAppSelector.mockImplementation((selector) => {
-          if (selector === isConnecting) {
-            return false
-          }
-          if (selector === getWallet) {
-            return wallet
-          }
-          return null
+          isConnecting: false,
+          hasValidIdentity: true,
         })
-        mockHasValidIdentity.mockReturnValue(true)
       })
 
       describe("and the user is not a member", () => {
@@ -1321,19 +1273,6 @@ describe("when rendering the community detail page", () => {
       ownerName: string
     }
 
-    const setupWalletState = (wallet: { address: string } | null) => {
-      mockUseAppSelector.mockImplementation((selector) => {
-        if (selector === isConnecting) {
-          return false
-        }
-        if (selector === getWallet) {
-          return wallet
-        }
-        return null
-      })
-      mockHasValidIdentity.mockReturnValue(!!wallet)
-    }
-
     beforeEach(() => {
       community = {
         id: "community-1",
@@ -1374,7 +1313,11 @@ describe("when rendering the community detail page", () => {
 
     describe("and address changes from non-null to null", () => {
       beforeEach(() => {
-        setupWalletState({ address: "0x456" })
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
+        })
       })
 
       it("should automatically refetch the community to get unsigned data", async () => {
@@ -1390,7 +1333,11 @@ describe("when rendering the community detail page", () => {
         mockUseGetCommunityByIdQuery.mockClear()
 
         // Update to no wallet (user signs out)
-        setupWalletState(null)
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
+        })
 
         // Rerender to trigger the query with new isSigned value
         rerender(<CommunityDetail />)
@@ -1410,7 +1357,11 @@ describe("when rendering the community detail page", () => {
 
     describe("and address changes from null to non-null", () => {
       beforeEach(() => {
-        setupWalletState(null)
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
+        })
       })
 
       it("should automatically refetch when signing in (isSigned changes)", async () => {
@@ -1426,7 +1377,11 @@ describe("when rendering the community detail page", () => {
         mockUseGetCommunityByIdQuery.mockClear()
 
         // Update to have wallet (user signs in)
-        setupWalletState({ address: "0x456" })
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
+        })
 
         // Rerender to trigger the query with new isSigned value
         rerender(<CommunityDetail />)
@@ -1446,7 +1401,11 @@ describe("when rendering the community detail page", () => {
 
     describe("and address changes from null to null", () => {
       beforeEach(() => {
-        setupWalletState(null)
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
+        })
       })
 
       it("should not refetch when auth state doesn't change", () => {
@@ -1481,7 +1440,11 @@ describe("when rendering the community detail page", () => {
 
     describe("and address changes from one address to another", () => {
       beforeEach(() => {
-        setupWalletState({ address: "0x456" })
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
+        })
       })
 
       it("should not refetch when switching accounts (same isSigned value)", () => {
@@ -1497,7 +1460,11 @@ describe("when rendering the community detail page", () => {
         const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
 
         // Update to different wallet (switch account, but still signed)
-        setupWalletState({ address: "0x789" })
+        setupWalletState({
+          address: "0x789",
+          isConnecting: false,
+          hasValidIdentity: true,
+        })
 
         // Rerender to trigger the address change
         rerender(<CommunityDetail />)
@@ -1520,7 +1487,11 @@ describe("when rendering the community detail page", () => {
     describe("and community id is not provided", () => {
       beforeEach(() => {
         mockUseParams.mockReturnValue({ id: undefined })
-        setupWalletState({ address: "0x456" })
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
+        })
       })
 
       it("should not refetch when id is undefined", () => {
@@ -1536,7 +1507,11 @@ describe("when rendering the community detail page", () => {
         const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
 
         // Update to no wallet (user signs out)
-        setupWalletState(null)
+        setupWalletState({
+          address: null,
+          isConnecting: false,
+          hasValidIdentity: false,
+        })
 
         // Rerender to trigger the sign-out detection
         rerender(<CommunityDetail />)

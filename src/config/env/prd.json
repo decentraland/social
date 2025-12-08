@@ -6,5 +6,6 @@
   "NETWORK": "mainnet",
   "CHAIN_ID": "1",
   "CATALYST_LAMBDAS_URL": "https://peer.decentraland.org/lambdas",
-  "PEER_URL": "https://peer.decentraland.org"
+  "PEER_URL": "https://peer.decentraland.org",
+  "CREDITS_SERVER_URL": "https://credits.decentraland.org"
 }

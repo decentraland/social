@@ -1,6 +1,6 @@
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Icon, muiIcons } from "decentraland-ui2"
 import { EventAttendees } from "./EventAttendees"
+import { t } from "../../../../../modules/translation"
 import { formatEventTime } from "../../../../../utils/dateFormat"
 import type { Event } from "./EventsList.types"
 import {
