@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useAnalytics } from "@dcl/hooks"
 import {
   Icon,
@@ -83,7 +83,7 @@ export const CommunityInfo = ({
   const { track } = useAnalytics()
   const utmParams = useUtmParams()
 
-  const getTrackPayload = useCallback(
+  const trackPayload = useMemo(
     () => ({
       communityId: community.id,
       userAddress: address,
@@ -93,7 +93,7 @@ export const CommunityInfo = ({
   )
 
   const handleJoinClick = useCallback(() => {
-    track(Events.CLICK_JOIN, getTrackPayload())
+    track(Events.CLICK_JOIN, trackPayload)
 
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
@@ -103,10 +103,10 @@ export const CommunityInfo = ({
     }
 
     onJoin(community.id)
-  }, [isLoggedIn, address, community.id, onJoin, track, getTrackPayload])
+  }, [isLoggedIn, address, community.id, onJoin, track, trackPayload])
 
   const handleRequestToJoinClick = useCallback(() => {
-    track(Events.CLICK_REQUEST_TO_JOIN, getTrackPayload())
+    track(Events.CLICK_REQUEST_TO_JOIN, trackPayload)
 
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
@@ -118,17 +118,10 @@ export const CommunityInfo = ({
     if (onRequestToJoin) {
       onRequestToJoin(community.id)
     }
-  }, [
-    isLoggedIn,
-    address,
-    community.id,
-    onRequestToJoin,
-    track,
-    getTrackPayload,
-  ])
+  }, [isLoggedIn, address, community.id, onRequestToJoin, track, trackPayload])
 
   const handleCancelRequestClick = useCallback(() => {
-    track(Events.CLICK_CANCEL_REQUEST, getTrackPayload())
+    track(Events.CLICK_CANCEL_REQUEST, trackPayload)
 
     if (!isLoggedIn || !address) {
       return
@@ -137,14 +130,7 @@ export const CommunityInfo = ({
     if (onCancelRequest) {
       onCancelRequest(community.id)
     }
-  }, [
-    isLoggedIn,
-    address,
-    community.id,
-    onCancelRequest,
-    track,
-    getTrackPayload,
-  ])
+  }, [isLoggedIn, address, community.id, onCancelRequest, track, trackPayload])
 
   const renderJoinedButton = () => (
     <CTAButton variant="outlined" color="secondary" disabled>
@@ -154,12 +140,12 @@ export const CommunityInfo = ({
   )
 
   const handleSignInToJoinClick = useCallback(() => {
-    track(Events.CLICK_SIGN_IN_TO_JOIN, getTrackPayload())
+    track(Events.CLICK_SIGN_IN_TO_JOIN, trackPayload)
     const action = isPrivate
       ? AllowedAction.REQUEST_TO_JOIN
       : AllowedAction.JOIN
     redirectToAuth(`/communities/${community.id}`, { action })
-  }, [track, getTrackPayload, isPrivate, community.id])
+  }, [track, trackPayload, isPrivate, community.id])
 
   const renderSignInButton = () => {
     return (
@@ -295,7 +281,7 @@ export const CommunityInfo = ({
                   }}
                   onTrack={(data) =>
                     track(Events.CLICK_JUMP_IN, {
-                      ...getTrackPayload(),
+                      ...trackPayload,
                       ...data,
                     })
                   }
