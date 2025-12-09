@@ -289,6 +289,9 @@ export const CommunityInfo = ({
                 <JumpIn
                   variant="button"
                   buttonText={t("community_info.jump_in")}
+                  desktopAppOptions={{
+                    communityId: community.id,
+                  }}
                   onTrack={(data) =>
                     track(Events.CLICK_JUMP_IN, {
                       ...getTrackPayload(),
