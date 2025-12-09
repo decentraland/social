@@ -1,4 +1,5 @@
 import { useCallback } from "react"
+import { useAnalytics } from "@dcl/hooks"
 import {
   Icon,
   JumpIn,
@@ -10,9 +11,9 @@ import {
 } from "decentraland-ui2"
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
-import { Events, useAnalytics } from "../../../../../hooks/useAnalytics"
 import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
 import { useUtmParams } from "../../../../../hooks/useUtmParams"
+import { Events } from "../../../../../modules/analytics/events"
 import { t } from "../../../../../modules/translation"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
