@@ -1,5 +1,5 @@
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Icon, muiIcons, useTheme } from "decentraland-ui2"
+import { t } from "../../../modules/translation"
 import { PageLayout } from "../../PageLayout"
 import { NotFoundProps } from "./NotFound.types"
 import {

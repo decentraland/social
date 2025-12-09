@@ -1,9 +1,9 @@
 import { AuthIdentity } from "@dcl/crypto"
 import { localStorageGetIdentity } from "@dcl/single-sign-on-client"
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import { getData as getWallet } from "decentraland-dapps/dist/modules/wallet/selectors"
 import signedFetch from "decentraland-crypto-fetch"
 import { config } from "../config"
+import { getAddress } from "../modules/wallet/selectors"
 import type {
   BaseQueryFn,
   FetchArgs,
@@ -25,10 +25,10 @@ const baseQuery: BaseQueryFn<
       init?: RequestInit
     ): Promise<Response> => {
       const state = api.getState()
-      const wallet = getWallet(state)
+      const address = getAddress(state as Parameters<typeof getAddress>[0])
 
-      if (wallet?.address) {
-        const identity = localStorageGetIdentity(wallet.address.toLowerCase())
+      if (address) {
+        const identity = localStorageGetIdentity(address.toLowerCase())
 
         if (identity) {
           return signedFetch(input, {

@@ -1,10 +1,10 @@
 import { useMemo } from "react"
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import { Box, CircularProgress } from "decentraland-ui2"
 import { EmptyEventsIcon } from "./EmptyEventsIcon"
 import { EventItem } from "./EventItem"
 import { useInfiniteScroll } from "../../../../../hooks/useInfiniteScroll"
 import { useProfilePictures } from "../../../../../hooks/useProfilePictures"
+import { t } from "../../../../../modules/translation"
 import type { EventsListProps } from "./EventsList.types"
 import {
   EmptyState,

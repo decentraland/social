@@ -1,5 +1,4 @@
 import { useCallback } from "react"
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
 import {
   Icon,
   JumpIn,
@@ -12,6 +11,7 @@ import {
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
 import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
+import { t } from "../../../../../modules/translation"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
 import { getThumbnailUrl } from "../../utils/communityUtils"

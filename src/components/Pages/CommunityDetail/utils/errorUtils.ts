@@ -1,5 +1,5 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
+import { t } from "../../../../modules/translation"
 
 function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
   return (

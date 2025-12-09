@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useParams, useSearchParams } from "react-router-dom"
-import { t } from "decentraland-dapps/dist/modules/translation/utils"
-import {
-  getData as getWallet,
-  isConnecting,
-} from "decentraland-dapps/dist/modules/wallet/selectors"
 import {
   Box,
   CircularProgress,
@@ -21,7 +16,6 @@ import {
   isErrorWithMessage,
   isFetchBaseQueryError,
 } from "./utils/errorUtils"
-import { useAppSelector } from "../../../app/hooks"
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
@@ -36,7 +30,8 @@ import {
 } from "../../../features/communities/types"
 import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
-import { hasValidIdentity } from "../../../utils/identity"
+import { t } from "../../../modules/translation"
+import { useWallet } from "../../../modules/wallet/hooks"
 import { PageLayout } from "../../PageLayout"
 import { NotFound } from "../NotFound"
 import { AllowedAction } from "./CommunityDetail.types"
@@ -51,15 +46,13 @@ import {
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
-  const wallet = useAppSelector(getWallet)
-  const isWalletConnecting = useAppSelector(isConnecting)
+  const { address, isConnecting, hasValidIdentity } = useWallet()
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
-  const isLoggedIn = hasValidIdentity(wallet)
-  const address = wallet?.address
+  const isLoggedIn = hasValidIdentity
 
   // Skip query only when:
   // 1. No community id provided
@@ -68,8 +61,8 @@ function CommunityDetail() {
   //       This prevents using cached signed data for unsigned requests and vice versa.
   //       RTK Query will automatically refetch when isSigned changes (e.g., when identity becomes available)
   //       isSigned should be false when wallet is connecting, even if identity exists, because connection isn't complete
-  const shouldSkipQuery = !id || isWalletConnecting
-  const isSigned = isLoggedIn && !isWalletConnecting
+  const shouldSkipQuery = !id || isConnecting
+  const isSigned = isLoggedIn && !isConnecting
 
   const {
     data,
@@ -243,7 +236,7 @@ function CommunityDetail() {
         address &&
         community &&
         !isLoading &&
-        !isWalletConnecting &&
+        !isConnecting &&
         !isPerformingCommunityAction
       )
     }
@@ -307,7 +300,7 @@ function CommunityDetail() {
     address,
     community,
     isLoading,
-    isWalletConnecting,
+    isConnecting,
     isPerformingCommunityAction,
     member,
     hasPendingRequest,
@@ -315,7 +308,7 @@ function CommunityDetail() {
     handleRequestToJoin,
   ])
 
-  if (isLoading || isWalletConnecting) {
+  if (isLoading || isConnecting) {
     return (
       <ContentContainer>
         <Box
@@ -346,7 +339,7 @@ function CommunityDetail() {
           <CommunityInfo
             community={community}
             isLoggedIn={isLoggedIn}
-            address={address}
+            address={address ?? undefined}
             isPerformingCommunityAction={isPerformingCommunityAction}
             isMember={member}
             canViewContent={canViewContent}

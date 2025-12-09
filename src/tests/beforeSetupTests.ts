@@ -10,6 +10,11 @@ const translations: Record<string, string> = {
 
 jest.mock("decentraland-dapps/dist/modules/translation/utils", () => ({
   t: (key: string) => translations[key] || key,
+  setCurrentLocale: jest.fn(),
+  mergeTranslations: <T extends Record<string, unknown>>(
+    target: T = {} as T,
+    ...sources: (T | undefined)[]
+  ): T => Object.assign({}, target, ...sources.filter(Boolean)),
 }))
 
 // Mock lottie-react to avoid canvas issues

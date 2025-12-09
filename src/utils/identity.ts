@@ -1,11 +1,12 @@
 import { localStorageGetIdentity } from "@dcl/single-sign-on-client"
-import type { Wallet } from "decentraland-dapps/dist/modules/wallet/types"
 
-export const hasValidIdentity = (wallet: Wallet | null): boolean => {
-  if (!wallet?.address) {
+export const hasValidIdentity = (
+  address: string | null | undefined
+): boolean => {
+  if (!address) {
     return false
   }
 
-  const identity = localStorageGetIdentity(wallet.address.toLowerCase())
+  const identity = localStorageGetIdentity(address.toLowerCase())
   return !!identity
 }
