@@ -10,7 +10,9 @@ import {
 } from "decentraland-ui2"
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
+import { Events, useAnalytics } from "../../../../../hooks/useAnalytics"
 import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
+import { useUtmParams } from "../../../../../hooks/useUtmParams"
 import { t } from "../../../../../modules/translation"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
@@ -77,8 +79,21 @@ export const CommunityInfo = ({
   const ownerProfilePicture = useProfilePicture(community.ownerAddress)
   const theme = useTheme<Theme>()
   const ownerAvatarBackgroundColor = getRandomRarityColor(theme)
+  const { track } = useAnalytics()
+  const utmParams = useUtmParams()
+
+  const getTrackPayload = useCallback(
+    () => ({
+      communityId: community.id,
+      userAddress: address,
+      ...utmParams,
+    }),
+    [community.id, address, utmParams]
+  )
 
   const handleJoinClick = useCallback(() => {
+    track(Events.CLICK_JOIN, getTrackPayload())
+
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
         action: AllowedAction.JOIN,
@@ -87,9 +102,11 @@ export const CommunityInfo = ({
     }
 
     onJoin(community.id)
-  }, [isLoggedIn, address, community.id, onJoin])
+  }, [isLoggedIn, address, community.id, onJoin, track, getTrackPayload])
 
   const handleRequestToJoinClick = useCallback(() => {
+    track(Events.CLICK_REQUEST_TO_JOIN, getTrackPayload())
+
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
         action: AllowedAction.REQUEST_TO_JOIN,
@@ -100,9 +117,18 @@ export const CommunityInfo = ({
     if (onRequestToJoin) {
       onRequestToJoin(community.id)
     }
-  }, [isLoggedIn, address, community.id, onRequestToJoin])
+  }, [
+    isLoggedIn,
+    address,
+    community.id,
+    onRequestToJoin,
+    track,
+    getTrackPayload,
+  ])
 
   const handleCancelRequestClick = useCallback(() => {
+    track(Events.CLICK_CANCEL_REQUEST, getTrackPayload())
+
     if (!isLoggedIn || !address) {
       return
     }
@@ -110,7 +136,14 @@ export const CommunityInfo = ({
     if (onCancelRequest) {
       onCancelRequest(community.id)
     }
-  }, [isLoggedIn, address, community.id, onCancelRequest])
+  }, [
+    isLoggedIn,
+    address,
+    community.id,
+    onCancelRequest,
+    track,
+    getTrackPayload,
+  ])
 
   const renderJoinedButton = () => (
     <CTAButton variant="outlined" color="secondary" disabled>
@@ -119,17 +152,20 @@ export const CommunityInfo = ({
     </CTAButton>
   )
 
-  const renderSignInButton = () => {
+  const handleSignInToJoinClick = useCallback(() => {
+    track(Events.CLICK_SIGN_IN_TO_JOIN, getTrackPayload())
     const action = isPrivate
       ? AllowedAction.REQUEST_TO_JOIN
       : AllowedAction.JOIN
+    redirectToAuth(`/communities/${community.id}`, { action })
+  }, [track, getTrackPayload, isPrivate, community.id])
+
+  const renderSignInButton = () => {
     return (
       <CTAButton
         color="primary"
         variant="contained"
-        onClick={() =>
-          redirectToAuth(`/communities/${community.id}`, { action })
-        }
+        onClick={handleSignInToJoinClick}
       >
         {t("community_info.sign_in_to_join")}
       </CTAButton>
@@ -253,6 +289,12 @@ export const CommunityInfo = ({
                 <JumpIn
                   variant="button"
                   buttonText={t("community_info.jump_in")}
+                  onTrack={(data) =>
+                    track(Events.CLICK_JUMP_IN, {
+                      ...getTrackPayload(),
+                      ...data,
+                    })
+                  }
                   modalProps={{
                     title: t("community_info.jump_in_modal.title"),
                     description: t("community_info.jump_in_modal.description"),

@@ -13,6 +13,27 @@ jest.mock("../../../../../utils/authRedirect", () => ({
   redirectToAuth: (...args: unknown[]) => mockRedirectToAuth(...args),
 }))
 
+const mockTrack = jest.fn()
+jest.mock("../../../../../hooks/useAnalytics", () => ({
+  useAnalytics: () => ({
+    track: mockTrack,
+    identify: jest.fn(),
+    page: jest.fn(),
+    isInitialized: true,
+  }),
+  Events: {
+    CLICK_JOIN: "Click on Join",
+    CLICK_REQUEST_TO_JOIN: "Click on Request to Join",
+    CLICK_CANCEL_REQUEST: "Click on Cancel Request",
+    CLICK_JUMP_IN: "Click on Jump In",
+    CLICK_SIGN_IN_TO_JOIN: "Click on Sign In to Join",
+  },
+}))
+
+jest.mock("../../../../../hooks/useUtmParams", () => ({
+  useUtmParams: () => ({}),
+}))
+
 // Create mock functions for the hooks that we can control
 const mockUseTabletAndBelowMediaQuery = jest.fn()
 const mockUseTabletMediaQuery = jest.fn()
@@ -110,6 +131,7 @@ describe("when rendering the community info", () => {
   beforeEach(() => {
     mockOnJoin = jest.fn()
     mockRedirectToAuth.mockClear()
+    mockTrack.mockClear()
     mockUseProfilePicture.mockReset()
     mockUseProfilePicture.mockReturnValue("")
     defaultCommunity = {
