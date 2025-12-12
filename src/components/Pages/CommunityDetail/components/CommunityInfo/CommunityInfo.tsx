@@ -1,4 +1,5 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
+import { useAnalytics } from "@dcl/hooks"
 import {
   Icon,
   JumpIn,
@@ -11,6 +12,8 @@ import {
 import { PrivacyIcon } from "./PrivacyIcon"
 import { Privacy } from "../../../../../features/communities/types"
 import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
+import { useUtmParams } from "../../../../../hooks/useUtmParams"
+import { Events } from "../../../../../modules/analytics/events"
 import { t } from "../../../../../modules/translation"
 import { redirectToAuth } from "../../../../../utils/authRedirect"
 import { AllowedAction } from "../../CommunityDetail.types"
@@ -77,8 +80,21 @@ export const CommunityInfo = ({
   const ownerProfilePicture = useProfilePicture(community.ownerAddress)
   const theme = useTheme<Theme>()
   const ownerAvatarBackgroundColor = getRandomRarityColor(theme)
+  const { track } = useAnalytics()
+  const utmParams = useUtmParams()
+
+  const trackPayload = useMemo(
+    () => ({
+      communityId: community.id,
+      userAddress: address,
+      ...utmParams,
+    }),
+    [community.id, address, utmParams]
+  )
 
   const handleJoinClick = useCallback(() => {
+    track(Events.CLICK_JOIN, trackPayload)
+
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
         action: AllowedAction.JOIN,
@@ -87,9 +103,11 @@ export const CommunityInfo = ({
     }
 
     onJoin(community.id)
-  }, [isLoggedIn, address, community.id, onJoin])
+  }, [isLoggedIn, address, community.id, onJoin, track, trackPayload])
 
   const handleRequestToJoinClick = useCallback(() => {
+    track(Events.CLICK_REQUEST_TO_JOIN, trackPayload)
+
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
         action: AllowedAction.REQUEST_TO_JOIN,
@@ -100,9 +118,11 @@ export const CommunityInfo = ({
     if (onRequestToJoin) {
       onRequestToJoin(community.id)
     }
-  }, [isLoggedIn, address, community.id, onRequestToJoin])
+  }, [isLoggedIn, address, community.id, onRequestToJoin, track, trackPayload])
 
   const handleCancelRequestClick = useCallback(() => {
+    track(Events.CLICK_CANCEL_REQUEST, trackPayload)
+
     if (!isLoggedIn || !address) {
       return
     }
@@ -110,7 +130,7 @@ export const CommunityInfo = ({
     if (onCancelRequest) {
       onCancelRequest(community.id)
     }
-  }, [isLoggedIn, address, community.id, onCancelRequest])
+  }, [isLoggedIn, address, community.id, onCancelRequest, track, trackPayload])
 
   const renderJoinedButton = () => (
     <CTAButton variant="outlined" color="secondary" disabled>
@@ -119,17 +139,20 @@ export const CommunityInfo = ({
     </CTAButton>
   )
 
-  const renderSignInButton = () => {
+  const handleSignInToJoinClick = useCallback(() => {
+    track(Events.CLICK_SIGN_IN_TO_JOIN, trackPayload)
     const action = isPrivate
       ? AllowedAction.REQUEST_TO_JOIN
       : AllowedAction.JOIN
+    redirectToAuth(`/communities/${community.id}`, { action })
+  }, [track, trackPayload, isPrivate, community.id])
+
+  const renderSignInButton = () => {
     return (
       <CTAButton
         color="primary"
         variant="contained"
-        onClick={() =>
-          redirectToAuth(`/communities/${community.id}`, { action })
-        }
+        onClick={handleSignInToJoinClick}
       >
         {t("community_info.sign_in_to_join")}
       </CTAButton>
@@ -253,6 +276,15 @@ export const CommunityInfo = ({
                 <JumpIn
                   variant="button"
                   buttonText={t("community_info.jump_in")}
+                  desktopAppOptions={{
+                    communityId: community.id,
+                  }}
+                  onTrack={(data) =>
+                    track(Events.CLICK_JUMP_IN, {
+                      ...trackPayload,
+                      ...data,
+                    })
+                  }
                   modalProps={{
                     title: t("community_info.jump_in_modal.title"),
                     description: t("community_info.jump_in_modal.description"),

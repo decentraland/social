@@ -1,10 +1,12 @@
 import { StrictMode } from "react"
 import { Provider } from "react-redux"
 import { BrowserRouter } from "react-router-dom"
+import { AnalyticsProvider } from "@dcl/hooks"
 import ModalProvider from "decentraland-dapps/dist/providers/ModalProvider"
 import { createRoot } from "react-dom/client"
 import { DclThemeProvider, darkTheme } from "decentraland-ui2"
 import { store } from "./app/store"
+import { config } from "./config"
 import * as locales from "./modules/translation/locales"
 import { TranslationProvider } from "./providers/TranslationProvider"
 import { WagmiProvider } from "./providers/WagmiProvider"
@@ -24,9 +26,11 @@ createRoot(document.getElementById("root")!).render(
           <WalletSyncProvider>
             <TranslationProvider locales={Object.keys(locales)}>
               <DclThemeProvider theme={darkTheme}>
-                <ModalProvider components={{}}>
-                  <AppRoutes />
-                </ModalProvider>
+                <AnalyticsProvider writeKey={config.get("SEGMENT_API_KEY")}>
+                  <ModalProvider components={{}}>
+                    <AppRoutes />
+                  </ModalProvider>
+                </AnalyticsProvider>
               </DclThemeProvider>
             </TranslationProvider>
           </WalletSyncProvider>
