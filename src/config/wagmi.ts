@@ -2,6 +2,7 @@ import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
 import { Config, createConfig, http } from "wagmi"
 import { mainnet, polygon, polygonAmoy, sepolia } from "wagmi/chains"
 import { injected, walletConnect } from "wagmi/connectors"
+import { magic } from "./connectors"
 import { config as appConfig } from "./index"
 
 const WALLET_CONNECT_PROJECT_ID = "61570c542c2d66c659492e5b24a41522"
@@ -28,6 +29,7 @@ const wagmiConfig: Config = createConfig({
       },
       showQrModal: true,
     }),
+    magic({ isTest: !isMainnet }),
   ],
   transports: {
     [mainnet.id]: http("https://rpc.decentraland.org/mainnet"),
