@@ -2,7 +2,7 @@ import { useParams, useSearchParams } from "react-router-dom"
 import { render, screen, waitFor } from "@testing-library/react"
 import { userEvent } from "@testing-library/user-event"
 import { CommunityDetail } from "./CommunityDetail"
-import { useAppDispatch } from "../../../app/hooks"
+import { useAppDispatch, useAppSelector } from "../../../app/hooks"
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
@@ -169,6 +169,7 @@ const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
 const mockUsePaginatedCommunityMembers =
   usePaginatedCommunityMembers as jest.Mock
 const mockUseAppDispatch = useAppDispatch as jest.Mock
+const mockUseAppSelector = useAppSelector as jest.Mock
 
 function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
   const mockSetSearchParams = jest.fn()
@@ -182,18 +183,30 @@ function setupWalletState(options: {
   address?: string | null
   isConnecting?: boolean
   hasValidIdentity?: boolean
+  // By default, assume Redux is synchronized with wagmi (reduxAddress matches address)
+  // Set to undefined to simulate Redux not being synchronized yet
+  reduxAddress?: string | null | undefined
 }) {
+  const wagmiAddress = options.address ?? null
+  // Default: Redux address matches wagmi address (synchronized state)
+  // If explicitly set to undefined, simulate Redux not synchronized yet
+  const reduxAddress =
+    options.reduxAddress !== undefined ? options.reduxAddress : wagmiAddress
+
   mockUseWallet.mockReturnValue({
-    address: options.address ?? null,
+    address: wagmiAddress,
     isConnecting: options.isConnecting ?? false,
     hasValidIdentity: options.hasValidIdentity ?? false,
-    isConnected: !!options.address && options.hasValidIdentity,
+    isConnected: !!wagmiAddress && options.hasValidIdentity,
     chainId: 1,
     identity: options.hasValidIdentity ? {} : undefined,
     connectors: [],
     connect: jest.fn(),
     disconnect: jest.fn(),
   })
+
+  // Mock useAppSelector to return the Redux address when getReduxAddress selector is used
+  mockUseAppSelector.mockReturnValue(reduxAddress)
 }
 
 describe("when rendering the community detail page", () => {
@@ -338,6 +351,36 @@ describe("when rendering the community detail page", () => {
           { id: "community-1", isSigned: true },
           { skip: false }
         )
+      })
+    })
+
+    describe("when wagmi has connected but Redux is not yet synchronized", () => {
+      beforeEach(() => {
+        // Simulate the race condition: wagmi has address and identity,
+        // but Redux store hasn't been updated yet (useEffect hasn't run)
+        setupWalletState({
+          address: "0x456",
+          isConnecting: false,
+          hasValidIdentity: true,
+          reduxAddress: null, // Redux not synchronized yet
+        })
+      })
+
+      it("should skip the query to avoid sending unsigned requests", () => {
+        renderCommunityDetail()
+
+        // Query should be skipped because Redux is not synchronized
+        // This prevents sending unsigned requests to private communities
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
+          { id: "community-1", isSigned: false },
+          { skip: true }
+        )
+      })
+
+      it("should show loading indicator while Redux is syncing", () => {
+        renderCommunityDetail()
+
+        expect(screen.getByRole("progressbar")).toBeInTheDocument()
       })
     })
 
