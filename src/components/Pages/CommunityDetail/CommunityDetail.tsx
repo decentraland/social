@@ -16,6 +16,7 @@ import {
   isErrorWithMessage,
   isFetchBaseQueryError,
 } from "./utils/errorUtils"
+import { useAppSelector } from "../../../app/hooks"
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
@@ -32,6 +33,7 @@ import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunit
 import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
 import { t } from "../../../modules/translation"
 import { useWallet } from "../../../modules/wallet/hooks"
+import { getAddress as getReduxAddress } from "../../../modules/wallet/selectors"
 import { PageLayout } from "../../PageLayout"
 import { NotFound } from "../NotFound"
 import { AllowedAction } from "./CommunityDetail.types"
@@ -52,17 +54,29 @@ function CommunityDetail() {
   const [activeTab, setActiveTab] = useState<TabType>("members")
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
+  // Redux address is needed to ensure the store is synchronized before making signed requests.
+  // baseQuery.ts uses getAddress(state) from Redux to sign requests, so we must wait for
+  // Redux to have the address before running queries that need authentication.
+  const reduxAddress = useAppSelector(getReduxAddress)
+
   const isLoggedIn = hasValidIdentity
+
+  // Detect if Redux store is still syncing with wagmi.
+  // This happens when wagmi has connected (hasValidIdentity is true) but the Redux store
+  // hasn't been updated yet (useEffect in useWalletSync hasn't run).
+  // Without this check, queries may run unsigned and fail for private communities.
+  const isReduxSyncing = hasValidIdentity && !!address && !reduxAddress
 
   // Skip query only when:
   // 1. No community id provided
   // 2. Wallet is connecting (to avoid race conditions)
+  // 3. Redux store is still syncing with wagmi (to ensure signed requests work)
   // Note: We include isSigned in query arg so RTK Query treats signed/unsigned as different queries
   //       This prevents using cached signed data for unsigned requests and vice versa.
   //       RTK Query will automatically refetch when isSigned changes (e.g., when identity becomes available)
   //       isSigned should be false when wallet is connecting, even if identity exists, because connection isn't complete
-  const shouldSkipQuery = !id || isConnecting
-  const isSigned = isLoggedIn && !isConnecting
+  const shouldSkipQuery = !id || isConnecting || isReduxSyncing
+  const isSigned = isLoggedIn && !isConnecting && !isReduxSyncing
 
   const {
     data,
@@ -308,7 +322,7 @@ function CommunityDetail() {
     handleRequestToJoin,
   ])
 
-  if (isLoading || isConnecting) {
+  if (isLoading || isConnecting || isReduxSyncing) {
     return (
       <ContentContainer>
         <Box
