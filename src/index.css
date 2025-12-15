@@ -14,9 +14,3 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* Ensure Navbar user menu text uses the CSS variable */
-.dcl.navbar .dcl.user-menu,
-.dcl.navbar .dcl.user-menu * {
-  color: var(--text);
-}

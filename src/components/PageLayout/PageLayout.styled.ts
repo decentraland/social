@@ -13,6 +13,7 @@ const PageContent = styled(Box)(() => ({
   flexDirection: "column",
   flex: 1,
   width: "100%",
+  paddingTop: "66px", // Account for the fixed UI2 Navbar height
 }))
 
 const BackToTopButton = styled(BackToTopButtonBase)(() => ({
