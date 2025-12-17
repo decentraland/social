@@ -35,21 +35,32 @@ function useWalletSync() {
     address,
     isConnecting: wagmiConnecting,
     isConnected: wagmiConnected,
+    isReconnecting: wagmiReconnecting,
   } = useAccount()
   const chainId = useChainId()
   const { isPending: isSwitching } = useSwitchChain()
   const { isPending: isDisconnectingWagmi } = useDisconnect()
 
   // Sync wagmi connection state to Redux
+  // IMPORTANT: We must check isReconnecting to avoid race condition during page load
+  // Wagmi sets isReconnecting=true while checking localStorage for saved connections.
+  // If we dispatch setWalletDisconnected during reconnect, it causes a "flash" of Sign In button.
   useEffect(() => {
-    if (wagmiConnecting) {
+    if (wagmiConnecting || wagmiReconnecting) {
       dispatch(setWalletConnecting())
     } else if (wagmiConnected && address) {
       dispatch(setWalletConnected({ address, chainId }))
     } else {
       dispatch(setWalletDisconnected())
     }
-  }, [dispatch, wagmiConnecting, wagmiConnected, address, chainId])
+  }, [
+    dispatch,
+    wagmiConnecting,
+    wagmiReconnecting,
+    wagmiConnected,
+    address,
+    chainId,
+  ])
 
   // Update chain ID when it changes
   useEffect(() => {
@@ -78,6 +89,7 @@ function useWallet() {
     address,
     isConnecting: wagmiConnecting,
     isConnected: wagmiConnected,
+    isReconnecting: wagmiReconnecting,
   } = useAccount()
   const chainId = useChainId()
   const { connect, connectors } = useConnect()
@@ -130,7 +142,7 @@ function useWallet() {
     address: walletAddress,
     chainId,
     isConnected,
-    isConnecting: wagmiConnecting || reduxIsConnecting,
+    isConnecting: wagmiConnecting || wagmiReconnecting || reduxIsConnecting,
     isDisconnecting: reduxIsDisconnecting,
     isSwitchingNetwork: reduxIsSwitchingNetwork,
     identity,
