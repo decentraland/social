@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react"
+import { memo, useCallback, useEffect, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 import { Avatar } from "@dcl/schemas"
 import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
@@ -17,6 +17,16 @@ const appChainId = Number(config.get("CHAIN_ID")) as ChainId
 const Navbar = memo(() => {
   const { pathname, search } = useLocation()
   const { address, chainId, isConnected, isConnecting } = useWallet()
+
+  // Debug log wallet state
+  useEffect(() => {
+    console.log("[Navbar] wallet state:", {
+      address,
+      chainId,
+      isConnected,
+      isConnecting,
+    })
+  }, [address, chainId, isConnected, isConnecting])
   const { switchChain, isPending: isSwitchingNetwork } = useSwitchChain()
   const { disconnect, isPending: isDisconnecting } = useDisconnect()
 
