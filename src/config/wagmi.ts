@@ -1,8 +1,8 @@
 import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
 import { Config, createConfig, http } from "wagmi"
 import { mainnet, polygon, polygonAmoy, sepolia } from "wagmi/chains"
-import { injected, walletConnect } from "wagmi/connectors"
-import { magic } from "./connectors"
+import { walletConnect } from "wagmi/connectors"
+import { injectedWithRetry, magic } from "./connectors"
 import { config as appConfig } from "./index"
 
 const WALLET_CONNECT_PROJECT_ID = "61570c542c2d66c659492e5b24a41522"
@@ -18,7 +18,9 @@ const polygonChain = isMainnet ? polygon : polygonAmoy
 const wagmiConfig: Config = createConfig({
   chains: [primaryChain, polygonChain],
   connectors: [
-    injected(),
+    // Use injectedWithRetry to handle the race condition where wallet
+    // extensions aren't ready when wagmi tries to reconnect on page load
+    injectedWithRetry(),
     walletConnect({
       projectId: WALLET_CONNECT_PROJECT_ID,
       metadata: {

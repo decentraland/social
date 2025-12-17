@@ -36,6 +36,28 @@ function buildAuthRedirectUrl(
 }
 
 /**
+ * Clears wagmi localStorage state before redirecting to auth.
+ *
+ * This is necessary because wagmi trusts its stored state. If the user was
+ * disconnected before going to auth, wagmi has saved {connections: [], current: null}.
+ * When returning from auth (even though MetaMask is now authorized), wagmi loads
+ * this "disconnected" state and doesn't re-check authorization.
+ *
+ * The auth site doesn't update our wagmi state (it may use different config/storage),
+ * so we clear it before redirecting to ensure a fresh reconnection on return.
+ */
+function clearWagmiState() {
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith("wagmi.")) {
+      keysToRemove.push(key)
+    }
+  }
+  keysToRemove.forEach((key) => localStorage.removeItem(key))
+}
+
+/**
  * Redirects to the authentication URL with the specified redirect path.
  * @param path - The path to redirect to after authentication
  * @param queryParams - Optional query parameters to append to the path
@@ -46,6 +68,9 @@ function redirectToAuth(
 ): void {
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
   const authUrl = config.get("AUTH_URL")
+
+  // Clear stale wagmi state to ensure fresh reconnection on return
+  clearWagmiState()
 
   window.location.replace(
     `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`

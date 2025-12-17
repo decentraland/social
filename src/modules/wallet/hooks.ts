@@ -103,7 +103,7 @@ function useWallet() {
   const reduxIsSwitchingNetwork = useAppSelector(selectIsSwitchingNetwork)
 
   // Prefer wagmi state but fall back to Redux for SSR consistency
-  const isConnected = wagmiConnected || reduxIsConnected
+  const isConnected = (wagmiConnected && !wagmiReconnecting) || reduxIsConnected
   const walletAddress = address || reduxAddress
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
