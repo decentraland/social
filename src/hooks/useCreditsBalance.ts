@@ -1,6 +1,9 @@
+import { AuthIdentity } from "@dcl/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { formatEther } from "viem"
+import { signedFetchFactory } from "decentraland-crypto-fetch"
 import { config } from "../config"
+import { useIdentity } from "../modules/wallet/hooks"
 
 type Credit = {
   id: string
@@ -32,7 +35,11 @@ type UseCreditsBalanceResult = {
   error: Error | null
 }
 
-async function fetchCredits(address: string): Promise<CreditsResponse | null> {
+async function fetchCredits(
+  address: string,
+  identity?: AuthIdentity
+): Promise<CreditsResponse | null> {
+  const signedFetch = signedFetchFactory()
   const creditsUrl = config.get("CREDITS_SERVER_URL")
 
   if (!creditsUrl) {
@@ -41,7 +48,7 @@ async function fetchCredits(address: string): Promise<CreditsResponse | null> {
 
   try {
     const url = `${creditsUrl}/users/${address.toLowerCase()}/credits`
-    const response = await fetch(url)
+    const response = await signedFetch(url, { identity })
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -64,9 +71,10 @@ export function useCreditsBalance({
   address,
   enabled = true,
 }: UseCreditsBalanceOptions): UseCreditsBalanceResult {
+  const { identity } = useIdentity()
   const { data, isLoading, error } = useQuery({
     queryKey: ["credits", address],
-    queryFn: () => fetchCredits(address!),
+    queryFn: () => fetchCredits(address!, identity),
     enabled: enabled && !!address,
     staleTime: 60_000, // 1 minute
     retry: 1,
