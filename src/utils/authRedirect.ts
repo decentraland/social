@@ -1,13 +1,11 @@
-import { config } from "../config"
+import { config } from '../config'
 
 /**
  * Gets the basename based on the current host.
  * Returns "/social" for decentraland domains, empty string otherwise.
  */
 function getBasename(): string {
-  return /^decentraland.(zone|org|today)$/.test(window.location.host)
-    ? "/social"
-    : ""
+  return /^decentraland.(zone|org|today)$/.test(window.location.host) ? '/social' : ''
 }
 
 /**
@@ -16,10 +14,7 @@ function getBasename(): string {
  * @param queryParams - Optional query parameters to append to the path
  * @returns The full redirect URL with basename
  */
-function buildAuthRedirectUrl(
-  path: string,
-  queryParams?: Record<string, string>
-): string {
+function buildAuthRedirectUrl(path: string, queryParams?: Record<string, string>): string {
   const basename = getBasename()
   // Parse the path, handling cases where it already includes query params
   const url = new URL(path, window.location.origin)
@@ -50,11 +45,11 @@ function clearWagmiState() {
   const keysToRemove: string[] = []
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (key?.startsWith("wagmi.")) {
+    if (key?.startsWith('wagmi.')) {
       keysToRemove.push(key)
     }
   }
-  keysToRemove.forEach((key) => localStorage.removeItem(key))
+  keysToRemove.forEach(key => localStorage.removeItem(key))
 }
 
 /**
@@ -62,19 +57,14 @@ function clearWagmiState() {
  * @param path - The path to redirect to after authentication
  * @param queryParams - Optional query parameters to append to the path
  */
-function redirectToAuth(
-  path: string,
-  queryParams?: Record<string, string>
-): void {
+function redirectToAuth(path: string, queryParams?: Record<string, string>): void {
   const redirectTo = buildAuthRedirectUrl(path, queryParams)
-  const authUrl = config.get("AUTH_URL")
+  const authUrl = config.get('AUTH_URL')
 
   // Clear stale wagmi state to ensure fresh reconnection on return
   clearWagmiState()
 
-  window.location.replace(
-    `${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`
-  )
+  window.location.replace(`${authUrl}/login?redirectTo=${encodeURIComponent(redirectTo)}`)
 }
 
 export { buildAuthRedirectUrl, redirectToAuth }

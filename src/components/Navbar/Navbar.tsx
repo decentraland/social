@@ -1,18 +1,18 @@
-import { memo, useCallback, useEffect, useMemo } from "react"
-import { useLocation } from "react-router-dom"
-import { Avatar } from "@dcl/schemas"
-import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
-import { useDisconnect, useSwitchChain } from "wagmi"
-import { Navbar as NavbarComponent, NavbarProps } from "decentraland-ui2"
-import { NavbarErrorBoundary } from "./NavbarErrorBoundary"
-import { config } from "../../config"
-import { useGetProfileQuery } from "../../features/profile/profile.client"
-import { useCreditsBalance } from "../../hooks/useCreditsBalance"
-import { useManaBalance } from "../../hooks/useManaBalance"
-import { useWallet } from "../../modules/wallet/hooks"
-import { redirectToAuth } from "../../utils/authRedirect"
+import { memo, useCallback, useEffect, useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useDisconnect, useSwitchChain } from 'wagmi'
+import { Avatar } from '@dcl/schemas'
+import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
+import { Navbar as NavbarComponent, NavbarProps } from 'decentraland-ui2'
+import { config } from '../../config'
+import { useGetProfileQuery } from '../../features/profile/profile.client'
+import { useCreditsBalance } from '../../hooks/useCreditsBalance'
+import { useManaBalance } from '../../hooks/useManaBalance'
+import { useWallet } from '../../modules/wallet/hooks'
+import { redirectToAuth } from '../../utils/authRedirect'
+import { NavbarErrorBoundary } from './NavbarErrorBoundary'
 
-const appChainId = Number(config.get("CHAIN_ID")) as ChainId
+const appChainId = Number(config.get('CHAIN_ID')) as ChainId
 
 const Navbar = memo(() => {
   const { pathname, search } = useLocation()
@@ -20,11 +20,11 @@ const Navbar = memo(() => {
 
   // Debug log wallet state
   useEffect(() => {
-    console.log("[Navbar] wallet state:", {
+    console.log('[Navbar] wallet state:', {
       address,
       chainId,
       isConnected,
-      isConnecting,
+      isConnecting
     })
   }, [address, chainId, isConnected, isConnecting])
   const { switchChain, isPending: isSwitchingNetwork } = useSwitchChain()
@@ -32,25 +32,25 @@ const Navbar = memo(() => {
 
   // Load user profile for avatar display
   const { data: profile } = useGetProfileQuery(address ?? undefined, {
-    skip: !address,
+    skip: !address
   })
   const avatar = profile?.avatars?.[0] as Avatar | undefined
 
   // Load MANA balance (both Ethereum and Polygon)
   const { manaBalances } = useManaBalance({
-    address: address as `0x${string}` | undefined,
-    enabled: isConnected,
+    address: address,
+    enabled: isConnected
   })
 
   // Load credits balance
   const { creditsBalance } = useCreditsBalance({
     address: address ?? undefined,
-    enabled: isConnected,
+    enabled: isConnected
   })
 
   const handleSignIn = useCallback(() => {
     const searchParams = new URLSearchParams(search)
-    const currentRedirectTo = searchParams.get("redirectTo")
+    const currentRedirectTo = searchParams.get('redirectTo')
     const redirectPath = currentRedirectTo || `${pathname}${search}`
     redirectToAuth(redirectPath)
   }, [pathname, search])
@@ -88,12 +88,12 @@ const Navbar = memo(() => {
         isSwitchingNetwork,
 
         // UI config
-        activePage: "extra", // "social" doesn't exist in NavbarPages enum
+        activePage: 'extra', // "social" doesn't exist in NavbarPages enum
 
         // Event handlers
         onClickSignIn: handleSignIn,
         onClickSignOut: handleSignOut,
-        onSelectChain: handleSwitchNetwork,
+        onSelectChain: handleSwitchNetwork
       }) as NavbarProps,
     [
       isConnected,
@@ -107,7 +107,7 @@ const Navbar = memo(() => {
       isSwitchingNetwork,
       handleSignIn,
       handleSignOut,
-      handleSwitchNetwork,
+      handleSwitchNetwork
     ]
   )
 

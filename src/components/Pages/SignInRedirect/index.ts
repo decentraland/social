@@ -1,1 +1,1 @@
-export { SignInRedirect } from "./SignInRedirect"
+export { SignInRedirect } from './SignInRedirect'

@@ -1,39 +1,33 @@
-import { useParams, useSearchParams } from "react-router-dom"
-import { render, screen, waitFor } from "@testing-library/react"
-import { userEvent } from "@testing-library/user-event"
-import { CommunityDetail } from "./CommunityDetail"
-import { useAppDispatch } from "../../../app/hooks"
+import { useParams, useSearchParams } from 'react-router-dom'
+import { render, screen, waitFor } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
+import { useAppDispatch } from '../../../app/hooks'
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
   useGetMemberRequestsQuery,
-  useJoinCommunityMutation,
-} from "../../../features/communities/communities.client"
-import {
-  Privacy,
-  RequestStatus,
-  RequestType,
-  Role,
-  Visibility,
-} from "../../../features/communities/types"
-import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
-import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
-import { useWallet } from "../../../modules/wallet/hooks"
+  useJoinCommunityMutation
+} from '../../../features/communities/communities.client'
+import { Privacy, RequestStatus, RequestType, Role, Visibility } from '../../../features/communities/types'
+import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
+import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
+import { useWallet } from '../../../modules/wallet/hooks'
+import { CommunityDetail } from './CommunityDetail'
 
 // Store mock dispatch function
 const mockDispatch = jest.fn()
 
-jest.mock("react-router-dom", () => ({
+jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
-  useSearchParams: jest.fn(),
+  useSearchParams: jest.fn()
 }))
 
-jest.mock("../../../modules/wallet/hooks", () => ({
-  useWallet: jest.fn(),
+jest.mock('../../../modules/wallet/hooks', () => ({
+  useWallet: jest.fn()
 }))
 
-jest.mock("../../../features/communities/communities.client", () => ({
+jest.mock('../../../features/communities/communities.client', () => ({
   useGetCommunityByIdQuery: jest.fn(),
   useJoinCommunityMutation: jest.fn(),
   useGetMemberRequestsQuery: jest.fn(),
@@ -41,45 +35,45 @@ jest.mock("../../../features/communities/communities.client", () => ({
   useCancelCommunityRequestMutation: jest.fn(),
   communitiesApi: {
     util: {
-      invalidateTags: jest.fn((tags) => ({
-        type: "invalidateTags",
-        payload: tags,
-      })),
-    },
-  },
+      invalidateTags: jest.fn(tags => ({
+        type: 'invalidateTags',
+        payload: tags
+      }))
+    }
+  }
 }))
 
-jest.mock("../../../features/events/events.client", () => ({
+jest.mock('../../../features/events/events.client', () => ({
   eventsApi: {
     util: {
-      invalidateTags: jest.fn((tags) => ({
-        type: "invalidateTags",
-        payload: tags,
-      })),
-    },
-  },
+      invalidateTags: jest.fn(tags => ({
+        type: 'invalidateTags',
+        payload: tags
+      }))
+    }
+  }
 }))
 
-jest.mock("../../../hooks/usePaginatedCommunityEvents", () => ({
-  usePaginatedCommunityEvents: jest.fn(),
+jest.mock('../../../hooks/usePaginatedCommunityEvents', () => ({
+  usePaginatedCommunityEvents: jest.fn()
 }))
 
-jest.mock("../../../hooks/usePaginatedCommunityMembers", () => ({
-  usePaginatedCommunityMembers: jest.fn(),
+jest.mock('../../../hooks/usePaginatedCommunityMembers', () => ({
+  usePaginatedCommunityMembers: jest.fn()
 }))
 
-jest.mock("../../../app/hooks", () => ({
+jest.mock('../../../app/hooks', () => ({
   useAppSelector: jest.fn(),
-  useAppDispatch: jest.fn(() => mockDispatch),
+  useAppDispatch: jest.fn(() => mockDispatch)
 }))
 
-jest.mock("./components/CommunityInfo", () => ({
+jest.mock('./components/CommunityInfo', () => ({
   CommunityInfo: ({
     community,
     onJoin,
     onRequestToJoin,
     onCancelRequest,
-    hasPendingRequest,
+    hasPendingRequest
   }: {
     community: { id: string; name: string }
     onJoin?: (id: string) => void
@@ -90,69 +84,37 @@ jest.mock("./components/CommunityInfo", () => ({
     <div data-testid="community-info">
       <div>{community.name}</div>
       {hasPendingRequest ? (
-        <button
-          onClick={() => onCancelRequest && onCancelRequest(community.id)}
-        >
-          CANCEL REQUEST
-        </button>
+        <button onClick={() => onCancelRequest && onCancelRequest(community.id)}>CANCEL REQUEST</button>
       ) : (
-        <button
-          onClick={() => onRequestToJoin && onRequestToJoin(community.id)}
-        >
-          REQUEST TO JOIN
-        </button>
+        <button onClick={() => onRequestToJoin && onRequestToJoin(community.id)}>REQUEST TO JOIN</button>
       )}
       {onJoin && <button onClick={() => onJoin(community.id)}>Join</button>}
     </div>
-  ),
+  )
 }))
 
-jest.mock("./components/EventsList", () => ({
-  EventsList: ({
-    events,
-    isLoading,
-  }: {
-    events: Array<{ id: string; name: string }>
-    isLoading: boolean
-  }) => (
+jest.mock('./components/EventsList', () => ({
+  EventsList: ({ events, isLoading }: { events: Array<{ id: string; name: string }>; isLoading: boolean }) => (
     <div data-testid="events-list">
-      {isLoading ? (
-        <div>Loading events...</div>
-      ) : (
-        events.map((event) => <div key={event.id}>{event.name}</div>)
-      )}
+      {isLoading ? <div>Loading events...</div> : events.map(event => <div key={event.id}>{event.name}</div>)}
     </div>
-  ),
+  )
 }))
 
-jest.mock("./components/MembersList", () => ({
-  MembersList: ({
-    members,
-    isLoading,
-  }: {
-    members: Array<{ name: string }>
-    isLoading: boolean
-  }) => (
+jest.mock('./components/MembersList', () => ({
+  MembersList: ({ members, isLoading }: { members: Array<{ name: string }>; isLoading: boolean }) => (
     <div data-testid="members-list">
-      {isLoading ? (
-        <div>Loading members...</div>
-      ) : (
-        members.map((member, index) => <div key={index}>{member.name}</div>)
-      )}
+      {isLoading ? <div>Loading members...</div> : members.map((member, index) => <div key={index}>{member.name}</div>)}
     </div>
-  ),
+  )
 }))
 
-jest.mock("./components/PrivateMessage", () => ({
-  PrivateMessage: () => (
-    <div data-testid="private-message">Private Message</div>
-  ),
+jest.mock('./components/PrivateMessage', () => ({
+  PrivateMessage: () => <div data-testid="private-message">Private Message</div>
 }))
 
-jest.mock("../../PageLayout", () => ({
-  PageLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="page-layout">{children}</div>
-  ),
+jest.mock('../../PageLayout', () => ({
+  PageLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="page-layout">{children}</div>
 }))
 
 const mockUseParams = useParams as jest.Mock
@@ -161,13 +123,10 @@ const mockUseWallet = useWallet as jest.Mock
 const mockUseGetCommunityByIdQuery = useGetCommunityByIdQuery as jest.Mock
 const mockUseJoinCommunityMutation = useJoinCommunityMutation as jest.Mock
 const mockUseGetMemberRequestsQuery = useGetMemberRequestsQuery as jest.Mock
-const mockUseCreateCommunityRequestMutation =
-  useCreateCommunityRequestMutation as jest.Mock
-const mockUseCancelCommunityRequestMutation =
-  useCancelCommunityRequestMutation as jest.Mock
+const mockUseCreateCommunityRequestMutation = useCreateCommunityRequestMutation as jest.Mock
+const mockUseCancelCommunityRequestMutation = useCancelCommunityRequestMutation as jest.Mock
 const mockUsePaginatedCommunityEvents = usePaginatedCommunityEvents as jest.Mock
-const mockUsePaginatedCommunityMembers =
-  usePaginatedCommunityMembers as jest.Mock
+const mockUsePaginatedCommunityMembers = usePaginatedCommunityMembers as jest.Mock
 const mockUseAppDispatch = useAppDispatch as jest.Mock
 
 function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
@@ -178,11 +137,7 @@ function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
 }
 
 // Helper to setup wallet mock state
-function setupWalletState(options: {
-  address?: string | null
-  isConnecting?: boolean
-  hasValidIdentity?: boolean
-}) {
+function setupWalletState(options: { address?: string | null; isConnecting?: boolean; hasValidIdentity?: boolean }) {
   mockUseWallet.mockReturnValue({
     address: options.address ?? null,
     isConnecting: options.isConnecting ?? false,
@@ -192,18 +147,18 @@ function setupWalletState(options: {
     identity: options.hasValidIdentity ? {} : undefined,
     connectors: [],
     connect: jest.fn(),
-    disconnect: jest.fn(),
+    disconnect: jest.fn()
   })
 }
 
-describe("when rendering the community detail page", () => {
+describe('when rendering the community detail page', () => {
   let mockJoinMutation: jest.Mock
   let mockJoinUnwrap: jest.Mock
 
   beforeEach(() => {
     mockJoinUnwrap = jest.fn()
     mockJoinMutation = jest.fn(() => ({
-      unwrap: mockJoinUnwrap,
+      unwrap: mockJoinUnwrap
     }))
 
     // Reset all mocks
@@ -211,15 +166,15 @@ describe("when rendering the community detail page", () => {
     mockDispatch.mockClear()
 
     // Setup dispatch to return the action
-    mockDispatch.mockImplementation((action) => action)
+    mockDispatch.mockImplementation(action => action)
 
-    mockUseParams.mockReturnValue({ id: "community-1" })
+    mockUseParams.mockReturnValue({ id: 'community-1' })
     mockUseSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()])
     // Default wallet state: not connected
     setupWalletState({
       address: null,
       isConnecting: false,
-      hasValidIdentity: false,
+      hasValidIdentity: false
     })
     mockUseAppDispatch.mockReturnValue(mockDispatch)
     mockUseGetCommunityByIdQuery.mockReturnValue({
@@ -227,36 +182,27 @@ describe("when rendering the community detail page", () => {
       isLoading: false,
       error: undefined,
       isError: false,
-      refetch: jest.fn(),
+      refetch: jest.fn()
     })
-    mockUseJoinCommunityMutation.mockReturnValue([
-      mockJoinMutation,
-      { isLoading: false, error: undefined, reset: jest.fn() },
-    ])
+    mockUseJoinCommunityMutation.mockReturnValue([mockJoinMutation, { isLoading: false, error: undefined, reset: jest.fn() }])
     mockUseGetMemberRequestsQuery.mockReturnValue({
-      data: { data: { results: [], total: 0, page: 1, pages: 1, limit: 10 } },
+      data: { data: { results: [], total: 0, page: 1, pages: 1, limit: 10 } }
     })
-    mockUseCreateCommunityRequestMutation.mockReturnValue([
-      jest.fn(),
-      { isLoading: false, error: undefined, reset: jest.fn() },
-    ])
-    mockUseCancelCommunityRequestMutation.mockReturnValue([
-      jest.fn(),
-      { isLoading: false, error: undefined, reset: jest.fn() },
-    ])
+    mockUseCreateCommunityRequestMutation.mockReturnValue([jest.fn(), { isLoading: false, error: undefined, reset: jest.fn() }])
+    mockUseCancelCommunityRequestMutation.mockReturnValue([jest.fn(), { isLoading: false, error: undefined, reset: jest.fn() }])
     mockUsePaginatedCommunityEvents.mockReturnValue({
       events: [],
       isLoading: false,
       isFetchingMore: false,
       hasMore: false,
-      loadMore: jest.fn(),
+      loadMore: jest.fn()
     })
     mockUsePaginatedCommunityMembers.mockReturnValue({
       members: [],
       isLoading: false,
       isFetchingMore: false,
       hasMore: false,
-      loadMore: jest.fn(),
+      loadMore: jest.fn()
     })
   })
 
@@ -264,104 +210,89 @@ describe("when rendering the community detail page", () => {
     jest.resetAllMocks()
   })
 
-  describe("and the community id is not provided", () => {
+  describe('and the community id is not provided', () => {
     beforeEach(() => {
       mockUseParams.mockReturnValue({ id: undefined })
     })
 
-    it("should skip the query", () => {
+    it('should skip the query', () => {
       renderCommunityDetail()
 
-      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-        { id: "", isSigned: false },
-        { skip: true }
-      )
+      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: '', isSigned: false }, { skip: true })
     })
   })
 
-  describe("and determining when to skip the community query", () => {
+  describe('and determining when to skip the community query', () => {
     beforeEach(() => {
-      mockUseParams.mockReturnValue({ id: "community-1" })
+      mockUseParams.mockReturnValue({ id: 'community-1' })
     })
 
-    describe("when wallet is connecting", () => {
+    describe('when wallet is connecting', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: true,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should skip the query", () => {
+      it('should skip the query', () => {
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: false },
-          { skip: true }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: true })
       })
     })
 
-    describe("when wallet exists but identity is not available", () => {
+    describe('when wallet exists but identity is not available', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
       })
 
-      it("should not skip the query (will refetch when identity becomes available)", () => {
+      it('should not skip the query (will refetch when identity becomes available)', () => {
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: false },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
       })
     })
 
-    describe("when wallet is connected and identity is available", () => {
+    describe('when wallet is connected and identity is available', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should not skip the query", () => {
+      it('should not skip the query', () => {
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
       })
     })
 
-    describe("when user is not logged in", () => {
+    describe('when user is not logged in', () => {
       beforeEach(() => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
       })
 
-      it("should not skip the query (allows unsigned requests for public communities)", () => {
+      it('should not skip the query (allows unsigned requests for public communities)', () => {
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: false },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
       })
     })
   })
 
-  describe("and identity becomes available after initial load", () => {
+  describe('and identity becomes available after initial load', () => {
     let mockRefetch: jest.Mock
     let community: {
       id: string
@@ -377,18 +308,18 @@ describe("when rendering the community detail page", () => {
     }
 
     beforeEach(() => {
-      mockUseParams.mockReturnValue({ id: "community-1" })
+      mockUseParams.mockReturnValue({ id: 'community-1' })
       mockRefetch = jest.fn()
       community = {
-        id: "community-1",
-        name: "Test Community",
-        description: "Test Description",
+        id: 'community-1',
+        name: 'Test Community',
+        description: 'Test Description',
         privacy: Privacy.PUBLIC,
         visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
-        ownerAddress: "0x123",
-        ownerName: "Test Owner",
+        ownerAddress: '0x123',
+        ownerName: 'Test Owner'
       }
 
       mockUseGetCommunityByIdQuery.mockReturnValue({
@@ -396,7 +327,7 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         error: undefined,
         isError: false,
-        refetch: mockRefetch,
+        refetch: mockRefetch
       })
 
       mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -404,7 +335,7 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
 
       mockUsePaginatedCommunityMembers.mockReturnValue({
@@ -412,25 +343,22 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
     })
 
-    it("should automatically refetch community when identity becomes available", async () => {
+    it('should automatically refetch community when identity becomes available', async () => {
       // Initial state: wallet exists but identity is not available
       setupWalletState({
-        address: "0x456",
+        address: '0x456',
         isConnecting: false,
-        hasValidIdentity: false,
+        hasValidIdentity: false
       })
 
       const { rerender } = renderCommunityDetail()
 
       // Verify query was called with isSigned: false initially
-      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-        { id: "community-1", isSigned: false },
-        { skip: false }
-      )
+      expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
 
       // Clear the mock to track the new query call
       mockUseGetCommunityByIdQuery.mockClear()
@@ -438,9 +366,9 @@ describe("when rendering the community detail page", () => {
       // Identity becomes available - RTK Query will automatically refetch
       // because isSigned changes from false to true
       setupWalletState({
-        address: "0x456",
+        address: '0x456',
         isConnecting: false,
-        hasValidIdentity: true,
+        hasValidIdentity: true
       })
 
       // Rerender to trigger the query with new isSigned value
@@ -450,17 +378,14 @@ describe("when rendering the community detail page", () => {
       // This ensures we get signed data with membership information
       await waitFor(
         () => {
-          expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-            { id: "community-1", isSigned: true },
-            { skip: false }
-          )
+          expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
         },
         { timeout: 3000 }
       )
     })
   })
 
-  describe("and community data includes membership information", () => {
+  describe('and community data includes membership information', () => {
     let community: {
       id: string
       name: string
@@ -475,17 +400,17 @@ describe("when rendering the community detail page", () => {
     }
 
     beforeEach(() => {
-      mockUseParams.mockReturnValue({ id: "community-1" })
+      mockUseParams.mockReturnValue({ id: 'community-1' })
       community = {
-        id: "community-1",
-        name: "Test Community",
-        description: "Test Description",
+        id: 'community-1',
+        name: 'Test Community',
+        description: 'Test Description',
         privacy: Privacy.PUBLIC,
         visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
-        ownerAddress: "0x123",
-        ownerName: "Test Owner",
+        ownerAddress: '0x123',
+        ownerName: 'Test Owner'
       }
 
       mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -493,7 +418,7 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
 
       mockUsePaginatedCommunityMembers.mockReturnValue({
@@ -501,153 +426,145 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
     })
 
-    describe("when request is signed (user is logged in)", () => {
+    describe('when request is signed (user is logged in)', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should include role field in community data when user is a member", () => {
+      it('should include role field in community data when user is a member', () => {
         community = {
           ...community,
-          role: Role.MEMBER,
+          role: Role.MEMBER
         }
         mockUseGetCommunityByIdQuery.mockReturnValue({
           data: { data: community },
           isLoading: false,
           error: undefined,
           isError: false,
-          refetch: jest.fn(),
+          refetch: jest.fn()
         })
 
         renderCommunityDetail()
 
         // Verify the community data includes the role field
         expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
+          { id: 'community-1', isSigned: true },
           { skip: false } // Query should not be skipped when signed
         )
 
         // The component should render with membership information
-        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+        expect(screen.getByTestId('community-info')).toBeInTheDocument()
       })
 
-      it("should include role field in community data when user is an owner", () => {
+      it('should include role field in community data when user is an owner', () => {
         community = {
           ...community,
-          role: Role.OWNER,
+          role: Role.OWNER
         }
         mockUseGetCommunityByIdQuery.mockReturnValue({
           data: { data: community },
           isLoading: false,
           error: undefined,
           isError: false,
-          refetch: jest.fn(),
+          refetch: jest.fn()
         })
 
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
 
-        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+        expect(screen.getByTestId('community-info')).toBeInTheDocument()
       })
 
-      it("should not include role field when user is not a member", () => {
+      it('should not include role field when user is not a member', () => {
         community = {
           ...community,
-          role: "none",
+          role: 'none'
         }
         mockUseGetCommunityByIdQuery.mockReturnValue({
           data: { data: community },
           isLoading: false,
           error: undefined,
           isError: false,
-          refetch: jest.fn(),
+          refetch: jest.fn()
         })
 
         renderCommunityDetail()
 
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
 
-        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+        expect(screen.getByTestId('community-info')).toBeInTheDocument()
       })
     })
   })
 
-  describe("and the community is loading", () => {
+  describe('and the community is loading', () => {
     beforeEach(() => {
       mockUseGetCommunityByIdQuery.mockReturnValue({
         data: undefined,
         isLoading: true,
         error: undefined,
         isError: false,
-        refetch: jest.fn(),
+        refetch: jest.fn()
       })
     })
 
-    it("should display a loading indicator", () => {
+    it('should display a loading indicator', () => {
       renderCommunityDetail()
 
-      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
   })
 
-  describe("and the community query fails", () => {
+  describe('and the community query fails', () => {
     let queryError: Error
 
     beforeEach(() => {
-      queryError = new Error("Failed to fetch community")
+      queryError = new Error('Failed to fetch community')
       mockUseGetCommunityByIdQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
         error: queryError,
         isError: true,
-        refetch: jest.fn(),
+        refetch: jest.fn()
       })
     })
 
-    it("should display an error message", () => {
+    it('should display an error message', () => {
       renderCommunityDetail()
 
-      expect(screen.getByText("Community not found")).toBeInTheDocument()
-      expect(
-        screen.getByText("The community you are looking for does not exist.")
-      ).toBeInTheDocument()
+      expect(screen.getByText('Community not found')).toBeInTheDocument()
+      expect(screen.getByText('The community you are looking for does not exist.')).toBeInTheDocument()
     })
   })
 
-  describe("and the community is not found", () => {
+  describe('and the community is not found', () => {
     beforeEach(() => {
       mockUseGetCommunityByIdQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
         error: undefined,
         isError: false,
-        refetch: jest.fn(),
+        refetch: jest.fn()
       })
     })
 
-    it("should display a not found message", () => {
+    it('should display a not found message', () => {
       renderCommunityDetail()
 
-      expect(screen.getByText("Community not found")).toBeInTheDocument()
+      expect(screen.getByText('Community not found')).toBeInTheDocument()
     })
   })
 
-  describe("and the community is found", () => {
+  describe('and the community is found', () => {
     let community: {
       id: string
       name: string
@@ -663,15 +580,15 @@ describe("when rendering the community detail page", () => {
 
     beforeEach(() => {
       community = {
-        id: "community-1",
-        name: "Test Community",
-        description: "Test Description",
+        id: 'community-1',
+        name: 'Test Community',
+        description: 'Test Description',
         privacy: Privacy.PUBLIC,
         visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
-        ownerAddress: "0x123",
-        ownerName: "Test Owner",
+        ownerAddress: '0x123',
+        ownerName: 'Test Owner'
       }
 
       mockUseGetCommunityByIdQuery.mockReturnValue({
@@ -679,40 +596,37 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         error: undefined,
         isError: false,
-        refetch: jest.fn(),
+        refetch: jest.fn()
       })
     })
 
-    it("should render the community info", () => {
+    it('should render the community info', () => {
       renderCommunityDetail()
 
-      expect(screen.getByTestId("community-info")).toBeInTheDocument()
-      expect(screen.getByText("Test Community")).toBeInTheDocument()
+      expect(screen.getByTestId('community-info')).toBeInTheDocument()
+      expect(screen.getByText('Test Community')).toBeInTheDocument()
     })
 
-    describe("and the user is not logged in", () => {
+    describe('and the user is not logged in', () => {
       beforeEach(() => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
       })
 
-      it("should not check if user is a member", () => {
+      it('should not check if user is a member', () => {
         renderCommunityDetail()
 
-        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+        expect(screen.getByTestId('community-info')).toBeInTheDocument()
       })
 
-      describe("and action parameter is present in URL", () => {
-        it("should not execute the action", () => {
-          const searchParams = new URLSearchParams("action=join")
+      describe('and action parameter is present in URL', () => {
+        it('should not execute the action', () => {
+          const searchParams = new URLSearchParams('action=join')
           const mockSetSearchParams = jest.fn()
-          mockUseSearchParams.mockReturnValue([
-            searchParams,
-            mockSetSearchParams,
-          ])
+          mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
           renderCommunityDetail()
 
@@ -721,7 +635,7 @@ describe("when rendering the community detail page", () => {
       })
     })
 
-    describe("and invalid action parameter is present", () => {
+    describe('and invalid action parameter is present', () => {
       let community: {
         id: string
         name: string
@@ -736,96 +650,96 @@ describe("when rendering the community detail page", () => {
 
       beforeEach(() => {
         community = {
-          id: "community-1",
-          name: "Test Community",
-          description: "Test Description",
+          id: 'community-1',
+          name: 'Test Community',
+          description: 'Test Description',
           privacy: Privacy.PUBLIC,
           visibility: Visibility.ALL,
           active: true,
           membersCount: 100,
-          ownerAddress: "0x123",
-          ownerName: "Test Owner",
+          ownerAddress: '0x123',
+          ownerName: 'Test Owner'
         }
         mockUseGetCommunityByIdQuery.mockReturnValue({
           data: { data: community },
           isLoading: false,
           error: undefined,
           isError: false,
-          refetch: jest.fn(),
+          refetch: jest.fn()
         })
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should handle invalid action parameter", () => {
+      it('should handle invalid action parameter', () => {
         // This test verifies the component can handle invalid action parameters
         // The actual cleanup is tested via integration tests
-        const searchParams = new URLSearchParams("action=invalidAction")
+        const searchParams = new URLSearchParams('action=invalidAction')
         const mockSetSearchParams = jest.fn()
         mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
         renderCommunityDetail()
 
         // The component should render without errors
-        expect(screen.getByTestId("community-info")).toBeInTheDocument()
+        expect(screen.getByTestId('community-info')).toBeInTheDocument()
       })
     })
 
-    describe("and the user is logged in", () => {
+    describe('and the user is logged in', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      describe("and the user is not a member", () => {
+      describe('and the user is not a member', () => {
         beforeEach(() => {
           community = {
             ...community,
-            role: "none",
+            role: 'none'
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
             isLoading: false,
             error: undefined,
             isError: false,
-            refetch: jest.fn(),
+            refetch: jest.fn()
           })
         })
 
-        it("should enable content viewing for public communities", () => {
+        it('should enable content viewing for public communities', () => {
           renderCommunityDetail()
 
-          expect(screen.getByTestId("events-list")).toBeInTheDocument()
-          expect(screen.getByTestId("members-list")).toBeInTheDocument()
+          expect(screen.getByTestId('events-list')).toBeInTheDocument()
+          expect(screen.getByTestId('members-list')).toBeInTheDocument()
         })
 
-        it("should not enable content viewing for private communities", () => {
+        it('should not enable content viewing for private communities', () => {
           community = {
             ...community,
-            privacy: Privacy.PRIVATE,
+            privacy: Privacy.PRIVATE
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
             isLoading: false,
             error: undefined,
             isError: false,
-            refetch: jest.fn(),
+            refetch: jest.fn()
           })
 
           renderCommunityDetail()
 
-          expect(screen.getByTestId("private-message")).toBeInTheDocument()
-          expect(screen.queryByTestId("events-list")).not.toBeInTheDocument()
-          expect(screen.queryByTestId("members-list")).not.toBeInTheDocument()
+          expect(screen.getByTestId('private-message')).toBeInTheDocument()
+          expect(screen.queryByTestId('events-list')).not.toBeInTheDocument()
+          expect(screen.queryByTestId('members-list')).not.toBeInTheDocument()
         })
 
-        describe("and the community is private", () => {
+        describe('and the community is private', () => {
           let mockCreateRequestMutation: jest.Mock
           let mockCreateRequestUnwrap: jest.Mock
           let mockCancelRequestMutation: jest.Mock
@@ -834,36 +748,36 @@ describe("when rendering the community detail page", () => {
           beforeEach(() => {
             community = {
               ...community,
-              privacy: Privacy.PRIVATE,
+              privacy: Privacy.PRIVATE
             }
             mockUseGetCommunityByIdQuery.mockReturnValue({
               data: { data: community },
               isLoading: false,
               error: undefined,
               isError: false,
-              refetch: jest.fn(),
+              refetch: jest.fn()
             })
 
             mockCreateRequestUnwrap = jest.fn()
             mockCreateRequestMutation = jest.fn(() => ({
-              unwrap: mockCreateRequestUnwrap,
+              unwrap: mockCreateRequestUnwrap
             }))
             mockUseCreateCommunityRequestMutation.mockReturnValue([
               mockCreateRequestMutation,
-              { isLoading: false, error: undefined, reset: jest.fn() },
+              { isLoading: false, error: undefined, reset: jest.fn() }
             ])
 
             mockCancelRequestUnwrap = jest.fn()
             mockCancelRequestMutation = jest.fn(() => ({
-              unwrap: mockCancelRequestUnwrap,
+              unwrap: mockCancelRequestUnwrap
             }))
             mockUseCancelCommunityRequestMutation.mockReturnValue([
               mockCancelRequestMutation,
-              { isLoading: false, error: undefined, reset: jest.fn() },
+              { isLoading: false, error: undefined, reset: jest.fn() }
             ])
           })
 
-          describe("and the user has no pending request", () => {
+          describe('and the user has no pending request', () => {
             beforeEach(() => {
               mockUseGetMemberRequestsQuery.mockReturnValue({
                 data: {
@@ -872,61 +786,58 @@ describe("when rendering the community detail page", () => {
                     total: 0,
                     page: 1,
                     pages: 1,
-                    limit: 10,
-                  },
-                },
+                    limit: 10
+                  }
+                }
               })
             })
 
-            it("should fetch member requests", () => {
+            it('should fetch member requests', () => {
               renderCommunityDetail()
 
               expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
                 {
-                  address: "0x456",
-                  type: RequestType.REQUEST_TO_JOIN,
+                  address: '0x456',
+                  type: RequestType.REQUEST_TO_JOIN
                 },
                 { skip: false }
               )
             })
 
-            describe("and the request to join button is clicked", () => {
-              it("should call createCommunityRequest", async () => {
+            describe('and the request to join button is clicked', () => {
+              it('should call createCommunityRequest', async () => {
                 const user = userEvent.setup()
                 mockCreateRequestUnwrap.mockResolvedValue({
                   data: {
-                    id: "request-1",
-                    communityId: "community-1",
-                    memberAddress: "0x456",
+                    id: 'request-1',
+                    communityId: 'community-1',
+                    memberAddress: '0x456',
                     type: RequestType.REQUEST_TO_JOIN,
-                    status: RequestStatus.PENDING,
-                  },
+                    status: RequestStatus.PENDING
+                  }
                 })
 
                 renderCommunityDetail()
 
-                const requestButton = screen.getByText("REQUEST TO JOIN")
+                const requestButton = screen.getByText('REQUEST TO JOIN')
                 await user.click(requestButton)
 
                 await waitFor(() => {
                   expect(mockCreateRequestMutation).toHaveBeenCalledWith({
-                    communityId: "community-1",
-                    targetedAddress: "0x456",
+                    communityId: 'community-1',
+                    targetedAddress: '0x456'
                   })
                 })
               })
             })
 
-            describe("and action=requestToJoin parameter is present in URL", () => {
-              it("should render with the action parameter", () => {
+            describe('and action=requestToJoin parameter is present in URL', () => {
+              it('should render with the action parameter', () => {
                 // This test verifies the redirect URL includes the action parameter
                 // The actual auto-execution is tested via integration tests
-                const searchParams = new URLSearchParams("action=requestToJoin")
+                const searchParams = new URLSearchParams('action=requestToJoin')
                 const mockSetSearchParams = jest.fn()
-                mockUseSearchParams.mockReturnValue([
-                  searchParams,
-                  mockSetSearchParams,
-                ])
+                mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
                 renderCommunityDetail()
 
@@ -935,36 +846,30 @@ describe("when rendering the community detail page", () => {
               })
             })
 
-            describe("and creating the request fails", () => {
+            describe('and creating the request fails', () => {
               let createRequestError: Error
 
               beforeEach(() => {
-                createRequestError = new Error("Failed to create request")
+                createRequestError = new Error('Failed to create request')
                 mockCreateRequestUnwrap.mockRejectedValue(createRequestError)
               })
 
-              it("should display the error message", async () => {
+              it('should display the error message', async () => {
                 const user = userEvent.setup()
                 renderCommunityDetail()
 
-                const requestButton = screen.getByText("REQUEST TO JOIN")
+                const requestButton = screen.getByText('REQUEST TO JOIN')
                 await user.click(requestButton)
 
                 await waitFor(() => {
-                  expect(
-                    screen.getByText("Community not found")
-                  ).toBeInTheDocument()
-                  expect(
-                    screen.getByText(
-                      "The community you are looking for does not exist."
-                    )
-                  ).toBeInTheDocument()
+                  expect(screen.getByText('Community not found')).toBeInTheDocument()
+                  expect(screen.getByText('The community you are looking for does not exist.')).toBeInTheDocument()
                 })
               })
             })
           })
 
-          describe("and the user has a pending request", () => {
+          describe('and the user has a pending request', () => {
             let pendingRequest: {
               id: string
               communityId: string
@@ -974,10 +879,10 @@ describe("when rendering the community detail page", () => {
 
             beforeEach(() => {
               pendingRequest = {
-                id: "request-1",
-                communityId: "community-1",
+                id: 'request-1',
+                communityId: 'community-1',
                 type: RequestType.REQUEST_TO_JOIN,
-                status: RequestStatus.PENDING,
+                status: RequestStatus.PENDING
               }
               mockUseGetMemberRequestsQuery.mockReturnValue({
                 data: {
@@ -986,68 +891,62 @@ describe("when rendering the community detail page", () => {
                     total: 1,
                     page: 1,
                     pages: 1,
-                    limit: 10,
-                  },
-                },
+                    limit: 10
+                  }
+                }
               })
             })
 
-            it("should identify the pending request for the community", () => {
+            it('should identify the pending request for the community', () => {
               renderCommunityDetail()
 
               expect(mockUseGetMemberRequestsQuery).toHaveBeenCalledWith(
                 {
-                  address: "0x456",
-                  type: RequestType.REQUEST_TO_JOIN,
+                  address: '0x456',
+                  type: RequestType.REQUEST_TO_JOIN
                 },
                 { skip: false }
               )
             })
 
-            describe("and the cancel request button is clicked", () => {
-              it("should call cancelCommunityRequest", async () => {
+            describe('and the cancel request button is clicked', () => {
+              it('should call cancelCommunityRequest', async () => {
                 const user = userEvent.setup()
                 mockCancelRequestUnwrap.mockResolvedValue(undefined)
 
                 renderCommunityDetail()
 
-                const cancelButton = screen.getByText("CANCEL REQUEST")
+                const cancelButton = screen.getByText('CANCEL REQUEST')
                 await user.click(cancelButton)
 
                 await waitFor(() => {
                   expect(mockCancelRequestMutation).toHaveBeenCalledWith({
-                    communityId: "community-1",
-                    requestId: "request-1",
-                    address: "0x456",
+                    communityId: 'community-1',
+                    requestId: 'request-1',
+                    address: '0x456'
                   })
                 })
               })
             })
 
-            describe("and canceling the request fails", () => {
+            describe('and canceling the request fails', () => {
               let cancelRequestError: Error
 
               beforeEach(() => {
-                cancelRequestError = new Error("Failed to cancel request")
+                cancelRequestError = new Error('Failed to cancel request')
                 mockCancelRequestUnwrap.mockRejectedValue(cancelRequestError)
               })
 
-              it("should display the error message", async () => {
+              it('should display the error message', async () => {
                 const user = userEvent.setup()
                 renderCommunityDetail()
 
-                const cancelButton = screen.getByText("CANCEL REQUEST")
+                const cancelButton = screen.getByText('CANCEL REQUEST')
                 await user.click(cancelButton)
 
                 await waitFor(() => {
-                  expect(
-                    screen.getByText("Community not found")
-                  ).toBeInTheDocument()
-                  expect(
-                    screen.getByText(
-                      "The community you are looking for does not exist."
-                    )
-                  ).toBeInTheDocument()
+                  expect(screen.getByText('Community not found')).toBeInTheDocument()
+                  expect(screen.getByText('The community you are looking for does not exist.')).toBeInTheDocument()
                 })
               })
             })
@@ -1055,54 +954,51 @@ describe("when rendering the community detail page", () => {
         })
       })
 
-      describe("and the user is a member", () => {
+      describe('and the user is a member', () => {
         beforeEach(() => {
           community = {
             ...community,
-            role: Role.MEMBER,
+            role: Role.MEMBER
           }
           mockUseGetCommunityByIdQuery.mockReturnValue({
             data: { data: community },
             isLoading: false,
             error: undefined,
             isError: false,
-            refetch: jest.fn(),
+            refetch: jest.fn()
           })
         })
 
-        it("should enable content viewing", () => {
+        it('should enable content viewing', () => {
           renderCommunityDetail()
 
-          expect(screen.getByTestId("events-list")).toBeInTheDocument()
-          expect(screen.getByTestId("members-list")).toBeInTheDocument()
+          expect(screen.getByTestId('events-list')).toBeInTheDocument()
+          expect(screen.getByTestId('members-list')).toBeInTheDocument()
         })
 
-        describe("and the join button is clicked", () => {
-          it("should call onJoin with the community id", async () => {
+        describe('and the join button is clicked', () => {
+          it('should call onJoin with the community id', async () => {
             const user = userEvent.setup()
             mockJoinUnwrap.mockResolvedValue({})
 
             renderCommunityDetail()
 
-            const joinButton = screen.getByText("Join")
+            const joinButton = screen.getByText('Join')
             await user.click(joinButton)
 
             await waitFor(() => {
-              expect(mockJoinMutation).toHaveBeenCalledWith("community-1")
+              expect(mockJoinMutation).toHaveBeenCalledWith('community-1')
             })
           })
         })
 
-        describe("and action=join parameter is present in URL", () => {
-          it("should render with the action parameter", () => {
+        describe('and action=join parameter is present in URL', () => {
+          it('should render with the action parameter', () => {
             // This test verifies the redirect URL includes the action parameter
             // The actual auto-execution is tested via integration tests
-            const searchParams = new URLSearchParams("action=join")
+            const searchParams = new URLSearchParams('action=join')
             const mockSetSearchParams = jest.fn()
-            mockUseSearchParams.mockReturnValue([
-              searchParams,
-              mockSetSearchParams,
-            ])
+            mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
             renderCommunityDetail()
 
@@ -1111,73 +1007,67 @@ describe("when rendering the community detail page", () => {
           })
         })
 
-        describe("and joining the community fails", () => {
+        describe('and joining the community fails', () => {
           let joinError: Error
 
           beforeEach(() => {
-            joinError = new Error("Failed to join")
+            joinError = new Error('Failed to join')
             mockJoinUnwrap.mockRejectedValue(joinError)
           })
 
-          it("should display the error message from the failed join attempt", async () => {
+          it('should display the error message from the failed join attempt', async () => {
             const user = userEvent.setup()
             renderCommunityDetail()
 
-            const joinButton = screen.getByText("Join")
+            const joinButton = screen.getByText('Join')
             await user.click(joinButton)
 
             await waitFor(() => {
-              expect(
-                screen.getByText("Community not found")
-              ).toBeInTheDocument()
-              expect(
-                screen.getByText(
-                  "The community you are looking for does not exist."
-                )
-              ).toBeInTheDocument()
+              expect(screen.getByText('Community not found')).toBeInTheDocument()
+              expect(screen.getByText('The community you are looking for does not exist.')).toBeInTheDocument()
             })
           })
         })
       })
     })
 
-    describe("and events are loading", () => {
+    describe('and events are loading', () => {
       beforeEach(() => {
         mockUsePaginatedCommunityEvents.mockReturnValue({
           events: [],
           isLoading: true,
           isFetchingMore: false,
           hasMore: false,
-          loadMore: jest.fn(),
+          loadMore: jest.fn()
         })
       })
 
-      it("should display loading state for events", () => {
+      it('should display loading state for events', () => {
         renderCommunityDetail()
 
-        expect(screen.getByText("Loading events...")).toBeInTheDocument()
+        expect(screen.getByText('Loading events...')).toBeInTheDocument()
       })
     })
 
-    describe("and members are loading", () => {
+    describe('and members are loading', () => {
       beforeEach(() => {
         mockUsePaginatedCommunityMembers.mockReturnValue({
           members: [],
           isLoading: true,
           isFetchingMore: false,
           hasMore: false,
-          loadMore: jest.fn(),
+          loadMore: jest.fn()
         })
       })
 
-      it("should display loading state for members", () => {
+      it('should display loading state for members', () => {
         renderCommunityDetail()
 
-        expect(screen.getByText("Loading members...")).toBeInTheDocument()
+        expect(screen.getByText('Loading members...')).toBeInTheDocument()
       })
     })
 
-    describe("and events are available", () => {
+    describe('and events are available', () => {
       let events: Array<{
         id: string
         name: string
@@ -1189,19 +1079,19 @@ describe("when rendering the community detail page", () => {
       beforeEach(() => {
         events = [
           {
-            id: "event-1",
-            name: "Event 1",
-            image: "https://example.com/image1.jpg",
+            id: 'event-1',
+            name: 'Event 1',
+            image: 'https://example.com/image1.jpg',
             isLive: false,
-            startTime: "2024-01-01T10:00:00Z",
+            startTime: '2024-01-01T10:00:00Z'
           },
           {
-            id: "event-2",
-            name: "Event 2",
-            image: "https://example.com/image2.jpg",
+            id: 'event-2',
+            name: 'Event 2',
+            image: 'https://example.com/image2.jpg',
             isLive: true,
-            startTime: "2024-01-02T10:00:00Z",
-          },
+            startTime: '2024-01-02T10:00:00Z'
+          }
         ]
 
         mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -1209,19 +1099,19 @@ describe("when rendering the community detail page", () => {
           isLoading: false,
           isFetchingMore: false,
           hasMore: false,
-          loadMore: jest.fn(),
+          loadMore: jest.fn()
         })
       })
 
-      it("should render all events", () => {
+      it('should render all events', () => {
         renderCommunityDetail()
 
-        expect(screen.getByText("Event 1")).toBeInTheDocument()
-        expect(screen.getByText("Event 2")).toBeInTheDocument()
+        expect(screen.getByText('Event 1')).toBeInTheDocument()
+        expect(screen.getByText('Event 2')).toBeInTheDocument()
       })
     })
 
-    describe("and members are available", () => {
+    describe('and members are available', () => {
       let members: Array<{
         name: string
         role: string
@@ -1231,15 +1121,15 @@ describe("when rendering the community detail page", () => {
       beforeEach(() => {
         members = [
           {
-            name: "John Doe",
-            role: "admin",
-            mutualFriends: 0,
+            name: 'John Doe',
+            role: 'admin',
+            mutualFriends: 0
           },
           {
-            name: "Jane Smith",
+            name: 'Jane Smith',
             role: Role.MEMBER,
-            mutualFriends: 5,
-          },
+            mutualFriends: 5
+          }
         ]
 
         mockUsePaginatedCommunityMembers.mockReturnValue({
@@ -1247,20 +1137,20 @@ describe("when rendering the community detail page", () => {
           isLoading: false,
           isFetchingMore: false,
           hasMore: false,
-          loadMore: jest.fn(),
+          loadMore: jest.fn()
         })
       })
 
-      it("should render all members", () => {
+      it('should render all members', () => {
         renderCommunityDetail()
 
-        expect(screen.getByText("John Doe")).toBeInTheDocument()
-        expect(screen.getByText("Jane Smith")).toBeInTheDocument()
+        expect(screen.getByText('John Doe')).toBeInTheDocument()
+        expect(screen.getByText('Jane Smith')).toBeInTheDocument()
       })
     })
   })
 
-  describe("when user signs out", () => {
+  describe('when user signs out', () => {
     let community: {
       id: string
       name: string
@@ -1275,15 +1165,15 @@ describe("when rendering the community detail page", () => {
 
     beforeEach(() => {
       community = {
-        id: "community-1",
-        name: "Test Community",
-        description: "Test Description",
+        id: 'community-1',
+        name: 'Test Community',
+        description: 'Test Description',
         privacy: Privacy.PUBLIC,
         visibility: Visibility.ALL,
         active: true,
         membersCount: 100,
-        ownerAddress: "0x123",
-        ownerName: "Test Owner",
+        ownerAddress: '0x123',
+        ownerName: 'Test Owner'
       }
 
       mockUseGetCommunityByIdQuery.mockReturnValue({
@@ -1291,7 +1181,7 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         error: undefined,
         isError: false,
-        refetch: jest.fn(),
+        refetch: jest.fn()
       })
 
       mockUsePaginatedCommunityEvents.mockReturnValue({
@@ -1299,7 +1189,7 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
 
       mockUsePaginatedCommunityMembers.mockReturnValue({
@@ -1307,27 +1197,24 @@ describe("when rendering the community detail page", () => {
         isLoading: false,
         isFetchingMore: false,
         hasMore: false,
-        loadMore: jest.fn(),
+        loadMore: jest.fn()
       })
     })
 
-    describe("and address changes from non-null to null", () => {
+    describe('and address changes from non-null to null', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should automatically refetch the community to get unsigned data", async () => {
+      it('should automatically refetch the community to get unsigned data', async () => {
         const { rerender } = renderCommunityDetail()
 
         // Verify initial query was called with isSigned: true
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
 
         // Clear the mock to track the new query call
         mockUseGetCommunityByIdQuery.mockClear()
@@ -1336,7 +1223,7 @@ describe("when rendering the community detail page", () => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
 
         // Rerender to trigger the query with new isSigned value
@@ -1345,42 +1232,36 @@ describe("when rendering the community detail page", () => {
         // Wait for RTK Query to automatically refetch with isSigned: false
         await waitFor(
           () => {
-            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-              { id: "community-1", isSigned: false },
-              { skip: false }
-            )
+            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
           },
           { timeout: 3000 }
         )
       })
     })
 
-    describe("and address changes from null to non-null", () => {
+    describe('and address changes from null to non-null', () => {
       beforeEach(() => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
       })
 
-      it("should automatically refetch when signing in (isSigned changes)", async () => {
+      it('should automatically refetch when signing in (isSigned changes)', async () => {
         const { rerender } = renderCommunityDetail()
 
         // Verify initial query was called with isSigned: false
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: false },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
 
         // Clear the mock to track the new query call
         mockUseGetCommunityByIdQuery.mockClear()
 
         // Update to have wallet (user signs in)
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
 
         // Rerender to trigger the query with new isSigned value
@@ -1389,22 +1270,19 @@ describe("when rendering the community detail page", () => {
         // Wait for RTK Query to automatically refetch with isSigned: true
         await waitFor(
           () => {
-            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-              { id: "community-1", isSigned: true },
-              { skip: false }
-            )
+            expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
           },
           { timeout: 3000 }
         )
       })
     })
 
-    describe("and address changes from null to null", () => {
+    describe('and address changes from null to null', () => {
       beforeEach(() => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
       })
 
@@ -1412,10 +1290,7 @@ describe("when rendering the community detail page", () => {
         const { rerender } = renderCommunityDetail()
 
         // Verify initial query was called
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: false },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: false }, { skip: false })
 
         // Get the initial call count
         const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
@@ -1425,45 +1300,37 @@ describe("when rendering the community detail page", () => {
 
         // Verify that query was called again (hooks run on every render)
         // but RTK Query will deduplicate since args are the same
-        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
-          initialCallCount
-        )
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(initialCallCount)
         // Verify the last call has the same args (RTK Query will deduplicate)
-        const lastCall =
-          mockUseGetCommunityByIdQuery.mock.calls[
-            mockUseGetCommunityByIdQuery.mock.calls.length - 1
-          ]
-        expect(lastCall[0]).toEqual({ id: "community-1", isSigned: false })
+        const lastCall = mockUseGetCommunityByIdQuery.mock.calls[mockUseGetCommunityByIdQuery.mock.calls.length - 1]
+        expect(lastCall[0]).toEqual({ id: 'community-1', isSigned: false })
         expect(lastCall[1]).toEqual({ skip: false })
       })
     })
 
-    describe("and address changes from one address to another", () => {
+    describe('and address changes from one address to another', () => {
       beforeEach(() => {
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should not refetch when switching accounts (same isSigned value)", () => {
+      it('should not refetch when switching accounts (same isSigned value)', () => {
         const { rerender } = renderCommunityDetail()
 
         // Verify initial query was called with isSigned: true
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "community-1", isSigned: true },
-          { skip: false }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: 'community-1', isSigned: true }, { skip: false })
 
         // Get the initial call count
         const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
 
         // Update to different wallet (switch account, but still signed)
         setupWalletState({
-          address: "0x789",
+          address: '0x789',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
 
         // Rerender to trigger the address change
@@ -1471,37 +1338,29 @@ describe("when rendering the community detail page", () => {
 
         // Verify that query was called again (hooks run on every render)
         // but RTK Query will deduplicate since isSigned is still true
-        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
-          initialCallCount
-        )
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(initialCallCount)
         // Verify the last call has the same isSigned value (RTK Query will deduplicate)
-        const lastCall =
-          mockUseGetCommunityByIdQuery.mock.calls[
-            mockUseGetCommunityByIdQuery.mock.calls.length - 1
-          ]
-        expect(lastCall[0]).toEqual({ id: "community-1", isSigned: true })
+        const lastCall = mockUseGetCommunityByIdQuery.mock.calls[mockUseGetCommunityByIdQuery.mock.calls.length - 1]
+        expect(lastCall[0]).toEqual({ id: 'community-1', isSigned: true })
         expect(lastCall[1]).toEqual({ skip: false })
       })
     })
 
-    describe("and community id is not provided", () => {
+    describe('and community id is not provided', () => {
       beforeEach(() => {
         mockUseParams.mockReturnValue({ id: undefined })
         setupWalletState({
-          address: "0x456",
+          address: '0x456',
           isConnecting: false,
-          hasValidIdentity: true,
+          hasValidIdentity: true
         })
       })
 
-      it("should not refetch when id is undefined", () => {
+      it('should not refetch when id is undefined', () => {
         const { rerender } = renderCommunityDetail()
 
         // Verify query was skipped (no id)
-        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith(
-          { id: "", isSigned: true },
-          { skip: true }
-        )
+        expect(mockUseGetCommunityByIdQuery).toHaveBeenCalledWith({ id: '', isSigned: true }, { skip: true })
 
         // Get the initial call count
         const initialCallCount = mockUseGetCommunityByIdQuery.mock.calls.length
@@ -1510,7 +1369,7 @@ describe("when rendering the community detail page", () => {
         setupWalletState({
           address: null,
           isConnecting: false,
-          hasValidIdentity: false,
+          hasValidIdentity: false
         })
 
         // Rerender to trigger the sign-out detection
@@ -1518,15 +1377,10 @@ describe("when rendering the community detail page", () => {
 
         // Verify that query was called again (hooks run on every render)
         // but since id is undefined and skip is true, RTK Query won't make a request
-        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(
-          initialCallCount
-        )
+        expect(mockUseGetCommunityByIdQuery.mock.calls.length).toBeGreaterThan(initialCallCount)
         // Verify the last call still has skip: true
-        const lastCall =
-          mockUseGetCommunityByIdQuery.mock.calls[
-            mockUseGetCommunityByIdQuery.mock.calls.length - 1
-          ]
-        expect(lastCall[0]).toEqual({ id: "", isSigned: false })
+        const lastCall = mockUseGetCommunityByIdQuery.mock.calls[mockUseGetCommunityByIdQuery.mock.calls.length - 1]
+        expect(lastCall[0]).toEqual({ id: '', isSigned: false })
         expect(lastCall[1]).toEqual({ skip: true })
       })
     })

@@ -1,6 +1,6 @@
-import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
-import { type Chain, type EIP1193Provider } from "viem"
-import { createConnector } from "wagmi"
+import { type Chain, type EIP1193Provider } from 'viem'
+import { createConnector } from 'wagmi'
+import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
 
 // Magic SDK types (dynamic import)
 type MagicInstance = {
@@ -16,17 +16,14 @@ type MagicInstance = {
 
 // DCL Magic configuration - matches decentraland-connect
 const MAGIC_CONFIG = {
-  apiKey: "pk_live_212568025B158355",
-  testApiKey: "pk_live_CE856A4938B36648",
+  apiKey: 'pk_live_212568025B158355',
+  testApiKey: 'pk_live_CE856A4938B36648',
   rpcUrls: {
-    [ChainId.ETHEREUM_MAINNET]:
-      "https://rpc.decentraland.org/mainnet?project=magic",
-    [ChainId.ETHEREUM_SEPOLIA]:
-      "https://rpc.decentraland.org/sepolia?project=magic",
-    [ChainId.MATIC_MAINNET]:
-      "https://rpc.decentraland.org/polygon?project=magic",
-    [ChainId.MATIC_AMOY]: "https://rpc.decentraland.org/amoy?project=magic",
-  } as Record<number, string>,
+    [ChainId.ETHEREUM_MAINNET]: 'https://rpc.decentraland.org/mainnet?project=magic',
+    [ChainId.ETHEREUM_SEPOLIA]: 'https://rpc.decentraland.org/sepolia?project=magic',
+    [ChainId.MATIC_MAINNET]: 'https://rpc.decentraland.org/polygon?project=magic',
+    [ChainId.MATIC_AMOY]: 'https://rpc.decentraland.org/amoy?project=magic'
+  } as Record<number, string>
 } as const
 
 export type MagicParameters = {
@@ -60,25 +57,23 @@ export function magic(parameters: MagicParameters = {}) {
 
   async function getMagicInstance(chainId: number): Promise<MagicInstance> {
     // Dynamic import to avoid loading Magic SDK if not needed
-    const { Magic } = await import("magic-sdk")
-    const { OAuthExtension } = await import("@magic-ext/oauth2")
+    const { Magic } = await import('magic-sdk')
+    const { OAuthExtension } = await import('@magic-ext/oauth2')
 
     const apiKey = isTest ? MAGIC_CONFIG.testApiKey : MAGIC_CONFIG.apiKey
-    const rpcUrl =
-      MAGIC_CONFIG.rpcUrls[chainId] ||
-      MAGIC_CONFIG.rpcUrls[ChainId.ETHEREUM_MAINNET]
+    const rpcUrl = MAGIC_CONFIG.rpcUrls[chainId] || MAGIC_CONFIG.rpcUrls[ChainId.ETHEREUM_MAINNET]
 
     return new Magic(apiKey, {
       extensions: [new OAuthExtension()],
       network: {
         rpcUrl,
-        chainId,
-      },
+        chainId
+      }
     }) as unknown as MagicInstance
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return createConnector<EIP1193Provider, any, StorageItem>((config) => {
+  return createConnector<EIP1193Provider, any, StorageItem>(config => {
     /**
      * Helper to get accounts from the provider.
      * Used by setup(), connect(), and getAccounts().
@@ -87,9 +82,9 @@ export function magic(parameters: MagicParameters = {}) {
       if (!provider) {
         return []
       }
-      const accounts = (await provider.request({
-        method: "eth_accounts",
-      })) as string[]
+      const accounts = await provider.request({
+        method: 'eth_accounts'
+      })
       return accounts as readonly `0x${string}`[]
     }
 
@@ -97,9 +92,7 @@ export function magic(parameters: MagicParameters = {}) {
      * Helper to initialize the provider and get connection data.
      * Abstracts the common pattern of getting provider + accounts + saving chainId.
      */
-    async function initializeConnection(
-      chainId: number
-    ): Promise<{ accounts: readonly `0x${string}`[]; chainId: number } | null> {
+    async function initializeConnection(chainId: number): Promise<{ accounts: readonly `0x${string}`[]; chainId: number } | null> {
       provider = await magicInstance!.wallet.getProvider()
       const accounts = await fetchAccounts()
 
@@ -107,22 +100,22 @@ export function magic(parameters: MagicParameters = {}) {
         return null
       }
 
-      await config.storage?.setItem("magicChainId", chainId)
+      await config.storage?.setItem('magicChainId', chainId)
 
       return { accounts, chainId }
     }
 
     return {
-      id: "magic",
-      name: "Magic",
-      type: "magic",
+      id: 'magic',
+      name: 'Magic',
+      type: 'magic',
 
       async setup() {
         // Check if user is already logged in via Magic
         // Magic stores sessions in its own domain (auth.magic.link) via iframe,
         // so we can detect sessions even when the user logged in from a different
         // subdomain (e.g., auth.decentraland.org)
-        const savedChainId = await config.storage?.getItem("magicChainId")
+        const savedChainId = await config.storage?.getItem('magicChainId')
         const chainId = savedChainId ?? config.chains[0]?.id
 
         if (chainId) {
@@ -137,7 +130,7 @@ export function magic(parameters: MagicParameters = {}) {
                 // Emit connect event so wagmi knows we're connected
                 // This is the key difference from other connectors - we detect
                 // an existing session and notify wagmi proactively
-                config.emitter.emit("connect", connection)
+                config.emitter.emit('connect', connection)
               }
             }
           } catch {
@@ -156,15 +149,13 @@ export function magic(parameters: MagicParameters = {}) {
         const isLoggedIn = await magicInstance.user.isLoggedIn()
 
         if (!isLoggedIn) {
-          throw new Error(
-            "Magic: User is not logged in. Please authenticate via the auth dapp first."
-          )
+          throw new Error('Magic: User is not logged in. Please authenticate via the auth dapp first.')
         }
 
         const connection = await initializeConnection(targetChainId)
 
         if (!connection) {
-          throw new Error("Magic: No accounts found")
+          throw new Error('Magic: No accounts found')
         }
 
         return connection
@@ -176,7 +167,7 @@ export function magic(parameters: MagicParameters = {}) {
         }
         magicInstance = null
         provider = null
-        await config.storage?.removeItem("magicChainId")
+        await config.storage?.removeItem('magicChainId')
       },
 
       async getAccounts() {
@@ -186,7 +177,7 @@ export function magic(parameters: MagicParameters = {}) {
       async getChainId() {
         // Magic is agnostic of the current chain - it doesn't track chain state
         // internally like MetaMask does. We need to return the chainId we stored.
-        const savedChainId = await config.storage?.getItem("magicChainId")
+        const savedChainId = await config.storage?.getItem('magicChainId')
         return savedChainId ?? config.chains[0].id
       },
 
@@ -206,7 +197,7 @@ export function magic(parameters: MagicParameters = {}) {
             // This is important for cross-domain sessions: Magic stores sessions
             // in its own domain (auth.magic.link) via iframe, so we can check
             // if user is logged in even without a saved chainId
-            const savedChainId = await config.storage?.getItem("magicChainId")
+            const savedChainId = await config.storage?.getItem('magicChainId')
             const chainId = savedChainId ?? config.chains[0]?.id
             if (!chainId) {
               return false
@@ -219,13 +210,9 @@ export function magic(parameters: MagicParameters = {}) {
         }
       },
 
-      async switchChain({
-        chainId: newChainId,
-      }: {
-        chainId: number
-      }): Promise<Chain> {
+      async switchChain({ chainId: newChainId }: { chainId: number }): Promise<Chain> {
         // Validate chain is configured BEFORE making changes
-        const chain = config.chains.find((c) => c.id === newChainId)
+        const chain = config.chains.find(c => c.id === newChainId)
         if (!chain) {
           throw new Error(`Chain ${newChainId} not configured`)
         }
@@ -237,13 +224,13 @@ export function magic(parameters: MagicParameters = {}) {
 
         const isLoggedIn = await magicInstance.user.isLoggedIn()
         if (!isLoggedIn) {
-          throw new Error("Magic: User is not logged in")
+          throw new Error('Magic: User is not logged in')
         }
 
         provider = await magicInstance.wallet.getProvider()
-        await config.storage?.setItem("magicChainId", newChainId)
+        await config.storage?.setItem('magicChainId', newChainId)
 
-        config.emitter.emit("change", { chainId: newChainId })
+        config.emitter.emit('change', { chainId: newChainId })
 
         return chain
       },
@@ -256,22 +243,22 @@ export function magic(parameters: MagicParameters = {}) {
         if (accounts.length === 0) {
           this.onDisconnect()
         } else {
-          config.emitter.emit("change", {
-            accounts: accounts as readonly `0x${string}`[],
+          config.emitter.emit('change', {
+            accounts: accounts as readonly `0x${string}`[]
           })
         }
       },
 
       onChainChanged(chain: string) {
         const chainId = Number(chain)
-        config.emitter.emit("change", { chainId })
+        config.emitter.emit('change', { chainId })
       },
 
       onDisconnect() {
-        config.emitter.emit("disconnect")
+        config.emitter.emit('disconnect')
         magicInstance = null
         provider = null
-      },
+      }
     }
   })
 }

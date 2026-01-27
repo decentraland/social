@@ -1,7 +1,7 @@
-import { Route, Switch } from "react-router-dom"
-import { CommunityDetail } from "./components/Pages/CommunityDetail"
-import { NotFound } from "./components/Pages/NotFound"
-import { SignInRedirect } from "./components/Pages/SignInRedirect"
+import { Route, Switch } from 'react-router-dom'
+import { CommunityDetail } from './components/Pages/CommunityDetail'
+import { NotFound } from './components/Pages/NotFound'
+import { SignInRedirect } from './components/Pages/SignInRedirect'
 
 export function AppRoutes() {
   return (

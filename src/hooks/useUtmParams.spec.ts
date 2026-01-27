@@ -1,113 +1,109 @@
-import * as React from "react"
-import type { ReactNode } from "react"
-import { MemoryRouter } from "react-router-dom"
-import { renderHook } from "@testing-library/react"
-import { useUtmParams } from "./useUtmParams"
+import * as React from 'react'
+import type { ReactNode } from 'react'
+import { MemoryRouter } from 'react-router-dom'
+import { renderHook } from '@testing-library/react'
+import { useUtmParams } from './useUtmParams'
 
-function createWrapper(initialEntries: string[] = ["/"]) {
+function createWrapper(initialEntries: string[] = ['/']) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return React.createElement(
       MemoryRouter,
       {
-        initialEntries,
+        initialEntries
       },
       children
     )
   }
 }
 
-describe("useUtmParams", () => {
-  describe("when there are no UTM params in the URL", () => {
-    it("should return an empty object", () => {
+describe('useUtmParams', () => {
+  describe('when there are no UTM params in the URL', () => {
+    it('should return an empty object', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/"]),
+        wrapper: createWrapper(['/'])
       })
 
       expect(result.current).toEqual({})
     })
   })
 
-  describe("when utm_org is present", () => {
-    it("should return the utm_org value", () => {
+  describe('when utm_org is present', () => {
+    it('should return the utm_org value', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/?utm_org=dcl"]),
+        wrapper: createWrapper(['/?utm_org=dcl'])
       })
 
-      expect(result.current).toEqual({ utm_org: "dcl" })
+      expect(result.current).toEqual({ utm_org: 'dcl' })
     })
   })
 
-  describe("when utm_source is present", () => {
-    it("should return the utm_source value", () => {
+  describe('when utm_source is present', () => {
+    it('should return the utm_source value', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/?utm_source=explorer"]),
+        wrapper: createWrapper(['/?utm_source=explorer'])
       })
 
-      expect(result.current).toEqual({ utm_source: "explorer" })
+      expect(result.current).toEqual({ utm_source: 'explorer' })
     })
   })
 
-  describe("when utm_medium is present", () => {
-    it("should return the utm_medium value", () => {
+  describe('when utm_medium is present', () => {
+    it('should return the utm_medium value', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/?utm_medium=organic"]),
+        wrapper: createWrapper(['/?utm_medium=organic'])
       })
 
-      expect(result.current).toEqual({ utm_medium: "organic" })
+      expect(result.current).toEqual({ utm_medium: 'organic' })
     })
   })
 
-  describe("when utm_campaign is present", () => {
-    it("should return the utm_campaign value", () => {
+  describe('when utm_campaign is present', () => {
+    it('should return the utm_campaign value', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/?utm_campaign=communities"]),
+        wrapper: createWrapper(['/?utm_campaign=communities'])
       })
 
-      expect(result.current).toEqual({ utm_campaign: "communities" })
+      expect(result.current).toEqual({ utm_campaign: 'communities' })
     })
   })
 
-  describe("when all UTM params are present", () => {
-    it("should return all UTM values", () => {
+  describe('when all UTM params are present', () => {
+    it('should return all UTM values', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper([
-          "/?utm_org=dcl&utm_source=explorer&utm_medium=organic&utm_campaign=communities",
-        ]),
+        wrapper: createWrapper(['/?utm_org=dcl&utm_source=explorer&utm_medium=organic&utm_campaign=communities'])
       })
 
       expect(result.current).toEqual({
-        utm_org: "dcl",
-        utm_source: "explorer",
-        utm_medium: "organic",
-        utm_campaign: "communities",
+        utm_org: 'dcl',
+        utm_source: 'explorer',
+        utm_medium: 'organic',
+        utm_campaign: 'communities'
       })
     })
   })
 
-  describe("when some UTM params are present", () => {
-    it("should only return the present values", () => {
+  describe('when some UTM params are present', () => {
+    it('should only return the present values', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper(["/?utm_org=dcl&utm_campaign=communities"]),
+        wrapper: createWrapper(['/?utm_org=dcl&utm_campaign=communities'])
       })
 
       expect(result.current).toEqual({
-        utm_org: "dcl",
-        utm_campaign: "communities",
+        utm_org: 'dcl',
+        utm_campaign: 'communities'
       })
     })
   })
 
-  describe("when there are other query params mixed with UTM params", () => {
-    it("should only return the UTM params", () => {
+  describe('when there are other query params mixed with UTM params', () => {
+    it('should only return the UTM params', () => {
       const { result } = renderHook(() => useUtmParams(), {
-        wrapper: createWrapper([
-          "/?utm_org=dcl&foo=bar&utm_source=explorer&baz=qux",
-        ]),
+        wrapper: createWrapper(['/?utm_org=dcl&foo=bar&utm_source=explorer&baz=qux'])
       })
 
       expect(result.current).toEqual({
-        utm_org: "dcl",
-        utm_source: "explorer",
+        utm_org: 'dcl',
+        utm_source: 'explorer'
       })
     })
   })

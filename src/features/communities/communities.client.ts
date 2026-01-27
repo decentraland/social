@@ -1,3 +1,4 @@
+import { client } from '../../services/client'
 import {
   CommunityMembersResponse,
   CommunityResponse,
@@ -7,41 +8,28 @@ import {
   RequestIntention,
   RequestStatus,
   RequestType,
-  Role,
-} from "./types"
-import { client } from "../../services/client"
+  Role
+} from './types'
 
 const communitiesApi = client.injectEndpoints({
-  endpoints: (builder) => ({
-    getCommunityById: builder.query<
-      CommunityResponse,
-      { id: string; isSigned: boolean }
-    >({
+  endpoints: builder => ({
+    getCommunityById: builder.query<CommunityResponse, { id: string; isSigned: boolean }>({
       query: ({ id }) => `/v1/communities/${id}`,
       serializeQueryArgs: ({ queryArgs }) => {
         const { id, isSigned } = queryArgs
         // Include auth state in cache key so signed/unsigned requests don't share cache
         return { id, isSigned }
       },
-      providesTags: (
-        result: CommunityResponse | undefined,
-        _error: unknown,
-        { id }: { id: string; isSigned: boolean }
-      ) =>
-        result
-          ? [{ type: "Communities" as const, id }, "Communities"]
-          : ["Communities"],
+      providesTags: (result: CommunityResponse | undefined, _error: unknown, { id }: { id: string; isSigned: boolean }) =>
+        result ? [{ type: 'Communities' as const, id }, 'Communities'] : ['Communities']
     }),
-    getCommunityMembers: builder.query<
-      CommunityMembersResponse,
-      { id: string; limit?: number; offset?: number }
-    >({
+    getCommunityMembers: builder.query<CommunityMembersResponse, { id: string; limit?: number; offset?: number }>({
       query: ({ id, limit, offset }) => {
         const params = new URLSearchParams()
-        if (limit) params.append("limit", limit.toString())
-        if (offset) params.append("offset", offset.toString())
+        if (limit) params.append('limit', limit.toString())
+        if (offset) params.append('offset', offset.toString())
         const queryString = params.toString()
-        return `/v1/communities/${id}/members${queryString ? `?${queryString}` : ""}`
+        return `/v1/communities/${id}/members${queryString ? `?${queryString}` : ''}`
       },
       serializeQueryArgs: ({ queryArgs }) => {
         const { id } = queryArgs
@@ -55,45 +43,29 @@ const communitiesApi = client.injectEndpoints({
           ...newItems,
           data: {
             ...newItems.data,
-            results: [
-              ...(currentCache?.data?.results || []),
-              ...newItems.data.results,
-            ],
-          },
+            results: [...(currentCache?.data?.results || []), ...newItems.data.results]
+          }
         }
       },
       forceRefetch({ currentArg, previousArg }) {
-        return (
-          currentArg?.offset !== previousArg?.offset ||
-          currentArg?.limit !== previousArg?.limit
-        )
+        return currentArg?.offset !== previousArg?.offset || currentArg?.limit !== previousArg?.limit
       },
-      providesTags: (
-        result: CommunityMembersResponse | undefined,
-        _error: unknown,
-        { id }: { id: string }
-      ) =>
-        result
-          ? [{ type: "Members" as const, id: `${id}-members` }, "Members"]
-          : ["Members"],
+      providesTags: (result: CommunityMembersResponse | undefined, _error: unknown, { id }: { id: string }) =>
+        result ? [{ type: 'Members' as const, id: `${id}-members` }, 'Members'] : ['Members']
     }),
     joinCommunity: builder.mutation<JoinCommunityResponse, string>({
       query: (id: string) => ({
         url: `/v1/communities/${id}/members`,
-        method: "POST",
+        method: 'POST'
       }),
       async onQueryStarted(communityId, { dispatch, queryFulfilled }) {
         // Optimistically update the community to show user as member
         const patchResult = dispatch(
-          communitiesApi.util.updateQueryData(
-            "getCommunityById",
-            { id: communityId, isSigned: true },
-            (draft) => {
-              if (draft?.data) {
-                draft.data.role = Role.MEMBER
-              }
+          communitiesApi.util.updateQueryData('getCommunityById', { id: communityId, isSigned: true }, draft => {
+            if (draft?.data) {
+              draft.data.role = Role.MEMBER
             }
-          )
+          })
         )
 
         try {
@@ -103,28 +75,21 @@ const communitiesApi = client.injectEndpoints({
           patchResult.undo()
         }
       },
-      invalidatesTags: (
-        _result: JoinCommunityResponse | undefined,
-        _error: unknown,
-        id: string
-      ) => [{ type: "Communities" as const, id }, "Communities"],
+      invalidatesTags: (_result: JoinCommunityResponse | undefined, _error: unknown, id: string) => [
+        { type: 'Communities' as const, id },
+        'Communities'
+      ]
     }),
-    createCommunityRequest: builder.mutation<
-      CreateCommunityRequestResponse,
-      { communityId: string; targetedAddress: string }
-    >({
+    createCommunityRequest: builder.mutation<CreateCommunityRequestResponse, { communityId: string; targetedAddress: string }>({
       query: ({ communityId, targetedAddress }) => ({
         url: `/v1/communities/${communityId}/requests`,
-        method: "POST",
+        method: 'POST',
         body: {
           targetedAddress,
-          type: RequestType.REQUEST_TO_JOIN,
-        },
+          type: RequestType.REQUEST_TO_JOIN
+        }
       }),
-      async onQueryStarted(
-        { communityId, targetedAddress },
-        { dispatch, queryFulfilled, getState }
-      ) {
+      async onQueryStarted({ communityId, targetedAddress }, { dispatch, queryFulfilled, getState }) {
         // Get community data from cache to create proper optimistic request
         const state = getState() as {
           client?: {
@@ -134,7 +99,7 @@ const communitiesApi = client.injectEndpoints({
         // This mutation requires auth, so we need to use the signed query key
         const queryKey = communitiesApi.endpoints.getCommunityById.select({
           id: communityId,
-          isSigned: true,
+          isSigned: true
         })
         const queryState = queryKey(state as never)
         const community = queryState?.data?.data
@@ -142,9 +107,9 @@ const communitiesApi = client.injectEndpoints({
         // Optimistically add a pending request to the member requests cache
         const patchResult = dispatch(
           communitiesApi.util.updateQueryData(
-            "getMemberRequests",
+            'getMemberRequests',
             { address: targetedAddress, type: RequestType.REQUEST_TO_JOIN },
-            (draft) => {
+            draft => {
               if (draft?.data) {
                 // Create an optimistic request with community data
                 // MemberCommunityRequest extends Community (minus id) and adds id, communityId, type, status
@@ -153,7 +118,7 @@ const communitiesApi = client.injectEndpoints({
                   id: `temp-${Date.now()}`,
                   communityId,
                   type: RequestType.REQUEST_TO_JOIN,
-                  status: RequestStatus.PENDING,
+                  status: RequestStatus.PENDING
                 } as (typeof draft.data.results)[0]
                 draft.data.results = [optimisticRequest, ...draft.data.results]
                 draft.data.total = (draft.data.total || 0) + 1
@@ -169,48 +134,32 @@ const communitiesApi = client.injectEndpoints({
           patchResult.undo()
         }
       },
-      invalidatesTags: (
-        _result: CreateCommunityRequestResponse | undefined,
-        _error: unknown,
-        { communityId }: { communityId: string }
-      ) => [
-        { type: "Communities" as const, id: communityId },
-        "Communities",
-        "MemberRequests",
-      ],
+      invalidatesTags: (_result: CreateCommunityRequestResponse | undefined, _error: unknown, { communityId }: { communityId: string }) => [
+        { type: 'Communities' as const, id: communityId },
+        'Communities',
+        'MemberRequests'
+      ]
     }),
-    cancelCommunityRequest: builder.mutation<
-      void,
-      { communityId: string; requestId: string; address?: string }
-    >({
+    cancelCommunityRequest: builder.mutation<void, { communityId: string; requestId: string; address?: string }>({
       query: ({ communityId, requestId }) => ({
         url: `/v1/communities/${communityId}/requests/${requestId}`,
-        method: "PATCH",
+        method: 'PATCH',
         body: {
-          intention: RequestIntention.CANCELLED,
-        },
+          intention: RequestIntention.CANCELLED
+        }
       }),
-      async onQueryStarted(
-        { requestId, address },
-        { dispatch, queryFulfilled }
-      ) {
+      async onQueryStarted({ requestId, address }, { dispatch, queryFulfilled }) {
         let patchResult: { undo: () => void } | null = null
 
         // Optimistically remove the request from cache if address is provided
         if (address) {
           patchResult = dispatch(
-            communitiesApi.util.updateQueryData(
-              "getMemberRequests",
-              { address, type: RequestType.REQUEST_TO_JOIN },
-              (draft) => {
-                if (draft?.data) {
-                  draft.data.results = draft.data.results.filter(
-                    (request) => request.id !== requestId
-                  )
-                  draft.data.total = Math.max((draft.data.total || 0) - 1, 0)
-                }
+            communitiesApi.util.updateQueryData('getMemberRequests', { address, type: RequestType.REQUEST_TO_JOIN }, draft => {
+              if (draft?.data) {
+                draft.data.results = draft.data.results.filter(request => request.id !== requestId)
+                draft.data.total = Math.max((draft.data.total || 0) - 1, 0)
               }
-            )
+            })
           )
         }
 
@@ -223,36 +172,23 @@ const communitiesApi = client.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (
-        _result: void | undefined,
-        _error: unknown,
-        { communityId }: { communityId: string }
-      ) => [
-        { type: "Communities" as const, id: communityId },
-        "Communities",
-        "MemberRequests",
-      ],
+      invalidatesTags: (_result: void | undefined, _error: unknown, { communityId }: { communityId: string }) => [
+        { type: 'Communities' as const, id: communityId },
+        'Communities',
+        'MemberRequests'
+      ]
     }),
-    getMemberRequests: builder.query<
-      MemberRequestsResponse,
-      { address: string; type?: RequestType }
-    >({
+    getMemberRequests: builder.query<MemberRequestsResponse, { address: string; type?: RequestType }>({
       query: ({ address, type }) => {
         const params = new URLSearchParams()
-        if (type) params.append("type", type)
+        if (type) params.append('type', type)
         const queryString = params.toString()
-        return `/v1/members/${address}/requests${queryString ? `?${queryString}` : ""}`
+        return `/v1/members/${address}/requests${queryString ? `?${queryString}` : ''}`
       },
-      providesTags: (
-        result: MemberRequestsResponse | undefined,
-        _error: unknown,
-        { address }: { address: string }
-      ) =>
-        result
-          ? [{ type: "MemberRequests" as const, id: address }, "MemberRequests"]
-          : ["MemberRequests"],
-    }),
-  }),
+      providesTags: (result: MemberRequestsResponse | undefined, _error: unknown, { address }: { address: string }) =>
+        result ? [{ type: 'MemberRequests' as const, id: address }, 'MemberRequests'] : ['MemberRequests']
+    })
+  })
 })
 
 const {
@@ -261,7 +197,7 @@ const {
   useJoinCommunityMutation,
   useCreateCommunityRequestMutation,
   useCancelCommunityRequestMutation,
-  useGetMemberRequestsQuery,
+  useGetMemberRequestsQuery
 } = communitiesApi
 
 export {
@@ -271,5 +207,5 @@ export {
   useJoinCommunityMutation,
   useCreateCommunityRequestMutation,
   useCancelCommunityRequestMutation,
-  useGetMemberRequestsQuery,
+  useGetMemberRequestsQuery
 }

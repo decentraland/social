@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow } from 'date-fns'
 
 export const formatEventTime = (dateString: string): string => {
   const eventDate = new Date(dateString)
@@ -9,9 +9,9 @@ export const formatEventTime = (dateString: string): string => {
     return `Started ${distance}`
   }
 
-  const dayOfWeek = format(eventDate, "EEE")
-  const month = format(eventDate, "MMM").toUpperCase()
-  const day = format(eventDate, "d")
-  const time = format(eventDate, "h:mmaaa")
+  const dayOfWeek = format(eventDate, 'EEE')
+  const month = format(eventDate, 'MMM').toUpperCase()
+  const day = format(eventDate, 'd')
+  const time = format(eventDate, 'h:mmaaa')
   return `${dayOfWeek}, ${month} ${day} @ ${time}`
 }

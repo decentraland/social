@@ -1,5 +1,5 @@
-import { useMemo } from "react"
-import { useLocation } from "react-router-dom"
+import { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 
 type UtmParams = {
   utm_org?: string
@@ -8,12 +8,7 @@ type UtmParams = {
   utm_campaign?: string
 }
 
-const UTM_PARAM_KEYS = [
-  "utm_org",
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-] as const
+const UTM_PARAM_KEYS = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign'] as const
 
 const useUtmParams = (): UtmParams => {
   const { search } = useLocation()

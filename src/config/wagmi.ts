@@ -1,13 +1,13 @@
-import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
-import { Config, createConfig, http } from "wagmi"
-import { mainnet, polygon, polygonAmoy, sepolia } from "wagmi/chains"
-import { walletConnect } from "wagmi/connectors"
-import { injectedWithRetry, magic } from "./connectors"
-import { config as appConfig } from "./index"
+import { Config, createConfig, http } from 'wagmi'
+import { mainnet, polygon, polygonAmoy, sepolia } from 'wagmi/chains'
+import { walletConnect } from 'wagmi/connectors'
+import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
+import { injectedWithRetry, magic } from './connectors'
+import { config as appConfig } from './index'
 
-const WALLET_CONNECT_PROJECT_ID = "61570c542c2d66c659492e5b24a41522"
+const WALLET_CONNECT_PROJECT_ID = '61570c542c2d66c659492e5b24a41522'
 
-const chainId = Number(appConfig.get("CHAIN_ID")) as ChainId
+const chainId = Number(appConfig.get('CHAIN_ID')) as ChainId
 
 // Determine which chains to use based on environment
 const isMainnet = chainId === ChainId.ETHEREUM_MAINNET
@@ -24,24 +24,24 @@ const wagmiConfig: Config = createConfig({
     walletConnect({
       projectId: WALLET_CONNECT_PROJECT_ID,
       metadata: {
-        name: "Decentraland Social",
-        description: "Decentraland Social Communities",
-        url: "https://decentraland.org/social",
-        icons: ["https://decentraland.org/favicon.ico"],
+        name: 'Decentraland Social',
+        description: 'Decentraland Social Communities',
+        url: 'https://decentraland.org/social',
+        icons: ['https://decentraland.org/favicon.ico']
       },
-      showQrModal: true,
+      showQrModal: true
     }),
-    magic({ isTest: !isMainnet }),
+    magic({ isTest: !isMainnet })
   ],
   transports: {
-    [mainnet.id]: http("https://rpc.decentraland.org/mainnet"),
-    [sepolia.id]: http("https://rpc.decentraland.org/sepolia"),
-    [polygon.id]: http("https://rpc.decentraland.org/polygon"),
-    [polygonAmoy.id]: http("https://rpc.decentraland.org/amoy"),
-  },
+    [mainnet.id]: http('https://rpc.decentraland.org/mainnet'),
+    [sepolia.id]: http('https://rpc.decentraland.org/sepolia'),
+    [polygon.id]: http('https://rpc.decentraland.org/polygon'),
+    [polygonAmoy.id]: http('https://rpc.decentraland.org/amoy')
+  }
 })
 
-declare module "wagmi" {
+declare module 'wagmi' {
   interface Register {
     config: typeof wagmiConfig
   }

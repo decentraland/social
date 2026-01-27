@@ -1,6 +1,6 @@
-import { Theme, useTheme } from "@mui/material/styles"
-import { getRandomRarityColor } from "../utils/getRandomRarityColor"
-import { AttendeeAvatar } from "./EventsList.styled"
+import { Theme, useTheme } from '@mui/material/styles'
+import { getRandomRarityColor } from '../utils/getRandomRarityColor'
+import { AttendeeAvatar } from './EventsList.styled'
 
 type EventAttendeeProps = {
   src?: string
