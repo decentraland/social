@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 
 type UtmParams = {
   utm_org?: string
@@ -16,9 +16,10 @@ const UTM_PARAM_KEYS = [
 ] as const
 
 const useUtmParams = (): UtmParams => {
-  const [searchParams] = useSearchParams()
+  const { search } = useLocation()
 
   const utmParams = useMemo(() => {
+    const searchParams = new URLSearchParams(search)
     const params: UtmParams = {}
 
     for (const key of UTM_PARAM_KEYS) {
@@ -29,7 +30,7 @@ const useUtmParams = (): UtmParams => {
     }
 
     return params
-  }, [searchParams])
+  }, [search])
 
   return utmParams
 }

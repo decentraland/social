@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
+import { useHistory, useLocation, useParams } from "react-router-dom"
 import {
   Box,
   CircularProgress,
@@ -45,7 +45,8 @@ import {
 
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { pathname, search } = useLocation()
+  const history = useHistory()
   const { address, isConnecting, hasValidIdentity } = useWallet()
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
@@ -220,12 +221,17 @@ function CommunityDetail() {
 
   // Auto-execute action after authentication redirect
   useEffect(() => {
+    const searchParams = new URLSearchParams(search)
     const action = searchParams.get("action") as AllowedAction | null
 
     const removeActionParam = () => {
-      const newSearchParams = new URLSearchParams(searchParams)
+      const newSearchParams = new URLSearchParams(search)
       newSearchParams.delete("action")
-      setSearchParams(newSearchParams, { replace: true })
+      const nextSearch = newSearchParams.toString()
+      history.replace({
+        pathname,
+        search: nextSearch ? `?${nextSearch}` : "",
+      })
     }
 
     const canExecuteAction = (): boolean => {
@@ -294,8 +300,9 @@ function CommunityDetail() {
       removeActionParam()
     })
   }, [
-    searchParams,
-    setSearchParams,
+    search,
+    pathname,
+    history,
     isLoggedIn,
     address,
     community,
