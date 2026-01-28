@@ -1,87 +1,17 @@
-import { useCallback, useEffect, useMemo } from 'react'
-import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { useCallback, useMemo } from 'react'
+import { useWallet as useCoreWallet, useNetwork } from '@dcl/core-web3'
 import { AuthIdentity } from '@dcl/crypto'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import {
-  getAddress,
-  isConnected as selectIsConnected,
-  isConnecting as selectIsConnecting,
-  isDisconnecting as selectIsDisconnecting,
-  isSwitchingNetwork as selectIsSwitchingNetwork
-} from './selectors'
-import {
-  setDisconnecting,
-  setSwitchingNetwork,
-  setWalletConnected,
-  setWalletConnecting,
-  setWalletDisconnected,
-  setWalletError,
-  updateChainId
-} from './walletSlice'
 
 /**
- * Hook that syncs wagmi state with Redux store and provides wallet utilities
- */
-function useWalletSync() {
-  const dispatch = useAppDispatch()
-  const { address, isConnecting: wagmiConnecting, isConnected: wagmiConnected, isReconnecting: wagmiReconnecting } = useAccount()
-  const chainId = useChainId()
-  const { isPending: isSwitching } = useSwitchChain()
-  const { isPending: isDisconnectingWagmi } = useDisconnect()
-
-  // Sync wagmi connection state to Redux
-  // IMPORTANT: We must check isReconnecting to avoid race condition during page load
-  // Wagmi sets isReconnecting=true while checking localStorage for saved connections.
-  // If we dispatch setWalletDisconnected during reconnect, it causes a "flash" of Sign In button.
-  useEffect(() => {
-    if (wagmiConnecting || wagmiReconnecting) {
-      dispatch(setWalletConnecting())
-    } else if (wagmiConnected && address) {
-      dispatch(setWalletConnected({ address, chainId }))
-    } else {
-      dispatch(setWalletDisconnected())
-    }
-  }, [dispatch, wagmiConnecting, wagmiReconnecting, wagmiConnected, address, chainId])
-
-  // Update chain ID when it changes
-  useEffect(() => {
-    if (wagmiConnected && chainId) {
-      dispatch(updateChainId(chainId))
-    }
-  }, [dispatch, wagmiConnected, chainId])
-
-  // Sync switch network state
-  useEffect(() => {
-    dispatch(setSwitchingNetwork(isSwitching))
-  }, [dispatch, isSwitching])
-
-  // Sync disconnect state
-  useEffect(() => {
-    dispatch(setDisconnecting(isDisconnectingWagmi))
-  }, [dispatch, isDisconnectingWagmi])
-}
-
-/**
- * Hook to get wallet state and actions
+ * Hook to get wallet state and actions.
+ * Wraps core-web3 hooks and preserves the local app shape.
  */
 function useWallet() {
-  const dispatch = useAppDispatch()
-  const { address, isConnecting: wagmiConnecting, isConnected: wagmiConnected, isReconnecting: wagmiReconnecting } = useAccount()
-  const chainId = useChainId()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
+  const { address, isConnected, isConnecting, isDisconnecting, connectors, connect, disconnect } = useCoreWallet()
+  const { chainId, isSwitching } = useNetwork()
 
-  // Get Redux state for consistency
-  const reduxAddress = useAppSelector(getAddress)
-  const reduxIsConnected = useAppSelector(selectIsConnected)
-  const reduxIsConnecting = useAppSelector(selectIsConnecting)
-  const reduxIsDisconnecting = useAppSelector(selectIsDisconnecting)
-  const reduxIsSwitchingNetwork = useAppSelector(selectIsSwitchingNetwork)
-
-  // Prefer wagmi state but fall back to Redux for SSR consistency
-  const isConnected = (wagmiConnected && !wagmiReconnecting) || reduxIsConnected
-  const walletAddress = address || reduxAddress
+  const walletAddress = address ? (address as `0x${string}`) : undefined
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
     if (!walletAddress) return undefined
@@ -92,19 +22,12 @@ function useWallet() {
 
   const connectWallet = useCallback(
     (connectorId?: string) => {
-      const connector = connectorId ? connectors.find(c => c.id === connectorId) : connectors[0]
+      const connector = connectorId ? connectors.find(c => c.id === connectorId || c.uid === connectorId) : connectors[0]
       if (connector) {
-        connect(
-          { connector },
-          {
-            onError: error => {
-              dispatch(setWalletError(error.message))
-            }
-          }
-        )
+        connect(connector)
       }
     },
-    [connect, connectors, dispatch]
+    [connect, connectors]
   )
 
   const disconnectWallet = useCallback(() => {
@@ -113,11 +36,11 @@ function useWallet() {
 
   return {
     address: walletAddress,
-    chainId,
+    chainId: chainId ?? undefined,
     isConnected,
-    isConnecting: wagmiConnecting || wagmiReconnecting || reduxIsConnecting,
-    isDisconnecting: reduxIsDisconnecting,
-    isSwitchingNetwork: reduxIsSwitchingNetwork,
+    isConnecting,
+    isDisconnecting,
+    isSwitchingNetwork: isSwitching,
     identity,
     hasValidIdentity,
     connectors,
@@ -130,18 +53,19 @@ function useWallet() {
  * Hook to check if the user has a valid identity (for authenticated requests)
  */
 function useIdentity() {
-  const { address } = useAccount()
+  const { address } = useCoreWallet()
+  const walletAddress = address ? (address as `0x${string}`) : undefined
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
-    if (!address) return undefined
-    return localStorageGetIdentity(address.toLowerCase()) as AuthIdentity | undefined
-  }, [address])
+    if (!walletAddress) return undefined
+    return localStorageGetIdentity(walletAddress.toLowerCase()) as AuthIdentity | undefined
+  }, [walletAddress])
 
   return {
     identity,
     hasValidIdentity: !!identity,
-    address
+    address: walletAddress
   }
 }
 
-export { useWalletSync, useWallet, useIdentity }
+export { useWallet, useIdentity }

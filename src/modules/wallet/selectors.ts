@@ -1,41 +1,24 @@
+import {
+  getIsConnected,
+  getIsConnecting,
+  getIsDisconnecting,
+  getIsNetworkSwitching,
+  getChainId as getNetworkChainId,
+  getAddress as getWalletAddress,
+  getWalletError
+} from '@dcl/core-web3'
 import type { RootState } from '../../app/store'
-import { WALLET_LOADING_STATES } from './constants'
 
-const getState = (state: RootState) => state.wallet
+const getAddress = (state: RootState) => getWalletAddress(state)
 
-const getData = (state: RootState) => getState(state).data
+const getChainId = (state: RootState) => getNetworkChainId(state)
 
-const getLoading = (state: RootState) => getState(state).loading
+const isConnected = (state: RootState) => getIsConnected(state)
 
-const getError = (state: RootState) => getState(state).error
+const isConnecting = (state: RootState) => getIsConnecting(state)
 
-const isConnected = (state: RootState): boolean => getData(state) !== null
+const isDisconnecting = (state: RootState) => getIsDisconnecting(state)
 
-const isConnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.connect)
+const isSwitchingNetwork = (state: RootState) => getIsNetworkSwitching(state)
 
-const isDisconnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.disconnect)
-
-const isSwitchingNetwork = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.switchNetwork)
-
-const getAddress = (state: RootState): `0x${string}` | undefined => (isConnected(state) ? getData(state)!.address : undefined)
-
-const getChainId = (state: RootState): number | undefined => (isConnected(state) ? getData(state)!.chainId : undefined)
-
-const getAppChainId = (state: RootState) => getState(state).appChainId
-
-const getWalletError = (state: RootState): string | null => getState(state).error
-
-export {
-  getAddress,
-  getAppChainId,
-  getChainId,
-  getData,
-  getError,
-  getLoading,
-  getState,
-  getWalletError,
-  isConnected,
-  isConnecting,
-  isDisconnecting,
-  isSwitchingNetwork
-}
+export { getAddress, getChainId, getWalletError, isConnected, isConnecting, isDisconnecting, isSwitchingNetwork }

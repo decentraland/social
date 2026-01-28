@@ -1,44 +1,40 @@
-import { Config, createConfig, http } from 'wagmi'
-import { mainnet, polygon, polygonAmoy, sepolia } from 'wagmi/chains'
-import { walletConnect } from 'wagmi/connectors'
+import { http } from 'viem'
+import { createWeb3CoreConfig, magic, productionChains, testChains } from '@dcl/core-web3'
 import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
-import { injectedWithRetry, magic } from './connectors'
 import { config as appConfig } from './index'
 
 const WALLET_CONNECT_PROJECT_ID = '61570c542c2d66c659492e5b24a41522'
+const MAGIC_API_KEYS = {
+  mainnet: 'pk_live_212568025B158355',
+  testnet: 'pk_live_CE856A4938B36648'
+} as const
 
 const chainId = Number(appConfig.get('CHAIN_ID')) as ChainId
-
-// Determine which chains to use based on environment
 const isMainnet = chainId === ChainId.ETHEREUM_MAINNET
-const primaryChain = isMainnet ? mainnet : sepolia
-const polygonChain = isMainnet ? polygon : polygonAmoy
+const chains = isMainnet ? productionChains : testChains
+const magicApiKey = isMainnet ? MAGIC_API_KEYS.mainnet : MAGIC_API_KEYS.testnet
 
-// Include Polygon for MANA balance queries
-const wagmiConfig: Config = createConfig({
-  chains: [primaryChain, polygonChain],
-  connectors: [
-    // Use injectedWithRetry to handle the race condition where wallet
-    // extensions aren't ready when wagmi tries to reconnect on page load
-    injectedWithRetry(),
-    walletConnect({
-      projectId: WALLET_CONNECT_PROJECT_ID,
-      metadata: {
-        name: 'Decentraland Social',
-        description: 'Decentraland Social Communities',
-        url: 'https://decentraland.org/social',
-        icons: ['https://decentraland.org/favicon.ico']
-      },
-      showQrModal: true
-    }),
-    magic({ isTest: !isMainnet })
-  ],
+const wagmiConfig = createWeb3CoreConfig({
+  walletConnectProjectId: WALLET_CONNECT_PROJECT_ID,
+  appMetadata: {
+    name: 'Decentraland Social',
+    description: 'Decentraland Social Communities',
+    url: 'https://decentraland.org/social',
+    icons: ['https://decentraland.org/favicon.ico']
+  },
+  chains,
+  connectors: {
+    injected: true,
+    walletConnect: true,
+    coinbaseWallet: false
+  },
   transports: {
-    [mainnet.id]: http('https://rpc.decentraland.org/mainnet'),
-    [sepolia.id]: http('https://rpc.decentraland.org/sepolia'),
-    [polygon.id]: http('https://rpc.decentraland.org/polygon'),
-    [polygonAmoy.id]: http('https://rpc.decentraland.org/amoy')
-  }
+    [ChainId.ETHEREUM_MAINNET]: http('https://rpc.decentraland.org/mainnet'),
+    [ChainId.ETHEREUM_SEPOLIA]: http('https://rpc.decentraland.org/sepolia'),
+    [ChainId.MATIC_MAINNET]: http('https://rpc.decentraland.org/polygon'),
+    [ChainId.MATIC_AMOY]: http('https://rpc.decentraland.org/amoy')
+  },
+  additionalConnectors: [magic({ apiKey: magicApiKey })]
 })
 
 declare module 'wagmi' {

@@ -1,13 +1,15 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
+import { networkReducer, transactionsReducer, walletReducer } from '@dcl/core-web3'
 import { modalReducer as modal } from 'decentraland-dapps/dist/modules/modal/reducer'
 import { translationReducer as translation } from '../modules/translation'
-import { walletReducer as wallet } from '../modules/wallet'
 import { client } from '../services/client'
 
 const rootReducer = combineReducers({
   [client.reducerPath]: client.reducer,
-  wallet,
+  wallet: walletReducer,
+  network: networkReducer,
+  transactions: transactionsReducer,
   translation,
   modal
 })

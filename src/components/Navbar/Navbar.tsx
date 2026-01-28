@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useDisconnect, useSwitchChain } from 'wagmi'
+import { useNetwork } from '@dcl/core-web3'
 import { Avatar } from '@dcl/schemas'
 import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
 import { Navbar as NavbarComponent, NavbarProps } from 'decentraland-ui2'
@@ -16,7 +16,8 @@ const appChainId = Number(config.get('CHAIN_ID')) as ChainId
 
 const Navbar = memo(() => {
   const { pathname, search } = useLocation()
-  const { address, chainId, isConnected, isConnecting } = useWallet()
+  const { address, chainId, isConnected, isConnecting, isDisconnecting, disconnect } = useWallet()
+  const { switchNetwork, isSwitching: isSwitchingNetwork } = useNetwork()
 
   // Debug log wallet state
   useEffect(() => {
@@ -27,9 +28,6 @@ const Navbar = memo(() => {
       isConnecting
     })
   }, [address, chainId, isConnected, isConnecting])
-  const { switchChain, isPending: isSwitchingNetwork } = useSwitchChain()
-  const { disconnect, isPending: isDisconnecting } = useDisconnect()
-
   // Load user profile for avatar display
   const { data: profile } = useGetProfileQuery(address ?? undefined, {
     skip: !address
@@ -61,9 +59,9 @@ const Navbar = memo(() => {
 
   const handleSwitchNetwork = useCallback(
     (targetChainId: number) => {
-      switchChain({ chainId: targetChainId })
+      switchNetwork(targetChainId)
     },
-    [switchChain]
+    [switchNetwork]
   )
 
   // Memoize navbar props - cast to NavbarProps to avoid @dcl/schemas version conflicts
