@@ -1,1 +1,1 @@
-export { CommunityInfo } from "./CommunityInfo"
+export { CommunityInfo } from './CommunityInfo'

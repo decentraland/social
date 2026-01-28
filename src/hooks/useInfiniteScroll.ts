@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef } from 'react'
 
 type UseInfiniteScrollOptions = {
   hasMore: boolean
@@ -8,13 +8,7 @@ type UseInfiniteScrollOptions = {
   rootMargin?: string
 }
 
-export const useInfiniteScroll = ({
-  hasMore,
-  isLoading,
-  onLoadMore,
-  threshold = 0.1,
-  rootMargin = "100px",
-}: UseInfiniteScrollOptions) => {
+export const useInfiniteScroll = ({ hasMore, isLoading, onLoadMore, threshold = 0.1, rootMargin = '100px' }: UseInfiniteScrollOptions) => {
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -24,7 +18,7 @@ export const useInfiniteScroll = ({
     }
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries
         if (entry.isIntersecting && hasMore && !isLoading) {
           onLoadMore()
@@ -32,7 +26,7 @@ export const useInfiniteScroll = ({
       },
       {
         threshold,
-        rootMargin,
+        rootMargin
       }
     )
 

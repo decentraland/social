@@ -1,10 +1,10 @@
-import { useMemo } from "react"
-import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
-import { Network } from "@dcl/schemas/dist/dapps/network"
-import { Abi, formatEther } from "viem"
-import { useReadContracts } from "wagmi"
-import { ContractName, getContract } from "decentraland-transactions"
-import { config } from "../config"
+import { useMemo } from 'react'
+import { Abi, formatEther } from 'viem'
+import { useReadContracts } from 'wagmi'
+import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
+import { Network } from '@dcl/schemas/dist/dapps/network'
+import { ContractName, getContract } from 'decentraland-transactions'
+import { config } from '../config'
 
 type UseManaBalanceOptions = {
   address?: `0x${string}`
@@ -22,23 +22,14 @@ type UseManaBalanceResult = {
  * Fetches balances from both Ethereum and Polygon networks.
  * Uses contract addresses and ABIs from decentraland-transactions.
  */
-export function useManaBalance({
-  address,
-  enabled = true,
-}: UseManaBalanceOptions): UseManaBalanceResult {
-  const chainId = Number(config.get("CHAIN_ID")) as ChainId
+export function useManaBalance({ address, enabled = true }: UseManaBalanceOptions): UseManaBalanceResult {
+  const chainId = Number(config.get('CHAIN_ID')) as ChainId
 
   // Determine which chains to query based on environment
-  const ethereumChainId =
-    chainId === ChainId.ETHEREUM_MAINNET
-      ? ChainId.ETHEREUM_MAINNET
-      : ChainId.ETHEREUM_SEPOLIA
+  const ethereumChainId = chainId === ChainId.ETHEREUM_MAINNET ? ChainId.ETHEREUM_MAINNET : ChainId.ETHEREUM_SEPOLIA
 
   // Use Amoy for testnet, Polygon mainnet for prod
-  const maticChainId =
-    chainId === ChainId.ETHEREUM_MAINNET
-      ? ChainId.MATIC_MAINNET
-      : ChainId.MATIC_AMOY
+  const maticChainId = chainId === ChainId.ETHEREUM_MAINNET ? ChainId.MATIC_MAINNET : ChainId.MATIC_AMOY
 
   // Get MANA contracts from decentraland-transactions
   let ethereumContract: ReturnType<typeof getContract> | undefined
@@ -70,9 +61,9 @@ export function useManaBalance({
     contracts.push({
       address: ethereumContract.address as `0x${string}`,
       abi: ethereumContract.abi as Abi,
-      functionName: "balanceOf",
+      functionName: 'balanceOf',
       args: [address] as const,
-      chainId: ethereumChainId,
+      chainId: ethereumChainId
     })
   }
 
@@ -80,9 +71,9 @@ export function useManaBalance({
     contracts.push({
       address: maticContract.address as `0x${string}`,
       abi: maticContract.abi as Abi,
-      functionName: "balanceOf",
+      functionName: 'balanceOf',
       args: [address] as const,
-      chainId: maticChainId,
+      chainId: maticChainId
     })
   }
 
@@ -90,13 +81,11 @@ export function useManaBalance({
     contracts,
     query: {
       enabled: queryEnabled && contracts.length > 0,
-      staleTime: 30_000, // 30 seconds
-    },
+      staleTime: 30_000 // 30 seconds
+    }
   })
 
-  const manaBalances = useMemo<
-    Partial<Record<Network, number>> | undefined
-  >(() => {
+  const manaBalances = useMemo<Partial<Record<Network, number>> | undefined>(() => {
     if (!data || !queryEnabled) {
       return undefined
     }
@@ -107,10 +96,8 @@ export function useManaBalance({
     // Process Ethereum balance
     if (ethereumContract && data[dataIndex]) {
       const result = data[dataIndex]
-      if (result.status === "success" && result.result !== undefined) {
-        balances[Network.ETHEREUM] = Number(
-          formatEther(result.result as bigint)
-        )
+      if (result.status === 'success' && result.result !== undefined) {
+        balances[Network.ETHEREUM] = Number(formatEther(result.result as bigint))
       } else {
         balances[Network.ETHEREUM] = 0
       }
@@ -120,7 +107,7 @@ export function useManaBalance({
     // Process Matic balance
     if (maticContract && data[dataIndex]) {
       const result = data[dataIndex]
-      if (result.status === "success" && result.result !== undefined) {
+      if (result.status === 'success' && result.result !== undefined) {
         balances[Network.MATIC] = Number(formatEther(result.result as bigint))
       } else {
         balances[Network.MATIC] = 0
@@ -133,6 +120,6 @@ export function useManaBalance({
   return {
     manaBalances,
     isLoading,
-    error: error ?? null,
+    error: error ?? null
   }
 }

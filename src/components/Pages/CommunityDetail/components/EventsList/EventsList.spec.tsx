@@ -1,102 +1,100 @@
-import { render, screen } from "@testing-library/react"
-import { EventsList } from "./EventsList"
-import { formatEventTime } from "../../../../../utils/dateFormat"
-import type { Event } from "./EventsList.types"
+import { render, screen } from '@testing-library/react'
+import { formatEventTime } from '../../../../../utils/dateFormat'
+import { EventsList } from './EventsList'
+import type { Event } from './EventsList.types'
 
-jest.mock("../../../../../hooks/useInfiniteScroll", () => ({
-  useInfiniteScroll: jest.fn(() => ({ current: null })),
+jest.mock('../../../../../hooks/useInfiniteScroll', () => ({
+  useInfiniteScroll: jest.fn(() => ({ current: null }))
 }))
 
-jest.mock("../../../../../hooks/useProfilePictures", () => ({
-  useProfilePictures: jest.fn(() => ({})),
+jest.mock('../../../../../hooks/useProfilePictures', () => ({
+  useProfilePictures: jest.fn(() => ({}))
 }))
 
 const createEvent = (overrides: Partial<Event> = {}): Event => ({
-  id: "event-1",
-  name: "Test Event 1",
-  image: "https://example.com/image1.jpg",
+  id: 'event-1',
+  name: 'Test Event 1',
+  image: 'https://example.com/image1.jpg',
   isLive: false,
-  startTime: "2024-01-01T10:00:00Z",
+  startTime: '2024-01-01T10:00:00Z',
   totalAttendees: 0,
   latestAttendees: [],
-  ...overrides,
+  ...overrides
 })
 
-function renderEventsList(
-  props: Partial<React.ComponentProps<typeof EventsList>> = {}
-) {
+function renderEventsList(props: Partial<React.ComponentProps<typeof EventsList>> = {}) {
   const defaultProps = {
     events: [] as Event[],
     isLoading: false,
     isFetchingMore: false,
     hasMore: false,
-    onLoadMore: jest.fn() as jest.Mock,
+    onLoadMore: jest.fn()
   }
   return render(<EventsList {...defaultProps} {...props} />)
 }
 
-describe("when rendering the events list", () => {
-  describe("and the list is loading", () => {
+describe('when rendering the events list', () => {
+  describe('and the list is loading', () => {
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderEventsList({ isLoading: true })
 
-      expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+      expect(screen.getByText('UPCOMING EVENTS')).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderEventsList({ isLoading: true, hideTitle: true })
 
-      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+      expect(screen.queryByText('UPCOMING EVENTS')).not.toBeInTheDocument()
     })
 
-    it("should display a loading indicator", () => {
+    it('should display a loading indicator', () => {
       renderEventsList({ isLoading: true })
 
-      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
   })
 
-  describe("and there are no events", () => {
+  describe('and there are no events', () => {
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderEventsList({ events: [] })
 
-      expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+      expect(screen.getByText('UPCOMING EVENTS')).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderEventsList({ events: [], hideTitle: true })
 
-      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+      expect(screen.queryByText('UPCOMING EVENTS')).not.toBeInTheDocument()
     })
 
-    it("should display an empty state message", () => {
+    it('should display an empty state message', () => {
       renderEventsList({ events: [] })
 
-      expect(screen.getByText("No Upcoming Events")).toBeInTheDocument()
+      expect(screen.getByText('No Upcoming Events')).toBeInTheDocument()
     })
   })
 
-  describe("and there are events", () => {
+  describe('and there are events', () => {
     let events: Event[]
 
     beforeEach(() => {
       events = [
-        createEvent({ id: "event-1", name: "Test Event 1" }),
+        createEvent({ id: 'event-1', name: 'Test Event 1' }),
         createEvent({
-          id: "event-2",
-          name: "Test Event 2",
-          image: "https://example.com/image2.jpg",
+          id: 'event-2',
+          name: 'Test Event 2',
+          image: 'https://example.com/image2.jpg',
           isLive: true,
-          startTime: "2024-01-02T10:00:00Z",
-        }),
+          startTime: '2024-01-02T10:00:00Z'
+        })
       ]
     })
 
@@ -104,112 +102,106 @@ describe("when rendering the events list", () => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderEventsList({ events })
 
-      expect(screen.getByText("UPCOMING EVENTS")).toBeInTheDocument()
+      expect(screen.getByText('UPCOMING EVENTS')).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderEventsList({ events, hideTitle: true })
 
-      expect(screen.queryByText("UPCOMING EVENTS")).not.toBeInTheDocument()
+      expect(screen.queryByText('UPCOMING EVENTS')).not.toBeInTheDocument()
     })
 
-    it("should render all events", () => {
+    it('should render all events', () => {
       renderEventsList({ events })
 
-      expect(screen.getByText("Test Event 1")).toBeInTheDocument()
-      expect(screen.getByText("Test Event 2")).toBeInTheDocument()
+      expect(screen.getByText('Test Event 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Event 2')).toBeInTheDocument()
     })
 
-    it("should display event images with correct alt text", () => {
+    it('should display event images with correct alt text', () => {
       renderEventsList({ events })
 
-      const images = screen.getAllByRole("img")
-      expect(images[0]).toHaveAttribute("alt", "Test Event 1")
-      expect(images[1]).toHaveAttribute("alt", "Test Event 2")
+      const images = screen.getAllByRole('img')
+      expect(images[0]).toHaveAttribute('alt', 'Test Event 1')
+      expect(images[1]).toHaveAttribute('alt', 'Test Event 2')
     })
 
-    it("should display live badge for live events", () => {
+    it('should display live badge for live events', () => {
       renderEventsList({ events })
 
-      expect(screen.getByText("live")).toBeInTheDocument()
+      expect(screen.getByText('live')).toBeInTheDocument()
     })
 
-    it("should not display live badge for non-live events", () => {
-      const nonLiveEvents: Event[] = [
-        createEvent({ id: "event-1", name: "Test Event 1" }),
-      ]
+    it('should not display live badge for non-live events', () => {
+      const nonLiveEvents: Event[] = [createEvent({ id: 'event-1', name: 'Test Event 1' })]
 
       renderEventsList({ events: nonLiveEvents })
 
-      expect(screen.queryByText("live")).not.toBeInTheDocument()
+      expect(screen.queryByText('live')).not.toBeInTheDocument()
     })
 
-    it("should display event start times", () => {
+    it('should display event start times', () => {
       renderEventsList({ events })
 
-      expect(screen.getByTestId("event-time-event-1")).toHaveTextContent(
-        formatEventTime(events[0].startTime)
-      )
-      expect(screen.getByTestId("event-time-event-2")).toHaveTextContent(
-        formatEventTime(events[1].startTime)
-      )
+      expect(screen.getByTestId('event-time-event-1')).toHaveTextContent(formatEventTime(events[0].startTime))
+      expect(screen.getByTestId('event-time-event-2')).toHaveTextContent(formatEventTime(events[1].startTime))
     })
   })
 
-  describe("and there are more events to load", () => {
+  describe('and there are more events to load', () => {
     let events: Event[]
 
     beforeEach(() => {
-      events = [createEvent({ id: "event-1", name: "Test Event 1" })]
+      events = [createEvent({ id: 'event-1', name: 'Test Event 1' })]
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should render the load more sentinel", () => {
+    it('should render the load more sentinel', () => {
       const { container } = renderEventsList({ events, hasMore: true })
 
-      const sentinel = container.querySelector("div")
+      const sentinel = container.querySelector('div')
       expect(sentinel).toBeInTheDocument()
     })
 
-    describe("and more events are being fetched", () => {
-      it("should display a loading indicator in the sentinel", () => {
+    describe('and more events are being fetched', () => {
+      it('should display a loading indicator in the sentinel', () => {
         renderEventsList({ events, hasMore: true, isFetchingMore: true })
 
-        expect(screen.getByRole("progressbar")).toBeInTheDocument()
+        expect(screen.getByRole('progressbar')).toBeInTheDocument()
       })
     })
 
-    describe("and more events are not being fetched", () => {
-      it("should not display a loading indicator in the sentinel", () => {
+    describe('and more events are not being fetched', () => {
+      it('should not display a loading indicator in the sentinel', () => {
         renderEventsList({ events, hasMore: true, isFetchingMore: false })
 
-        const progressbars = screen.queryAllByRole("progressbar")
+        const progressbars = screen.queryAllByRole('progressbar')
         expect(progressbars.length).toBe(0)
       })
     })
   })
 
-  describe("and there are no more events to load", () => {
+  describe('and there are no more events to load', () => {
     let events: Event[]
 
     beforeEach(() => {
-      events = [createEvent({ id: "event-1", name: "Test Event 1" })]
+      events = [createEvent({ id: 'event-1', name: 'Test Event 1' })]
     })
 
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should not render the load more sentinel", () => {
+    it('should not render the load more sentinel', () => {
       renderEventsList({ events, hasMore: false })
 
-      const progressbars = screen.queryAllByRole("progressbar")
+      const progressbars = screen.queryAllByRole('progressbar')
       expect(progressbars.length).toBe(0)
     })
   })

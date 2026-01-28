@@ -28,7 +28,7 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(multiformats|uint8arrays|@dcl/single-sign-on-client|decentraland-connect|uuid|decentraland-dapps|decentraland-ui2|@mui|@babel|@emotion|flat)/)",
+    "node_modules/(?!(multiformats|uint8arrays|@dcl/single-sign-on-client|@dcl/hooks|@dcl/ui-env|decentraland-connect|uuid|decentraland-dapps|decentraland-ui2|@mui|@babel|@emotion|flat)/)",
   ],
   setupFiles: ["<rootDir>/src/tests/beforeSetupTests.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/tests/afterSetupTest.ts"],

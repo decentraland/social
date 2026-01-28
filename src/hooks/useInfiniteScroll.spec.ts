@@ -1,21 +1,19 @@
-import * as React from "react"
-import { act, render, renderHook } from "@testing-library/react"
-import { useInfiniteScroll } from "./useInfiniteScroll"
+/* eslint-disable @typescript-eslint/naming-convention */
+import * as React from 'react'
+import { act, render, renderHook } from '@testing-library/react'
+import { useInfiniteScroll } from './useInfiniteScroll'
 
-const createMockIntersectionObserverEntry = (
-  isIntersecting: boolean,
-  target: Element
-): IntersectionObserverEntry => ({
+const createMockIntersectionObserverEntry = (isIntersecting: boolean, target: Element): IntersectionObserverEntry => ({
   boundingClientRect: {} as DOMRectReadOnly,
   intersectionRatio: isIntersecting ? 1 : 0,
   intersectionRect: {} as DOMRectReadOnly,
   isIntersecting,
   rootBounds: {} as DOMRectReadOnly,
   target,
-  time: Date.now(),
+  time: Date.now()
 })
 
-describe("when using the infinite scroll hook", () => {
+describe('when using the infinite scroll hook', () => {
   let mockObserver: jest.Mock
   let mockObserve: jest.Mock
   let mockUnobserve: jest.Mock
@@ -31,24 +29,23 @@ describe("when using the infinite scroll hook", () => {
     mockObserver = jest.fn(() => ({
       observe: mockObserve,
       unobserve: mockUnobserve,
-      disconnect: mockDisconnect,
+      disconnect: mockDisconnect
     })) as unknown as jest.Mock
 
-    global.IntersectionObserver =
-      mockObserver as unknown as typeof IntersectionObserver
+    global.IntersectionObserver = mockObserver as unknown as typeof IntersectionObserver
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe("and the sentinel element is not available", () => {
-    it("should not create an observer", () => {
+  describe('and the sentinel element is not available', () => {
+    it('should not create an observer', () => {
       const { result } = renderHook(() =>
         useInfiniteScroll({
           hasMore: true,
           isLoading: false,
-          onLoadMore,
+          onLoadMore
         })
       )
 
@@ -57,13 +54,13 @@ describe("when using the infinite scroll hook", () => {
     })
   })
 
-  describe("and hasMore is false", () => {
-    it("should not observe the sentinel element", () => {
+  describe('and hasMore is false', () => {
+    it('should not observe the sentinel element', () => {
       renderHook(() =>
         useInfiniteScroll({
           hasMore: false,
           isLoading: false,
-          onLoadMore,
+          onLoadMore
         })
       )
 
@@ -71,13 +68,13 @@ describe("when using the infinite scroll hook", () => {
     })
   })
 
-  describe("and isLoading is true", () => {
-    it("should not observe the sentinel element", () => {
+  describe('and isLoading is true', () => {
+    it('should not observe the sentinel element', () => {
       renderHook(() =>
         useInfiniteScroll({
           hasMore: true,
           isLoading: true,
-          onLoadMore,
+          onLoadMore
         })
       )
 
@@ -85,11 +82,11 @@ describe("when using the infinite scroll hook", () => {
     })
   })
 
-  describe("and all conditions are met", () => {
+  describe('and all conditions are met', () => {
     let sentinelElement: HTMLDivElement
 
     beforeEach(() => {
-      sentinelElement = document.createElement("div")
+      sentinelElement = document.createElement('div')
       document.body.appendChild(sentinelElement)
       jest.clearAllMocks()
     })
@@ -98,131 +95,101 @@ describe("when using the infinite scroll hook", () => {
       document.body.removeChild(sentinelElement)
     })
 
-    it("should create an observer with default threshold and rootMargin", () => {
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+    it('should create an observer with default threshold and rootMargin', () => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
-          onLoadMore,
+          onLoadMore
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
 
       expect(mockObserver).toHaveBeenCalledWith(expect.any(Function), {
         threshold: 0.1,
-        rootMargin: "100px",
+        rootMargin: '100px'
       })
     })
 
-    it("should create an observer with custom threshold and rootMargin", () => {
+    it('should create an observer with custom threshold and rootMargin', () => {
       const customThreshold = 0.5
-      const customRootMargin = "200px"
+      const customRootMargin = '200px'
 
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
           onLoadMore,
           threshold: customThreshold,
-          rootMargin: customRootMargin,
+          rootMargin: customRootMargin
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
 
       expect(mockObserver).toHaveBeenCalledWith(expect.any(Function), {
         threshold: customThreshold,
-        rootMargin: customRootMargin,
+        rootMargin: customRootMargin
       })
     })
 
-    it("should observe the sentinel element", () => {
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+    it('should observe the sentinel element', () => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
-          onLoadMore,
+          onLoadMore
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      const { container } = render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      const { container } = render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
       const sentinel = container.querySelector('[data-testid="sentinel"]')
 
       expect(mockObserve).toHaveBeenCalledWith(sentinel)
     })
 
-    describe("and the sentinel element intersects", () => {
-      it("should call onLoadMore when element is intersecting and hasMore is true and isLoading is false", () => {
+    describe('and the sentinel element intersects', () => {
+      it('should call onLoadMore when element is intersecting and hasMore is true and isLoading is false', () => {
         let observerCallback: (entries: IntersectionObserverEntry[]) => void
 
-        mockObserver.mockImplementation((callback) => {
+        mockObserver.mockImplementation(callback => {
           observerCallback = callback
           return {
             observe: mockObserve,
             unobserve: mockUnobserve,
-            disconnect: mockDisconnect,
+            disconnect: mockDisconnect
           }
         })
 
-        const TestComponent = ({
-          hasMore,
-          isLoading,
-        }: {
-          hasMore: boolean
-          isLoading: boolean
-        }) => {
+        const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
           const sentinelRef = useInfiniteScroll({
             hasMore,
             isLoading,
-            onLoadMore,
+            onLoadMore
           })
-          return React.createElement("div", {
+          return React.createElement('div', {
             ref: sentinelRef,
-            "data-testid": "sentinel",
+            'data-testid': 'sentinel'
           })
         }
 
         const { container } = render(
           React.createElement(TestComponent, {
             hasMore: true,
-            isLoading: false,
+            isLoading: false
           })
         )
         const sentinel = container.querySelector('[data-testid="sentinel"]')
@@ -236,29 +203,23 @@ describe("when using the infinite scroll hook", () => {
         expect(onLoadMore).toHaveBeenCalledTimes(1)
       })
 
-      it("should not call onLoadMore when element is intersecting but hasMore is false", () => {
-        const TestComponent = ({
-          hasMore,
-          isLoading,
-        }: {
-          hasMore: boolean
-          isLoading: boolean
-        }) => {
+      it('should not call onLoadMore when element is intersecting but hasMore is false', () => {
+        const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
           const sentinelRef = useInfiniteScroll({
             hasMore,
             isLoading,
-            onLoadMore,
+            onLoadMore
           })
-          return React.createElement("div", {
+          return React.createElement('div', {
             ref: sentinelRef,
-            "data-testid": "sentinel",
+            'data-testid': 'sentinel'
           })
         }
 
         render(
           React.createElement(TestComponent, {
             hasMore: false,
-            isLoading: false,
+            isLoading: false
           })
         )
 
@@ -266,67 +227,53 @@ describe("when using the infinite scroll hook", () => {
         expect(onLoadMore).not.toHaveBeenCalled()
       })
 
-      it("should not call onLoadMore when element is intersecting but isLoading is true", () => {
-        const TestComponent = ({
-          hasMore,
-          isLoading,
-        }: {
-          hasMore: boolean
-          isLoading: boolean
-        }) => {
+      it('should not call onLoadMore when element is intersecting but isLoading is true', () => {
+        const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
           const sentinelRef = useInfiniteScroll({
             hasMore,
             isLoading,
-            onLoadMore,
+            onLoadMore
           })
-          return React.createElement("div", {
+          return React.createElement('div', {
             ref: sentinelRef,
-            "data-testid": "sentinel",
+            'data-testid': 'sentinel'
           })
         }
 
-        render(
-          React.createElement(TestComponent, { hasMore: true, isLoading: true })
-        )
+        render(React.createElement(TestComponent, { hasMore: true, isLoading: true }))
 
         expect(mockObserver).not.toHaveBeenCalled()
         expect(onLoadMore).not.toHaveBeenCalled()
       })
 
-      it("should not call onLoadMore when element is not intersecting", () => {
+      it('should not call onLoadMore when element is not intersecting', () => {
         let observerCallback: (entries: IntersectionObserverEntry[]) => void
 
-        mockObserver.mockImplementation((callback) => {
+        mockObserver.mockImplementation(callback => {
           observerCallback = callback
           return {
             observe: mockObserve,
             unobserve: mockUnobserve,
-            disconnect: mockDisconnect,
+            disconnect: mockDisconnect
           }
         })
 
-        const TestComponent = ({
-          hasMore,
-          isLoading,
-        }: {
-          hasMore: boolean
-          isLoading: boolean
-        }) => {
+        const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
           const sentinelRef = useInfiniteScroll({
             hasMore,
             isLoading,
-            onLoadMore,
+            onLoadMore
           })
-          return React.createElement("div", {
+          return React.createElement('div', {
             ref: sentinelRef,
-            "data-testid": "sentinel",
+            'data-testid': 'sentinel'
           })
         }
 
         const { container } = render(
           React.createElement(TestComponent, {
             hasMore: true,
-            isLoading: false,
+            isLoading: false
           })
         )
         const sentinel = container.querySelector('[data-testid="sentinel"]')
@@ -342,11 +289,11 @@ describe("when using the infinite scroll hook", () => {
     })
   })
 
-  describe("and the hook is unmounted", () => {
+  describe('and the hook is unmounted', () => {
     let sentinelElement: HTMLDivElement
 
     beforeEach(() => {
-      sentinelElement = document.createElement("div")
+      sentinelElement = document.createElement('div')
       document.body.appendChild(sentinelElement)
     })
 
@@ -354,28 +301,20 @@ describe("when using the infinite scroll hook", () => {
       document.body.removeChild(sentinelElement)
     })
 
-    it("should unobserve the sentinel element", () => {
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+    it('should unobserve the sentinel element', () => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
-          onLoadMore,
+          onLoadMore
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      const { container, unmount } = render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      const { container, unmount } = render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
       const sentinel = container.querySelector('[data-testid="sentinel"]')
 
       act(() => {
@@ -386,11 +325,11 @@ describe("when using the infinite scroll hook", () => {
     })
   })
 
-  describe("and dependencies change", () => {
+  describe('and dependencies change', () => {
     let sentinelElement: HTMLDivElement
 
     beforeEach(() => {
-      sentinelElement = document.createElement("div")
+      sentinelElement = document.createElement('div')
       document.body.appendChild(sentinelElement)
     })
 
@@ -398,30 +337,22 @@ describe("when using the infinite scroll hook", () => {
       document.body.removeChild(sentinelElement)
     })
 
-    it("should recreate the observer when hasMore changes", () => {
+    it('should recreate the observer when hasMore changes', () => {
       jest.clearAllMocks()
 
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
-          onLoadMore,
+          onLoadMore
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      const { rerender } = render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      const { rerender } = render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
 
       const initialObserveCalls = mockObserve.mock.calls.length
       expect(initialObserveCalls).toBeGreaterThan(0)
@@ -430,7 +361,7 @@ describe("when using the infinite scroll hook", () => {
         rerender(
           React.createElement(TestComponent, {
             hasMore: false,
-            isLoading: false,
+            isLoading: false
           })
         )
       })
@@ -439,7 +370,7 @@ describe("when using the infinite scroll hook", () => {
         rerender(
           React.createElement(TestComponent, {
             hasMore: true,
-            isLoading: false,
+            isLoading: false
           })
         )
       })
@@ -447,45 +378,35 @@ describe("when using the infinite scroll hook", () => {
       expect(mockObserve.mock.calls.length).toBeGreaterThan(initialObserveCalls)
     })
 
-    it("should recreate the observer when isLoading changes", () => {
+    it('should recreate the observer when isLoading changes', () => {
       jest.clearAllMocks()
 
-      const TestComponent = ({
-        hasMore,
-        isLoading,
-      }: {
-        hasMore: boolean
-        isLoading: boolean
-      }) => {
+      const TestComponent = ({ hasMore, isLoading }: { hasMore: boolean; isLoading: boolean }) => {
         const sentinelRef = useInfiniteScroll({
           hasMore,
           isLoading,
-          onLoadMore,
+          onLoadMore
         })
-        return React.createElement("div", {
+        return React.createElement('div', {
           ref: sentinelRef,
-          "data-testid": "sentinel",
+          'data-testid': 'sentinel'
         })
       }
 
-      const { rerender } = render(
-        React.createElement(TestComponent, { hasMore: true, isLoading: false })
-      )
+      const { rerender } = render(React.createElement(TestComponent, { hasMore: true, isLoading: false }))
 
       const initialObserveCalls = mockObserve.mock.calls.length
       expect(initialObserveCalls).toBeGreaterThan(0)
 
       act(() => {
-        rerender(
-          React.createElement(TestComponent, { hasMore: true, isLoading: true })
-        )
+        rerender(React.createElement(TestComponent, { hasMore: true, isLoading: true }))
       })
 
       act(() => {
         rerender(
           React.createElement(TestComponent, {
             hasMore: true,
-            isLoading: false,
+            isLoading: false
           })
         )
       })

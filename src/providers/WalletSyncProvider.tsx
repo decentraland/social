@@ -1,5 +1,5 @@
-import { ReactNode } from "react"
-import { useWalletSync } from "../modules/wallet/hooks"
+import { ReactNode } from 'react'
+import { useWalletSync } from '../modules/wallet/hooks'
 
 type Props = {
   children: ReactNode

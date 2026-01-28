@@ -1,33 +1,33 @@
 enum RequestStatus {
-  PENDING = "pending",
-  ACCEPTED = "accepted",
-  REJECTED = "rejected",
-  CANCELLED = "cancelled",
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  CANCELLED = 'cancelled'
 }
 
 enum RequestType {
-  INVITE = "invite",
-  REQUEST_TO_JOIN = "request_to_join",
+  INVITE = 'invite',
+  REQUEST_TO_JOIN = 'request_to_join'
 }
 
 enum Privacy {
-  PUBLIC = "public",
-  PRIVATE = "private",
+  PUBLIC = 'public',
+  PRIVATE = 'private'
 }
 
 enum Visibility {
-  ALL = "all",
-  UNLISTED = "unlisted",
+  ALL = 'all',
+  UNLISTED = 'unlisted'
 }
 
 enum Role {
-  OWNER = "owner",
-  MODERATOR = "moderator",
-  MEMBER = "member",
+  OWNER = 'owner',
+  MODERATOR = 'moderator',
+  MEMBER = 'member'
 }
 
 enum RequestIntention {
-  CANCELLED = "cancelled",
+  CANCELLED = 'cancelled'
 }
 
 type CommunityThumbnails = {
@@ -93,7 +93,7 @@ type MemberRequest = {
   status: RequestStatus
 }
 
-type MemberCommunityRequest = Omit<Community, "id"> & {
+type MemberCommunityRequest = Omit<Community, 'id'> & {
   id: string
   communityId: string
   type: RequestType
@@ -125,14 +125,7 @@ export type {
   MemberRequest,
   MemberCommunityRequest,
   CreateCommunityRequestResponse,
-  MemberRequestsResponse,
+  MemberRequestsResponse
 }
 
-export {
-  Privacy,
-  RequestIntention,
-  RequestStatus,
-  RequestType,
-  Role,
-  Visibility,
-}
+export { Privacy, RequestIntention, RequestStatus, RequestType, Role, Visibility }

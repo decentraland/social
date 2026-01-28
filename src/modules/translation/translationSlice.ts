@@ -1,11 +1,11 @@
-import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import { en as dappsEn } from "decentraland-dapps/dist/modules/translation/defaults"
-import { setCurrentLocale as setDappsCurrentLocale } from "decentraland-dapps/dist/modules/translation/utils"
-import { flatten } from "flat"
-import { en, es, zh } from "./locales"
-import { mergeTranslations, setCurrentLocale } from "./utils"
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { flatten } from 'flat'
+import { en as dappsEn } from 'decentraland-dapps/dist/modules/translation/defaults'
+import { setCurrentLocale as setDappsCurrentLocale } from 'decentraland-dapps/dist/modules/translation/utils'
+import { en, es, zh } from './locales'
+import { mergeTranslations, setCurrentLocale } from './utils'
 
-type Locale = "en" | "es" | "zh"
+type Locale = 'en' | 'es' | 'zh'
 
 type TranslationState = {
   locale: Locale
@@ -18,76 +18,65 @@ type TranslationState = {
 const localeMap: Record<Locale, Record<string, unknown>> = {
   en,
   es,
-  zh,
+  zh
 }
 
 // Get initial translations merged with dapps defaults
 const getInitialTranslations = (locale: Locale): Record<string, string> => {
   const appTranslations = localeMap[locale]
-  return mergeTranslations(
-    flatten(dappsEn) as Record<string, string>,
-    flatten(appTranslations) as Record<string, string>
-  )
+  return mergeTranslations(flatten(dappsEn), flatten(appTranslations))
 }
 
-const initialTranslations = getInitialTranslations("en")
+const initialTranslations = getInitialTranslations('en')
 
 // Set initial locale for both our t() and dcl-dapps t()
 // This is needed because BackToTopButton and other dcl-dapps components use their own t()
-setCurrentLocale("en", initialTranslations)
-setDappsCurrentLocale("en", initialTranslations)
+setCurrentLocale('en', initialTranslations)
+setDappsCurrentLocale('en', initialTranslations)
 
 const initialState: TranslationState = {
-  locale: "en",
+  locale: 'en',
   data: {
     en: initialTranslations,
     es: {},
-    zh: {},
+    zh: {}
   },
   loading: false,
-  error: null,
+  error: null
 }
 
 // Async thunk to fetch/change translations
-const fetchTranslations = createAsyncThunk(
-  "translation/fetchTranslations",
-  async (locale: Locale, { rejectWithValue }) => {
-    try {
-      const appTranslations = localeMap[locale]
-      if (!appTranslations) {
-        throw new Error(`Locale "${locale}" not found`)
-      }
-
-      const dappsDefaults = dappsEn // TODO: support other dapps locales if needed
-      const mergedTranslations = mergeTranslations(
-        flatten(dappsDefaults) as Record<string, string>,
-        flatten(appTranslations) as Record<string, string>
-      )
-
-      // Update the global locale used by both our t() and dcl-dapps t()
-      setCurrentLocale(locale, mergedTranslations)
-      setDappsCurrentLocale(locale, mergedTranslations)
-
-      return { locale, translations: mergedTranslations }
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to load translations"
-      )
+const fetchTranslations = createAsyncThunk('translation/fetchTranslations', async (locale: Locale, { rejectWithValue }) => {
+  try {
+    const appTranslations = localeMap[locale]
+    if (!appTranslations) {
+      throw new Error(`Locale "${locale}" not found`)
     }
+
+    const dappsDefaults = dappsEn // TODO: support other dapps locales if needed
+    const mergedTranslations = mergeTranslations(flatten(dappsDefaults), flatten(appTranslations))
+
+    // Update the global locale used by both our t() and dcl-dapps t()
+    setCurrentLocale(locale, mergedTranslations)
+    setDappsCurrentLocale(locale, mergedTranslations)
+
+    return { locale, translations: mergedTranslations }
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : 'Failed to load translations')
   }
-)
+})
 
 const translationSlice = createSlice({
-  name: "translation",
+  name: 'translation',
   initialState,
   reducers: {
     setLocale: (state, action: PayloadAction<Locale>) => {
       state.locale = action.payload
-    },
+    }
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(fetchTranslations.pending, (state) => {
+      .addCase(fetchTranslations.pending, state => {
         state.loading = true
         state.error = null
       })
@@ -100,7 +89,7 @@ const translationSlice = createSlice({
         state.loading = false
         state.error = action.payload as string
       })
-  },
+  }
 })
 
 const { setLocale } = translationSlice.actions

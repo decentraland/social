@@ -1,7 +1,7 @@
-import { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
-import { PayloadAction, createSlice } from "@reduxjs/toolkit"
-import { WALLET_LOADING_STATES } from "./constants"
-import { config } from "../../config"
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
+import { ChainId } from '@dcl/schemas/dist/dapps/chain-id'
+import { config } from '../../config'
+import { WALLET_LOADING_STATES } from './constants'
 
 // Match dcl-dapps Wallet type shape for compatibility with dcl-dapps selectors
 type WalletData = {
@@ -24,33 +24,28 @@ const initialState: WalletState = {
   data: null,
   loading: [],
   error: null,
-  appChainId: Number(config.get("CHAIN_ID")) as ChainId,
+  appChainId: Number(config.get('CHAIN_ID')) as ChainId
 }
 
 const walletSlice = createSlice({
-  name: "wallet",
+  name: 'wallet',
   initialState,
   reducers: {
-    setWalletConnecting: (state) => {
-      if (!state.loading.includes(WALLET_LOADING_STATES.CONNECT)) {
-        state.loading.push(WALLET_LOADING_STATES.CONNECT)
+    setWalletConnecting: state => {
+      if (!state.loading.includes(WALLET_LOADING_STATES.connect)) {
+        state.loading.push(WALLET_LOADING_STATES.connect)
       }
       state.error = null
     },
-    setWalletConnected: (
-      state,
-      action: PayloadAction<{ address: `0x${string}`; chainId: number }>
-    ) => {
+    setWalletConnected: (state, action: PayloadAction<{ address: `0x${string}`; chainId: number }>) => {
       state.data = {
         address: action.payload.address,
-        chainId: action.payload.chainId as ChainId,
+        chainId: action.payload.chainId as ChainId
       }
-      state.loading = state.loading.filter(
-        (l) => l !== WALLET_LOADING_STATES.CONNECT
-      )
+      state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.connect)
       state.error = null
     },
-    setWalletDisconnected: (state) => {
+    setWalletDisconnected: state => {
       state.data = null
       state.loading = []
       state.error = null
@@ -66,27 +61,23 @@ const walletSlice = createSlice({
     },
     setSwitchingNetwork: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes(WALLET_LOADING_STATES.SWITCH_NETWORK)) {
-          state.loading.push(WALLET_LOADING_STATES.SWITCH_NETWORK)
+        if (!state.loading.includes(WALLET_LOADING_STATES.switchNetwork)) {
+          state.loading.push(WALLET_LOADING_STATES.switchNetwork)
         }
       } else {
-        state.loading = state.loading.filter(
-          (l) => l !== WALLET_LOADING_STATES.SWITCH_NETWORK
-        )
+        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.switchNetwork)
       }
     },
     setDisconnecting: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes(WALLET_LOADING_STATES.DISCONNECT)) {
-          state.loading.push(WALLET_LOADING_STATES.DISCONNECT)
+        if (!state.loading.includes(WALLET_LOADING_STATES.disconnect)) {
+          state.loading.push(WALLET_LOADING_STATES.disconnect)
         }
       } else {
-        state.loading = state.loading.filter(
-          (l) => l !== WALLET_LOADING_STATES.DISCONNECT
-        )
+        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.disconnect)
       }
-    },
-  },
+    }
+  }
 })
 
 export const {
@@ -96,7 +87,7 @@ export const {
   setWalletError,
   updateChainId,
   setSwitchingNetwork,
-  setDisconnecting,
+  setDisconnecting
 } = walletSlice.actions
 
 export type { WalletData, WalletState }
