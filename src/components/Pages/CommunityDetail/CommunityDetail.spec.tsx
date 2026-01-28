@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from 'react-router-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { useAppDispatch } from '../../../app/hooks'
 import {
@@ -13,15 +13,23 @@ import { Privacy, RequestStatus, RequestType, Role, Visibility } from '../../../
 import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
 import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
 import { useWallet } from '../../../modules/wallet/hooks'
+import { renderWithProviders } from '../../../tests/testUtils'
 import { CommunityDetail } from './CommunityDetail'
 
 // Store mock dispatch function
 const mockDispatch = jest.fn()
 
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
-  useSearchParams: jest.fn()
-}))
+const mockNavigate = jest.fn()
+
+jest.mock('react-router-dom', () => {
+  const actual = jest.requireActual('react-router-dom')
+  return {
+    ...actual,
+    useParams: jest.fn(),
+    useSearchParams: jest.fn(),
+    useNavigate: () => mockNavigate
+  }
+})
 
 jest.mock('../../../modules/wallet/hooks', () => ({
   useWallet: jest.fn()
@@ -132,7 +140,9 @@ const mockUseAppDispatch = useAppDispatch as jest.Mock
 function renderCommunityDetail(searchParamsValue = new URLSearchParams()) {
   const mockSetSearchParams = jest.fn()
   mockUseSearchParams.mockReturnValue([searchParamsValue, mockSetSearchParams])
-  const result = render(<CommunityDetail />)
+  const searchString = searchParamsValue.toString()
+  const initialPath = `/communities/test-id${searchString ? `?${searchString}` : ''}`
+  const result = renderWithProviders(<CommunityDetail />, { initialEntries: [initialPath] })
   return { ...result, mockSetSearchParams, rerender: result.rerender }
 }
 
@@ -833,16 +843,13 @@ describe('when rendering the community detail page', () => {
 
             describe('and action=requestToJoin parameter is present in URL', () => {
               it('should render with the action parameter', () => {
-                // This test verifies the redirect URL includes the action parameter
-                // The actual auto-execution is tested via integration tests
+                // This test verifies the component renders correctly with the action parameter
                 const searchParams = new URLSearchParams('action=requestToJoin')
-                const mockSetSearchParams = jest.fn()
-                mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
-                renderCommunityDetail()
+                renderCommunityDetail(searchParams)
 
-                // The component should render with the action parameter
-                expect(mockUseSearchParams).toHaveBeenCalled()
+                // The component should render without errors
+                expect(screen.getByTestId('community-info')).toBeInTheDocument()
               })
             })
 
@@ -994,16 +1001,13 @@ describe('when rendering the community detail page', () => {
 
         describe('and action=join parameter is present in URL', () => {
           it('should render with the action parameter', () => {
-            // This test verifies the redirect URL includes the action parameter
-            // The actual auto-execution is tested via integration tests
+            // This test verifies the component renders correctly with the action parameter
             const searchParams = new URLSearchParams('action=join')
-            const mockSetSearchParams = jest.fn()
-            mockUseSearchParams.mockReturnValue([searchParams, mockSetSearchParams])
 
-            renderCommunityDetail()
+            renderCommunityDetail(searchParams)
 
-            // The component should render with the action parameter
-            expect(mockUseSearchParams).toHaveBeenCalled()
+            // The component should render without errors
+            expect(screen.getByTestId('community-info')).toBeInTheDocument()
           })
         })
 

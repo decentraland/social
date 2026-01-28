@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { Role } from '../../../../../features/communities/types'
+import { renderWithProviders } from '../../../../../tests/testUtils'
 import { MembersList } from './MembersList'
 
 jest.mock('../../../../../hooks/useInfiniteScroll', () => ({
@@ -20,7 +21,7 @@ function renderMembersList(props: Partial<React.ComponentProps<typeof MembersLis
     hasMore: false,
     onLoadMore: jest.fn()
   }
-  return render(<MembersList {...defaultProps} {...props} />)
+  return renderWithProviders(<MembersList {...defaultProps} {...props} />)
 }
 
 describe('when rendering the members list', () => {

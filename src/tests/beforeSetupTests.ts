@@ -16,12 +16,6 @@ jest.mock('decentraland-dapps/dist/modules/translation/utils', () => ({
     Object.assign({}, target, ...sources.filter(Boolean))
 }))
 
-// Mock lottie-react to avoid canvas issues
-jest.mock('lottie-react', () => ({
-  __esModule: true,
-  default: jest.fn().mockReturnValue(null)
-}))
-
 jest.mock('decentraland-ui2', () => ({
   ...jest.requireActual('decentraland-ui2'),
   Navbar: jest.fn().mockReturnValue(null),
