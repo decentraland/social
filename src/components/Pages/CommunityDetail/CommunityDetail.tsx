@@ -1,55 +1,38 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
-import {
-  Box,
-  CircularProgress,
-  useTabletAndBelowMediaQuery,
-} from "decentraland-ui2"
-import { CommunityInfo } from "./components/CommunityInfo"
-import { EventsList } from "./components/EventsList"
-import { MembersList } from "./components/MembersList"
-import { PrivateMessage } from "./components/PrivateMessage"
-import { type TabType, Tabs } from "./components/Tabs"
-import { isMember } from "./utils/communityUtils"
-import {
-  getErrorMessage,
-  isErrorWithMessage,
-  isFetchBaseQueryError,
-} from "./utils/errorUtils"
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Box, CircularProgress, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import {
   useCancelCommunityRequestMutation,
   useCreateCommunityRequestMutation,
   useGetCommunityByIdQuery,
   useGetMemberRequestsQuery,
-  useJoinCommunityMutation,
-} from "../../../features/communities/communities.client"
-import {
-  Privacy,
-  RequestStatus,
-  RequestType,
-} from "../../../features/communities/types"
-import { usePaginatedCommunityEvents } from "../../../hooks/usePaginatedCommunityEvents"
-import { usePaginatedCommunityMembers } from "../../../hooks/usePaginatedCommunityMembers"
-import { t } from "../../../modules/translation"
-import { useWallet } from "../../../modules/wallet/hooks"
-import { PageLayout } from "../../PageLayout"
-import { NotFound } from "../NotFound"
-import { AllowedAction } from "./CommunityDetail.types"
-import {
-  BottomSection,
-  ContentContainer,
-  EventsColumn,
-  MembersColumn,
-  PageContainer,
-} from "./CommunityDetail.styled"
+  useJoinCommunityMutation
+} from '../../../features/communities/communities.client'
+import { Privacy, RequestStatus, RequestType } from '../../../features/communities/types'
+import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
+import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
+import { t } from '../../../modules/translation'
+import { useWallet } from '../../../modules/wallet/hooks'
+import { PageLayout } from '../../PageLayout'
+import { NotFound } from '../NotFound'
+import { CommunityInfo } from './components/CommunityInfo'
+import { EventsList } from './components/EventsList'
+import { MembersList } from './components/MembersList'
+import { PrivateMessage } from './components/PrivateMessage'
+import { type TabType, Tabs } from './components/Tabs'
+import { isMember } from './utils/communityUtils'
+import { getErrorMessage, isErrorWithMessage, isFetchBaseQueryError } from './utils/errorUtils'
+import { AllowedAction } from './CommunityDetail.types'
+import { BottomSection, ContentContainer, EventsColumn, MembersColumn } from './CommunityDetail.styled'
 
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { pathname, search } = useLocation()
+  const navigate = useNavigate()
   const { address, isConnecting, hasValidIdentity } = useWallet()
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
-  const [activeTab, setActiveTab] = useState<TabType>("members")
+  const [activeTab, setActiveTab] = useState<TabType>('members')
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
 
   const isLoggedIn = hasValidIdentity
@@ -64,57 +47,36 @@ function CommunityDetail() {
   const shouldSkipQuery = !id || isConnecting
   const isSigned = isLoggedIn && !isConnecting
 
-  const {
-    data,
-    isLoading,
-    error: queryError,
-    isError,
-  } = useGetCommunityByIdQuery(
-    { id: id || "", isSigned },
-    { skip: shouldSkipQuery }
-  )
-  const [joinCommunity, { isLoading: isJoining, error: joinError }] =
-    useJoinCommunityMutation()
-  const [
-    createCommunityRequest,
-    { isLoading: isCreatingRequest, error: createRequestError },
-  ] = useCreateCommunityRequestMutation()
-  const [
-    cancelCommunityRequest,
-    { isLoading: isCancellingRequest, error: cancelRequestError },
-  ] = useCancelCommunityRequestMutation()
+  const { data, isLoading, error: queryError, isError } = useGetCommunityByIdQuery({ id: id || '', isSigned }, { skip: shouldSkipQuery })
+  const [joinCommunity, { isLoading: isJoining, error: joinError }] = useJoinCommunityMutation()
+  const [createCommunityRequest, { isLoading: isCreatingRequest, error: createRequestError }] = useCreateCommunityRequestMutation()
+  const [cancelCommunityRequest, { isLoading: isCancellingRequest, error: cancelRequestError }] = useCancelCommunityRequestMutation()
 
   const community = data?.data
 
   const member = community ? isMember(community) : false
   const isPrivate = community?.privacy === Privacy.PRIVATE
   const canViewContent = member || !isPrivate
-  const shouldFetchMembersAndEvents =
-    !!id && !!community && (!isPrivate || member)
+  const shouldFetchMembersAndEvents = !!id && !!community && (!isPrivate || member)
 
   // Fetch member requests if user is logged in and viewing a private community
   const shouldFetchRequests = isLoggedIn && !!address && !!isPrivate && !member
-  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } =
-    useGetMemberRequestsQuery(
-      {
-        address: address || "",
-        type: RequestType.REQUEST_TO_JOIN,
-      },
-      { skip: !shouldFetchRequests }
-    )
+  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } = useGetMemberRequestsQuery(
+    {
+      address: address || '',
+      type: RequestType.REQUEST_TO_JOIN
+    },
+    { skip: !shouldFetchRequests }
+  )
 
   // Find pending request for current community
   const pendingRequest = memberRequestsData?.data.results.find(
-    (request) =>
-      request.communityId === id &&
-      request.status === RequestStatus.PENDING &&
-      request.type === RequestType.REQUEST_TO_JOIN
+    request => request.communityId === id && request.status === RequestStatus.PENDING && request.type === RequestType.REQUEST_TO_JOIN
   )
   const hasPendingRequest = !!pendingRequest
   const pendingRequestId = pendingRequest?.id
 
-  const isPerformingCommunityAction =
-    isJoining || isCreatingRequest || isCancellingRequest
+  const isPerformingCommunityAction = isJoining || isCreatingRequest || isCancellingRequest
   const mutationError = joinError || createRequestError || cancelRequestError
 
   const {
@@ -123,10 +85,10 @@ function CommunityDetail() {
     isFetchingMore: isFetchingMoreMembers,
     hasMore: hasMoreMembers,
     loadMore: loadMoreMembers,
-    total: totalMembers,
+    total: totalMembers
   } = usePaginatedCommunityMembers({
-    communityId: id || "",
-    enabled: shouldFetchMembersAndEvents,
+    communityId: id || '',
+    enabled: shouldFetchMembersAndEvents
   })
 
   const {
@@ -134,16 +96,13 @@ function CommunityDetail() {
     isLoading: isLoadingEvents,
     isFetchingMore: isFetchingMoreEvents,
     hasMore: hasMoreEvents,
-    loadMore: loadMoreEvents,
+    loadMore: loadMoreEvents
   } = usePaginatedCommunityEvents({
-    communityId: id || "",
-    enabled: shouldFetchMembersAndEvents,
+    communityId: id || '',
+    enabled: shouldFetchMembersAndEvents
   })
 
-  const displayError =
-    error ||
-    (mutationError ? getErrorMessage(mutationError) : null) ||
-    (isError ? getErrorMessage(queryError) : null)
+  const displayError = error || (mutationError ? getErrorMessage(mutationError) : null) || (isError ? getErrorMessage(queryError) : null)
 
   const handleJoinCommunity = useCallback(
     async (communityId: string) => {
@@ -155,12 +114,12 @@ function CommunityDetail() {
         await joinCommunity(communityId).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
-          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || t("community_detail.failed_to_join"))
+          const errMsg = 'error' in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t('community_detail.failed_to_join'))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError(t("community_detail.failed_to_join"))
+          setError(t('community_detail.failed_to_join'))
         }
       }
     },
@@ -176,16 +135,16 @@ function CommunityDetail() {
       try {
         await createCommunityRequest({
           communityId,
-          targetedAddress: address,
+          targetedAddress: address
         }).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
-          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || t("community_detail.failed_to_join"))
+          const errMsg = 'error' in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t('community_detail.failed_to_join'))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError(t("community_detail.failed_to_join"))
+          setError(t('community_detail.failed_to_join'))
         }
       }
     },
@@ -202,16 +161,16 @@ function CommunityDetail() {
         await cancelCommunityRequest({
           communityId,
           requestId,
-          address,
+          address
         }).unwrap()
       } catch (err) {
         if (isFetchBaseQueryError(err)) {
-          const errMsg = "error" in err ? err.error : JSON.stringify(err.data)
-          setError(errMsg || t("community_detail.failed_to_join"))
+          const errMsg = 'error' in err ? err.error : JSON.stringify(err.data)
+          setError(errMsg || t('community_detail.failed_to_join'))
         } else if (isErrorWithMessage(err)) {
           setError(err.message)
         } else {
-          setError(t("community_detail.failed_to_join"))
+          setError(t('community_detail.failed_to_join'))
         }
       }
     },
@@ -220,12 +179,17 @@ function CommunityDetail() {
 
   // Auto-execute action after authentication redirect
   useEffect(() => {
-    const action = searchParams.get("action") as AllowedAction | null
+    const searchParams = new URLSearchParams(search)
+    const action = searchParams.get('action') as AllowedAction | null
 
     const removeActionParam = () => {
-      const newSearchParams = new URLSearchParams(searchParams)
-      newSearchParams.delete("action")
-      setSearchParams(newSearchParams, { replace: true })
+      const newSearchParams = new URLSearchParams(search)
+      newSearchParams.delete('action')
+      const nextSearch = newSearchParams.toString()
+      navigate({
+        pathname,
+        search: nextSearch ? `?${nextSearch}` : ''
+      })
     }
 
     const canExecuteAction = (): boolean => {
@@ -241,13 +205,8 @@ function CommunityDetail() {
       )
     }
 
-    const isValidAction = (
-      actionValue: string | null
-    ): actionValue is AllowedAction => {
-      return !!(
-        actionValue &&
-        Object.values(AllowedAction).includes(actionValue as AllowedAction)
-      )
+    const isValidAction = (actionValue: string | null): actionValue is AllowedAction => {
+      return !!(actionValue && Object.values(AllowedAction).includes(actionValue as AllowedAction))
     }
 
     if (action && executedActionRef.current !== action) {
@@ -274,12 +233,12 @@ function CommunityDetail() {
     > = {
       [AllowedAction.JOIN]: {
         shouldSkip: () => member,
-        execute: () => handleJoinCommunity(community!.id),
+        execute: () => handleJoinCommunity(community!.id)
       },
       [AllowedAction.REQUEST_TO_JOIN]: {
         shouldSkip: () => hasPendingRequest,
-        execute: () => handleRequestToJoin(community!.id),
-      },
+        execute: () => handleRequestToJoin(community!.id)
+      }
     }
 
     const handler = actionHandlers[action]
@@ -294,8 +253,9 @@ function CommunityDetail() {
       removeActionParam()
     })
   }, [
-    searchParams,
-    setSearchParams,
+    search,
+    pathname,
+    history,
     isLoggedIn,
     address,
     community,
@@ -305,18 +265,13 @@ function CommunityDetail() {
     member,
     hasPendingRequest,
     handleJoinCommunity,
-    handleRequestToJoin,
+    handleRequestToJoin
   ])
 
   if (isLoading || isConnecting) {
     return (
       <ContentContainer>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="400px"
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
       </ContentContainer>
@@ -324,126 +279,114 @@ function CommunityDetail() {
   }
 
   if (displayError || !community) {
-    return (
-      <NotFound
-        title={t("community_detail.not_found")}
-        description={t("community_detail.not_found_description")}
-      />
-    )
+    return <NotFound title={t('community_detail.not_found')} description={t('community_detail.not_found_description')} />
   }
 
   return (
     <PageLayout>
-      <PageContainer>
-        <ContentContainer>
-          <CommunityInfo
-            community={community}
-            isLoggedIn={isLoggedIn}
-            address={address ?? undefined}
-            isPerformingCommunityAction={isPerformingCommunityAction}
-            isMember={member}
-            canViewContent={canViewContent}
-            onJoin={handleJoinCommunity}
-            hasPendingRequest={hasPendingRequest}
-            isLoadingMemberRequests={isLoadingMemberRequests}
-            onRequestToJoin={handleRequestToJoin}
-            onCancelRequest={
-              pendingRequestId
-                ? (communityId: string) =>
-                    handleCancelRequest(communityId, pendingRequestId)
-                : undefined
-            }
-          />
+      <ContentContainer>
+        <CommunityInfo
+          community={community}
+          isLoggedIn={isLoggedIn}
+          address={address ?? undefined}
+          isPerformingCommunityAction={isPerformingCommunityAction}
+          isMember={member}
+          canViewContent={canViewContent}
+          onJoin={handleJoinCommunity}
+          hasPendingRequest={hasPendingRequest}
+          isLoadingMemberRequests={isLoadingMemberRequests}
+          onRequestToJoin={handleRequestToJoin}
+          onCancelRequest={pendingRequestId ? (communityId: string) => handleCancelRequest(communityId, pendingRequestId) : undefined}
+        />
 
-          {!canViewContent && <PrivateMessage />}
+        {!canViewContent && <PrivateMessage />}
 
-          {canViewContent && (
-            <BottomSection>
-              {isTabletOrMobile ? (
-                <>
-                  <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
-                  {activeTab === "members" ? (
-                    <MembersColumn>
-                      <MembersList
-                        members={members.map((member) => ({
-                          memberAddress: member.memberAddress,
-                          name: member.name || member.memberAddress,
-                          role: member.role,
-                          profilePictureUrl: member.profilePictureUrl || "",
-                          hasClaimedName: member.hasClaimedName ?? false,
-                        }))}
-                        isLoading={isLoadingMembers}
-                        isFetchingMore={isFetchingMoreMembers}
-                        hasMore={hasMoreMembers}
-                        onLoadMore={loadMoreMembers}
-                        hideTitle={true}
-                        showCount={false}
-                        total={totalMembers}
-                      />
-                    </MembersColumn>
-                  ) : (
-                    <EventsColumn>
-                      <EventsList
-                        events={events.map((event) => ({
-                          id: event.id,
-                          name: event.name,
-                          image: event.image || "",
-                          isLive: event.live || false,
-                          startTime: event.startAt,
-                          totalAttendees: event.totalAttendees,
-                          latestAttendees: event.latestAttendees,
-                        }))}
-                        isLoading={isLoadingEvents}
-                        isFetchingMore={isFetchingMoreEvents}
-                        hasMore={hasMoreEvents}
-                        onLoadMore={loadMoreEvents}
-                        hideTitle={true}
-                      />
-                    </EventsColumn>
-                  )}
-                </>
-              ) : (
-                <>
+        {canViewContent && (
+          <BottomSection>
+            {isTabletOrMobile ? (
+              <>
+                <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+                {activeTab === 'members' ? (
                   <MembersColumn>
                     <MembersList
-                      members={members.map((member) => ({
+                      members={members.map(member => ({
                         memberAddress: member.memberAddress,
-                        profilePictureUrl: member.profilePictureUrl || "",
                         name: member.name || member.memberAddress,
                         role: member.role,
-                        hasClaimedName: member.hasClaimedName ?? false,
+                        profilePictureUrl: member.profilePictureUrl || '',
+                        hasClaimedName: member.hasClaimedName ?? false
                       }))}
                       isLoading={isLoadingMembers}
                       isFetchingMore={isFetchingMoreMembers}
                       hasMore={hasMoreMembers}
                       onLoadMore={loadMoreMembers}
+                      hideTitle={true}
+                      showCount={false}
                       total={totalMembers}
                     />
                   </MembersColumn>
-
+                ) : (
                   <EventsColumn>
                     <EventsList
-                      events={events.map((event) => ({
+                      events={events.map(event => ({
                         id: event.id,
                         name: event.name,
-                        image: event.image || "",
+                        image: event.image || '',
                         isLive: event.live || false,
                         startTime: event.startAt,
                         totalAttendees: event.totalAttendees,
-                        latestAttendees: event.latestAttendees,
+                        latestAttendees: event.latestAttendees
                       }))}
                       isLoading={isLoadingEvents}
                       isFetchingMore={isFetchingMoreEvents}
                       hasMore={hasMoreEvents}
                       onLoadMore={loadMoreEvents}
+                      hideTitle={true}
                     />
                   </EventsColumn>
-                </>
-              )}
-            </BottomSection>
-          )}
-        </ContentContainer>
-      </PageContainer>
+                )}
+              </>
+            ) : (
+              <>
+                <MembersColumn>
+                  <MembersList
+                    members={members.map(member => ({
+                      memberAddress: member.memberAddress,
+                      profilePictureUrl: member.profilePictureUrl || '',
+                      name: member.name || member.memberAddress,
+                      role: member.role,
+                      hasClaimedName: member.hasClaimedName ?? false
+                    }))}
+                    isLoading={isLoadingMembers}
+                    isFetchingMore={isFetchingMoreMembers}
+                    hasMore={hasMoreMembers}
+                    onLoadMore={loadMoreMembers}
+                    total={totalMembers}
+                  />
+                </MembersColumn>
+
+                <EventsColumn>
+                  <EventsList
+                    events={events.map(event => ({
+                      id: event.id,
+                      name: event.name,
+                      image: event.image || '',
+                      isLive: event.live || false,
+                      startTime: event.startAt,
+                      totalAttendees: event.totalAttendees,
+                      latestAttendees: event.latestAttendees
+                    }))}
+                    isLoading={isLoadingEvents}
+                    isFetchingMore={isFetchingMoreEvents}
+                    hasMore={hasMoreEvents}
+                    onLoadMore={loadMoreEvents}
+                  />
+                </EventsColumn>
+              </>
+            )}
+          </BottomSection>
+        )}
+      </ContentContainer>
     </PageLayout>
   )
 }

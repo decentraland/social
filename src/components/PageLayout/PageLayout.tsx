@@ -1,10 +1,6 @@
-import { Footer } from "../Footer/Footer"
-import { Navbar } from "../Navbar/Navbar"
-import {
-  BackToTopButton,
-  PageContainer,
-  PageContent,
-} from "./PageLayout.styled"
+import { Footer } from '../Footer/Footer'
+import { Navbar } from '../Navbar/Navbar'
+import { BackToTopButton, PageContainer, PageContent } from './PageLayout.styled'
 
 type PageLayoutProps = {
   children: React.ReactNode

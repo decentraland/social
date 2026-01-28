@@ -1,24 +1,17 @@
-import { useCallback, useMemo } from "react"
-import { useAnalytics } from "@dcl/hooks"
-import {
-  Icon,
-  JumpIn,
-  Theme,
-  muiIcons,
-  useTabletAndBelowMediaQuery,
-  useTabletMediaQuery,
-  useTheme,
-} from "decentraland-ui2"
-import { PrivacyIcon } from "./PrivacyIcon"
-import { Privacy } from "../../../../../features/communities/types"
-import { useProfilePicture } from "../../../../../hooks/useProfilePicture"
-import { useUtmParams } from "../../../../../hooks/useUtmParams"
-import { Events } from "../../../../../modules/analytics/events"
-import { t } from "../../../../../modules/translation"
-import { redirectToAuth } from "../../../../../utils/authRedirect"
-import { AllowedAction } from "../../CommunityDetail.types"
-import { getThumbnailUrl } from "../../utils/communityUtils"
-import { getRandomRarityColor } from "../utils/getRandomRarityColor"
+import { useCallback, useMemo } from 'react'
+import { useAnalytics } from '@dcl/hooks'
+import { Icon, JumpIn, muiIcons, useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
+import { Privacy } from '../../../../../features/communities/types'
+import type { Community } from '../../../../../features/communities/types'
+import { useProfilePicture } from '../../../../../hooks/useProfilePicture'
+import { useUtmParams } from '../../../../../hooks/useUtmParams'
+import { Events } from '../../../../../modules/analytics/events'
+import { t } from '../../../../../modules/translation'
+import { redirectToAuth } from '../../../../../utils/authRedirect'
+import { AllowedAction } from '../../CommunityDetail.types'
+import { getThumbnailUrl } from '../../utils/communityUtils'
+import { getRandomRarityColor } from '../utils/getRandomRarityColor'
+import { PrivacyIcon } from './PrivacyIcon'
 import {
   ActionButtons,
   CTAButton,
@@ -42,9 +35,8 @@ import {
   Title,
   TitleContainer,
   TitleHeader,
-  TopRow,
-} from "./CommunityInfo.styled"
-import type { Community } from "../../../../../features/communities/types"
+  TopRow
+} from './CommunityInfo.styled'
 
 type CommunityInfoProps = {
   community: Community
@@ -71,14 +63,14 @@ export const CommunityInfo = ({
   hasPendingRequest = false,
   isLoadingMemberRequests = false,
   onRequestToJoin,
-  onCancelRequest,
+  onCancelRequest
 }: CommunityInfoProps) => {
   const thumbnailUrl = getThumbnailUrl(community.id)
   const isPrivate = community.privacy === Privacy.PRIVATE
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
   const isTablet = useTabletMediaQuery()
   const ownerProfilePicture = useProfilePicture(community.ownerAddress)
-  const theme = useTheme<Theme>()
+  const theme = useTheme()
   const ownerAvatarBackgroundColor = getRandomRarityColor(theme)
   const { track } = useAnalytics()
   const utmParams = useUtmParams()
@@ -87,7 +79,7 @@ export const CommunityInfo = ({
     () => ({
       communityId: community.id,
       userAddress: address,
-      ...utmParams,
+      ...utmParams
     }),
     [community.id, address, utmParams]
   )
@@ -97,7 +89,7 @@ export const CommunityInfo = ({
 
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
-        action: AllowedAction.JOIN,
+        action: AllowedAction.JOIN
       })
       return
     }
@@ -110,7 +102,7 @@ export const CommunityInfo = ({
 
     if (!isLoggedIn || !address) {
       redirectToAuth(`/communities/${community.id}`, {
-        action: AllowedAction.REQUEST_TO_JOIN,
+        action: AllowedAction.REQUEST_TO_JOIN
       })
       return
     }
@@ -135,40 +127,27 @@ export const CommunityInfo = ({
   const renderJoinedButton = () => (
     <CTAButton variant="outlined" color="secondary" disabled>
       <Icon component={muiIcons.Check} fontSize="small" />
-      {t("community_info.joined")}
+      {t('community_info.joined')}
     </CTAButton>
   )
 
   const handleSignInToJoinClick = useCallback(() => {
     track(Events.CLICK_SIGN_IN_TO_JOIN, trackPayload)
-    const action = isPrivate
-      ? AllowedAction.REQUEST_TO_JOIN
-      : AllowedAction.JOIN
+    const action = isPrivate ? AllowedAction.REQUEST_TO_JOIN : AllowedAction.JOIN
     redirectToAuth(`/communities/${community.id}`, { action })
   }, [track, trackPayload, isPrivate, community.id])
 
   const renderSignInButton = () => {
     return (
-      <CTAButton
-        color="primary"
-        variant="contained"
-        onClick={handleSignInToJoinClick}
-      >
-        {t("community_info.sign_in_to_join")}
+      <CTAButton color="primary" variant="contained" onClick={handleSignInToJoinClick}>
+        {t('community_info.sign_in_to_join')}
       </CTAButton>
     )
   }
 
   const renderJoinButton = () => (
-    <CTAButton
-      color="primary"
-      variant="contained"
-      onClick={handleJoinClick}
-      disabled={isPerformingCommunityAction}
-    >
-      {isPerformingCommunityAction
-        ? t("global.loading")
-        : t("community_info.join")}
+    <CTAButton color="primary" variant="contained" onClick={handleJoinClick} disabled={isPerformingCommunityAction}>
+      {isPerformingCommunityAction ? t('global.loading') : t('community_info.join')}
     </CTAButton>
   )
 
@@ -176,29 +155,22 @@ export const CommunityInfo = ({
     if (isLoadingMemberRequests) {
       return (
         <CTAButton color="secondary" variant="contained" disabled>
-          {t("global.loading")}
+          {t('global.loading')}
         </CTAButton>
       )
     }
 
     const isPerformingRequest = isPerformingCommunityAction
     const buttonLabel = isPerformingRequest
-      ? t("global.loading")
+      ? t('global.loading')
       : hasPendingRequest
-        ? t("community_info.cancel_request")
-        : t("community_info.request_to_join")
+        ? t('community_info.cancel_request')
+        : t('community_info.request_to_join')
 
-    const onClickAction = hasPendingRequest
-      ? handleCancelRequestClick
-      : handleRequestToJoinClick
+    const onClickAction = hasPendingRequest ? handleCancelRequestClick : handleRequestToJoinClick
 
     return (
-      <CTAButton
-        color="secondary"
-        variant="contained"
-        onClick={onClickAction}
-        disabled={isPerformingRequest}
-      >
+      <CTAButton color="secondary" variant="contained" onClick={onClickAction} disabled={isPerformingRequest}>
         {buttonLabel}
       </CTAButton>
     )
@@ -220,23 +192,17 @@ export const CommunityInfo = ({
     return renderJoinButton()
   }
 
-  const shouldShowJumpIn =
-    isLoggedIn && !isTabletOrMobile && (isMember || hasPendingRequest)
+  const shouldShowJumpIn = isLoggedIn && !isTabletOrMobile && (isMember || hasPendingRequest)
 
   return (
     <InfoSection>
       <TopRow>
         <CommunityImage>
-          <CommunityImageContent
-            src={thumbnailUrl || ""}
-            alt={community.name}
-          />
+          <CommunityImageContent src={thumbnailUrl || ''} alt={community.name} />
         </CommunityImage>
         <CommunityDetails>
           <TitleContainer>
-            <CommunityLabel>
-              {t("community_info.decentraland_community")}
-            </CommunityLabel>
+            <CommunityLabel>{t('community_info.decentraland_community')}</CommunityLabel>
             <TitleHeader>
               <Title>{community.name}</Title>
               <PrivacyMembersRow>
@@ -248,26 +214,20 @@ export const CommunityInfo = ({
                 </PrivacyBadgeContainer>
                 <PrivacyDivider />
                 <PrivacyMembersText>
-                  {new Intl.NumberFormat("en-US", {
-                    notation: "compact",
-                    compactDisplay: "short",
-                  }).format(community.membersCount)}{" "}
-                  {t("community_info.members")}
+                  {new Intl.NumberFormat('en-US', {
+                    notation: 'compact',
+                    compactDisplay: 'short'
+                  }).format(community.membersCount)}{' '}
+                  {t('community_info.members')}
                 </PrivacyMembersText>
               </PrivacyMembersRow>
             </TitleHeader>
             <OwnerRow>
               <OwnerAvatarContainer>
-                <OwnerAvatar
-                  src={ownerProfilePicture}
-                  backgroundColor={ownerAvatarBackgroundColor}
-                />
+                <OwnerAvatar src={ownerProfilePicture} backgroundColor={ownerAvatarBackgroundColor} />
               </OwnerAvatarContainer>
               <OwnerText>
-                {t("community_info.by")}{" "}
-                <span className="owner-name">
-                  {community.ownerName || t("community_info.unknown")}
-                </span>
+                {t('community_info.by')} <span className="owner-name">{community.ownerName || t('community_info.unknown')}</span>
               </OwnerText>
             </OwnerRow>
             <ActionButtons>
@@ -275,36 +235,34 @@ export const CommunityInfo = ({
               {shouldShowJumpIn && (
                 <JumpIn
                   variant="button"
-                  buttonText={t("community_info.jump_in")}
+                  buttonText={t('community_info.jump_in')}
                   desktopAppOptions={{
-                    communityId: community.id,
+                    communityId: community.id
                   }}
-                  onTrack={(data) =>
+                  onTrack={data =>
                     track(Events.CLICK_JUMP_IN, {
                       ...trackPayload,
-                      ...data,
+                      ...data
                     })
                   }
                   modalProps={{
-                    title: t("community_info.jump_in_modal.title"),
-                    description: t("community_info.jump_in_modal.description"),
-                    buttonLabel: t("community_info.jump_in_modal.button_label"),
+                    title: t('community_info.jump_in_modal.title'),
+                    description: t('community_info.jump_in_modal.description'),
+                    buttonLabel: t('community_info.jump_in_modal.button_label')
                   }}
                   buttonProps={{
-                    variant: "contained",
+                    variant: 'contained',
                     sx: {
-                      maxWidth: "175px",
-                      minWidth: "auto",
-                      height: "40px",
-                    },
+                      maxWidth: '175px',
+                      minWidth: 'auto',
+                      height: '40px'
+                    }
                   }}
                 />
               )}
             </ActionButtons>
           </TitleContainer>
-          {canViewContent && !isTablet && (
-            <Description>{community.description}</Description>
-          )}
+          {canViewContent && !isTablet && <Description>{community.description}</Description>}
         </CommunityDetails>
       </TopRow>
       {canViewContent && isTablet && (

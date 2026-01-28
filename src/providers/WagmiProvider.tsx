@@ -1,15 +1,15 @@
-import { ReactNode, useEffect } from "react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { WagmiProvider as WagmiProviderBase, useAccount } from "wagmi"
-import { wagmiConfig } from "../config/wagmi"
+import { ReactNode, useEffect } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider as WagmiProviderBase, useAccount } from 'wagmi'
+import { wagmiConfig } from '../config/wagmi'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000, // 1 minute
-      retry: 1,
-    },
-  },
+      retry: 1
+    }
+  }
 })
 
 type Props = {
@@ -20,23 +20,16 @@ type Props = {
  * Debug component to log wagmi state changes
  */
 function WagmiDebugger() {
-  const {
-    address,
-    isConnected,
-    isConnecting,
-    isReconnecting,
-    connector,
-    status,
-  } = useAccount()
+  const { address, isConnected, isConnecting, isReconnecting, connector, status } = useAccount()
 
   useEffect(() => {
-    console.log("[WagmiDebugger] Account state changed:", {
+    console.log('[WagmiDebugger] Account state changed:', {
       address,
       isConnected,
       isConnecting,
       isReconnecting,
       connectorName: connector?.name,
-      status,
+      status
     })
   }, [address, isConnected, isConnecting, isReconnecting, connector, status])
 

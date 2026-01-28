@@ -1,24 +1,16 @@
-import { useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 
-type UtmParams = {
-  utm_org?: string
-  utm_source?: string
-  utm_medium?: string
-  utm_campaign?: string
-}
+const UTM_PARAM_KEYS = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign'] as const
 
-const UTM_PARAM_KEYS = [
-  "utm_org",
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-] as const
+type UtmParamKey = (typeof UTM_PARAM_KEYS)[number]
+type UtmParams = Partial<Record<UtmParamKey, string>>
 
 const useUtmParams = (): UtmParams => {
-  const [searchParams] = useSearchParams()
+  const { search } = useLocation()
 
   const utmParams = useMemo(() => {
+    const searchParams = new URLSearchParams(search)
     const params: UtmParams = {}
 
     for (const key of UTM_PARAM_KEYS) {
@@ -29,7 +21,7 @@ const useUtmParams = (): UtmParams => {
     }
 
     return params
-  }, [searchParams])
+  }, [search])
 
   return utmParams
 }

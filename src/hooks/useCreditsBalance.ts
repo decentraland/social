@@ -1,9 +1,9 @@
-import { AuthIdentity } from "@dcl/crypto"
-import { useQuery } from "@tanstack/react-query"
-import { formatEther } from "viem"
-import { signedFetchFactory } from "decentraland-crypto-fetch"
-import { config } from "../config"
-import { useIdentity } from "../modules/wallet/hooks"
+import { useQuery } from '@tanstack/react-query'
+import { formatEther } from 'viem'
+import { AuthIdentity } from '@dcl/crypto'
+import { signedFetchFactory } from 'decentraland-crypto-fetch'
+import { config } from '../config'
+import { useIdentity } from '../modules/wallet/hooks'
 
 type Credit = {
   id: string
@@ -35,12 +35,9 @@ type UseCreditsBalanceResult = {
   error: Error | null
 }
 
-async function fetchCredits(
-  address: string,
-  identity?: AuthIdentity
-): Promise<CreditsResponse | null> {
+async function fetchCredits(address: string, identity?: AuthIdentity): Promise<CreditsResponse | null> {
   const signedFetch = signedFetchFactory()
-  const creditsUrl = config.get("CREDITS_SERVER_URL")
+  const creditsUrl = config.get('CREDITS_SERVER_URL')
 
   if (!creditsUrl) {
     return null
@@ -59,7 +56,7 @@ async function fetchCredits(
 
     return response.json()
   } catch (error) {
-    console.error("[useCreditsBalance] Failed to fetch credits:", error)
+    console.error('[useCreditsBalance] Failed to fetch credits:', error)
     return null
   }
 }
@@ -67,17 +64,14 @@ async function fetchCredits(
 /**
  * Hook to fetch credits balance for a given address
  */
-export function useCreditsBalance({
-  address,
-  enabled = true,
-}: UseCreditsBalanceOptions): UseCreditsBalanceResult {
+export function useCreditsBalance({ address, enabled = true }: UseCreditsBalanceOptions): UseCreditsBalanceResult {
   const { identity } = useIdentity()
   const { data, isLoading, error } = useQuery({
-    queryKey: ["credits", address],
+    queryKey: ['credits', address],
     queryFn: () => fetchCredits(address!, identity),
     enabled: enabled && !!address,
     staleTime: 60_000, // 1 minute
-    retry: 1,
+    retry: 1
   })
 
   let creditsBalance: CreditsBalance | undefined
@@ -87,20 +81,17 @@ export function useCreditsBalance({
     const balance = Number(formatEther(BigInt(data.totalCredits)))
 
     // Get the earliest expiring credit
-    const earliestExpiry =
-      data.credits.length > 0
-        ? Math.min(...data.credits.map((c) => c.expiresAt))
-        : 0
+    const earliestExpiry = data.credits.length > 0 ? Math.min(...data.credits.map(c => c.expiresAt)) : 0
 
     creditsBalance = {
       balance,
-      expiresAt: earliestExpiry * 1000, // Convert to milliseconds
+      expiresAt: earliestExpiry * 1000 // Convert to milliseconds
     }
   }
 
   return {
     creditsBalance,
     isLoading,
-    error: error ?? null,
+    error: error ?? null
   }
 }

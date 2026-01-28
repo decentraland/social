@@ -1,4 +1,4 @@
 export const locations = {
-  root: () => "/",
-  community: (communityId: string) => `/communities/${communityId}`,
+  root: () => '/',
+  community: (communityId: string) => `/communities/${communityId}`
 }

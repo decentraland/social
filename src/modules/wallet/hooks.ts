@@ -1,20 +1,15 @@
-import { useCallback, useEffect, useMemo } from "react"
-import { AuthIdentity } from "@dcl/crypto"
-import { localStorageGetIdentity } from "@dcl/single-sign-on-client"
-import {
-  useAccount,
-  useChainId,
-  useConnect,
-  useDisconnect,
-  useSwitchChain,
-} from "wagmi"
+import { useCallback, useEffect, useMemo } from 'react'
+import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { AuthIdentity } from '@dcl/crypto'
+import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import {
   getAddress,
   isConnected as selectIsConnected,
   isConnecting as selectIsConnecting,
   isDisconnecting as selectIsDisconnecting,
-  isSwitchingNetwork as selectIsSwitchingNetwork,
-} from "./selectors"
+  isSwitchingNetwork as selectIsSwitchingNetwork
+} from './selectors'
 import {
   setDisconnecting,
   setSwitchingNetwork,
@@ -22,21 +17,15 @@ import {
   setWalletConnecting,
   setWalletDisconnected,
   setWalletError,
-  updateChainId,
-} from "./walletSlice"
-import { useAppDispatch, useAppSelector } from "../../app/hooks"
+  updateChainId
+} from './walletSlice'
 
 /**
  * Hook that syncs wagmi state with Redux store and provides wallet utilities
  */
 function useWalletSync() {
   const dispatch = useAppDispatch()
-  const {
-    address,
-    isConnecting: wagmiConnecting,
-    isConnected: wagmiConnected,
-    isReconnecting: wagmiReconnecting,
-  } = useAccount()
+  const { address, isConnecting: wagmiConnecting, isConnected: wagmiConnected, isReconnecting: wagmiReconnecting } = useAccount()
   const chainId = useChainId()
   const { isPending: isSwitching } = useSwitchChain()
   const { isPending: isDisconnectingWagmi } = useDisconnect()
@@ -53,14 +42,7 @@ function useWalletSync() {
     } else {
       dispatch(setWalletDisconnected())
     }
-  }, [
-    dispatch,
-    wagmiConnecting,
-    wagmiReconnecting,
-    wagmiConnected,
-    address,
-    chainId,
-  ])
+  }, [dispatch, wagmiConnecting, wagmiReconnecting, wagmiConnected, address, chainId])
 
   // Update chain ID when it changes
   useEffect(() => {
@@ -85,12 +67,7 @@ function useWalletSync() {
  */
 function useWallet() {
   const dispatch = useAppDispatch()
-  const {
-    address,
-    isConnecting: wagmiConnecting,
-    isConnected: wagmiConnected,
-    isReconnecting: wagmiReconnecting,
-  } = useAccount()
+  const { address, isConnecting: wagmiConnecting, isConnected: wagmiConnected, isReconnecting: wagmiReconnecting } = useAccount()
   const chainId = useChainId()
   const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
@@ -108,25 +85,21 @@ function useWallet() {
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
     if (!walletAddress) return undefined
-    return localStorageGetIdentity(walletAddress.toLowerCase()) as
-      | AuthIdentity
-      | undefined
+    return localStorageGetIdentity(walletAddress.toLowerCase()) as AuthIdentity | undefined
   }, [walletAddress])
 
   const hasValidIdentity = useMemo(() => !!identity, [identity])
 
   const connectWallet = useCallback(
     (connectorId?: string) => {
-      const connector = connectorId
-        ? connectors.find((c) => c.id === connectorId)
-        : connectors[0]
+      const connector = connectorId ? connectors.find(c => c.id === connectorId) : connectors[0]
       if (connector) {
         connect(
           { connector },
           {
-            onError: (error) => {
+            onError: error => {
               dispatch(setWalletError(error.message))
-            },
+            }
           }
         )
       }
@@ -149,7 +122,7 @@ function useWallet() {
     hasValidIdentity,
     connectors,
     connect: connectWallet,
-    disconnect: disconnectWallet,
+    disconnect: disconnectWallet
   }
 }
 
@@ -161,15 +134,13 @@ function useIdentity() {
 
   const identity = useMemo<AuthIdentity | undefined>(() => {
     if (!address) return undefined
-    return localStorageGetIdentity(address.toLowerCase()) as
-      | AuthIdentity
-      | undefined
+    return localStorageGetIdentity(address.toLowerCase()) as AuthIdentity | undefined
   }, [address])
 
   return {
     identity,
     hasValidIdentity: !!identity,
-    address,
+    address
   }
 }
 

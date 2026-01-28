@@ -1,41 +1,41 @@
-import { Box, Typography, styled } from "decentraland-ui2"
+import { Box, Typography, styled } from 'decentraland-ui2'
 
 const TabsContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
+  display: 'flex',
   gap: theme.spacing(4), // 32px
   borderBottom: `1px solid ${theme.palette.divider}`,
-  width: "100%",
-  paddingBottom: 0,
+  width: '100%',
+  paddingBottom: 0
 }))
 
 const Tab = styled(Box, {
-  shouldForwardProp: (prop) => prop !== "active",
+  shouldForwardProp: prop => prop !== 'active'
 })<{ active: boolean }>(({ active, theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  height: "46px",
-  cursor: "pointer",
-  borderBottom: active ? `4px solid ${theme.palette.primary.main}` : "none",
+  display: 'flex',
+  alignItems: 'center',
+  height: '46px',
+  cursor: 'pointer',
+  borderBottom: active ? `4px solid ${theme.palette.primary.main}` : 'none',
   paddingBottom: active ? 0 : theme.spacing(0.5), // 4px
-  transition: theme.transitions.create("border-bottom"),
+  transition: theme.transitions.create('border-bottom')
 }))
 
 const TabButton = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "100%",
-  padding: theme.spacing(0, 1.25), // 0 10px
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  padding: theme.spacing(0, 1.25) // 0 10px
 }))
 
 const TabText = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== "active",
+  shouldForwardProp: prop => prop !== 'active'
 })<{ active: boolean }>(({ active, theme }) => ({
   fontSize: theme.typography.body1.fontSize,
   fontWeight: 600,
-  textTransform: "uppercase",
+  textTransform: 'uppercase',
   color: active ? theme.palette.common.white : theme.palette.text.secondary,
-  fontFamily: theme.typography.fontFamily,
+  fontFamily: theme.typography.fontFamily
 }))
 
 export { Tab, TabButton, TabText, TabsContainer }

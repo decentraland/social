@@ -1,1 +1,1 @@
-export { PrivateMessage } from "./PrivateMessage"
+export { PrivateMessage } from './PrivateMessage'

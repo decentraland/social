@@ -1,6 +1,6 @@
-import { ReactNode } from "react"
-import { IntlProvider } from "react-intl"
-import { useAppSelector } from "../app/hooks"
+import { ReactNode } from 'react'
+import { IntlProvider } from 'react-intl'
+import { useAppSelector } from '../app/hooks'
 
 type Props = {
   children: ReactNode
@@ -12,10 +12,8 @@ type Props = {
  * Translations are pre-loaded in the store's initial state.
  */
 export function TranslationProvider({ children }: Props) {
-  const locale = useAppSelector((state) => state.translation.locale)
-  const translations = useAppSelector(
-    (state) => state.translation.data[state.translation.locale]
-  )
+  const locale = useAppSelector(state => state.translation.locale)
+  const translations = useAppSelector(state => state.translation.data[state.translation.locale])
 
   // Translations are pre-loaded, so we can render immediately
   return (
