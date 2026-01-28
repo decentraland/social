@@ -1,28 +1,12 @@
-import { memo } from "react"
+import { memo } from 'react'
 
 export type ClaimedNameIconProps = React.SVGProps<SVGSVGElement>
 
-export const ClaimedNameIcon = memo(function ClaimedNameIcon(
-  props: ClaimedNameIconProps
-) {
+export const ClaimedNameIcon = memo(function ClaimedNameIcon(props: ClaimedNameIconProps) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <defs>
-        <linearGradient
-          id="claimed-name-gradient"
-          x1="8.90609"
-          y1="2.91992"
-          x2="8.90609"
-          y2="15.2673"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id="claimed-name-gradient" x1="8.90609" y1="2.91992" x2="8.90609" y2="15.2673" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FF2D55" />
           <stop offset="1" stopColor="#C640CD" />
         </linearGradient>

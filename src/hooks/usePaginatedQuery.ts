@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type PaginationState = {
   total: number
@@ -23,11 +23,7 @@ type UsePaginatedQueryOptions<TQueryArg, TData, TItems extends unknown[]> = {
   resetDependency?: unknown
 }
 
-export const usePaginatedQuery = <
-  TQueryArg extends { limit?: number; offset?: number },
-  TData,
-  TItems extends unknown[],
->({
+export const usePaginatedQuery = <TQueryArg extends { limit?: number; offset?: number }, TData, TItems extends unknown[]>({
   queryHook,
   queryArg,
   enabled = true,
@@ -35,7 +31,7 @@ export const usePaginatedQuery = <
   extractItems,
   extractTotal,
   getHasMore,
-  resetDependency,
+  resetDependency
 }: UsePaginatedQueryOptions<TQueryArg, TData, TItems>) => {
   const [limit] = useState(defaultLimit)
   const [currentOffset, setCurrentOffset] = useState(0)
@@ -62,10 +58,10 @@ export const usePaginatedQuery = <
     {
       ...queryArg,
       limit,
-      offset: currentOffset,
+      offset: currentOffset
     } as TQueryArg,
     {
-      skip: !enabled,
+      skip: !enabled
     }
   )
 
@@ -75,7 +71,7 @@ export const usePaginatedQuery = <
       const items = extractItemsRef.current(data)
       paginationRef.current = {
         total,
-        count: items.length,
+        count: items.length
       }
       dataRef.current = data
     }
@@ -84,9 +80,7 @@ export const usePaginatedQuery = <
 
   const total = data ? extractTotalRef.current(data) : 0
   const items = data ? extractItemsRef.current(data) : ([] as unknown as TItems)
-  const hasMore = data
-    ? getHasMoreRef.current(data, currentOffset, limit)
-    : false
+  const hasMore = data ? getHasMoreRef.current(data, currentOffset, limit) : false
 
   const loadMore = useCallback(() => {
     const currentData = dataRef.current
@@ -98,7 +92,7 @@ export const usePaginatedQuery = <
     if (!canLoadMore) {
       return
     }
-    setCurrentOffset((prev) => {
+    setCurrentOffset(prev => {
       const nextOffset = prev + limit
       if (pagination && nextOffset >= pagination.total) {
         return prev
@@ -113,6 +107,6 @@ export const usePaginatedQuery = <
     isFetchingMore: isFetching && currentOffset > 0,
     hasMore,
     loadMore,
-    total,
+    total
   }
 }

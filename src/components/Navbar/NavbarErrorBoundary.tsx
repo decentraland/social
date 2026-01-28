@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from "react"
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 type Props = {
   children: ReactNode
@@ -20,7 +20,7 @@ class NavbarErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Navbar error:", error, errorInfo)
+    console.error('Navbar error:', error, errorInfo)
   }
 
   render() {

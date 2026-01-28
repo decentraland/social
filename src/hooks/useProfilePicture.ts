@@ -1,4 +1,4 @@
-import { useGetProfilePictureQuery } from "../features/profile/profile.client"
+import { useGetProfilePictureQuery } from '../features/profile/profile.client'
 
 /**
  * Hook to fetch profile picture URL for a given address
@@ -9,8 +9,8 @@ import { useGetProfilePictureQuery } from "../features/profile/profile.client"
 export function useProfilePicture(address: string): string {
   const normalizedAddress = address.toLowerCase()
   const { data } = useGetProfilePictureQuery(normalizedAddress, {
-    skip: !normalizedAddress,
+    skip: !normalizedAddress
   })
 
-  return data || ""
+  return data || ''
 }

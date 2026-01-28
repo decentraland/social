@@ -1,14 +1,13 @@
-import { render, screen } from "@testing-library/react"
-import { MembersList } from "./MembersList"
-import { Role } from "../../../../../features/communities/types"
+import { screen } from '@testing-library/react'
+import { Role } from '../../../../../features/communities/types'
+import { renderWithProviders } from '../../../../../tests/testUtils'
+import { MembersList } from './MembersList'
 
-jest.mock("../../../../../hooks/useInfiniteScroll", () => ({
-  useInfiniteScroll: jest.fn(() => ({ current: null })),
+jest.mock('../../../../../hooks/useInfiniteScroll', () => ({
+  useInfiniteScroll: jest.fn(() => ({ current: null }))
 }))
 
-function renderMembersList(
-  props: Partial<React.ComponentProps<typeof MembersList>> = {}
-) {
+function renderMembersList(props: Partial<React.ComponentProps<typeof MembersList>> = {}) {
   const defaultProps = {
     members: [] as Array<{
       memberAddress: string
@@ -20,61 +19,61 @@ function renderMembersList(
     isLoading: false,
     isFetchingMore: false,
     hasMore: false,
-    onLoadMore: jest.fn() as jest.Mock,
+    onLoadMore: jest.fn()
   }
-  return render(<MembersList {...defaultProps} {...props} />)
+  return renderWithProviders(<MembersList {...defaultProps} {...props} />)
 }
 
-describe("when rendering the members list", () => {
-  describe("and the list is loading", () => {
+describe('when rendering the members list', () => {
+  describe('and the list is loading', () => {
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderMembersList({ isLoading: true })
 
       expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderMembersList({ isLoading: true, hideTitle: true })
 
       expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
-    it("should display a loading indicator", () => {
+    it('should display a loading indicator', () => {
       renderMembersList({ isLoading: true })
 
-      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
   })
 
-  describe("and there are no members", () => {
+  describe('and there are no members', () => {
     afterEach(() => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderMembersList({ members: [] })
 
       expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderMembersList({ members: [], hideTitle: true })
 
       expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
-    it("should display an empty state message", () => {
+    it('should display an empty state message', () => {
       renderMembersList({ members: [] })
 
-      expect(screen.getByText("No members found")).toBeInTheDocument()
+      expect(screen.getByText('No members found')).toBeInTheDocument()
     })
   })
 
-  describe("and there are members", () => {
+  describe('and there are members', () => {
     let members: Array<{
       memberAddress: string
       name: string
@@ -86,19 +85,19 @@ describe("when rendering the members list", () => {
     beforeEach(() => {
       members = [
         {
-          memberAddress: "0x111",
-          name: "John Doe",
-          role: "admin",
-          profilePictureUrl: "https://example.com/john.jpg",
-          hasClaimedName: false,
+          memberAddress: '0x111',
+          name: 'John Doe',
+          role: 'admin',
+          profilePictureUrl: 'https://example.com/john.jpg',
+          hasClaimedName: false
         },
         {
-          memberAddress: "0x222",
-          name: "Jane Smith",
+          memberAddress: '0x222',
+          name: 'Jane Smith',
           role: Role.MEMBER,
-          profilePictureUrl: "https://example.com/jane.jpg",
-          hasClaimedName: false,
-        },
+          profilePictureUrl: 'https://example.com/jane.jpg',
+          hasClaimedName: false
+        }
       ]
     })
 
@@ -106,70 +105,70 @@ describe("when rendering the members list", () => {
       jest.resetAllMocks()
     })
 
-    it("should display the section title", () => {
+    it('should display the section title', () => {
       renderMembersList({ members })
 
       expect(screen.getByText(/^MEMBERS/)).toBeInTheDocument()
     })
 
-    it("should not display the section title when hideTitle is true", () => {
+    it('should not display the section title when hideTitle is true', () => {
       renderMembersList({ members, hideTitle: true })
 
       expect(screen.queryByText(/^MEMBERS/)).not.toBeInTheDocument()
     })
 
-    it("should display the total count when provided", () => {
+    it('should display the total count when provided', () => {
       renderMembersList({ members, total: 15 })
 
-      expect(screen.getByText("MEMBERS (15)")).toBeInTheDocument()
+      expect(screen.getByText('MEMBERS (15)')).toBeInTheDocument()
     })
 
-    it("should hide the total count when showCount is false", () => {
+    it('should hide the total count when showCount is false', () => {
       renderMembersList({ members, total: 15, showCount: false })
 
-      expect(screen.getByText("MEMBERS")).toBeInTheDocument()
+      expect(screen.getByText('MEMBERS')).toBeInTheDocument()
       expect(screen.queryByText(/^MEMBERS \(\d+\)/)).not.toBeInTheDocument()
     })
 
-    it("should render all members", () => {
+    it('should render all members', () => {
       renderMembersList({ members })
 
-      expect(screen.getByText("John Doe")).toBeInTheDocument()
-      expect(screen.getByText("Jane Smith")).toBeInTheDocument()
+      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument()
     })
 
-    it("should display member roles", () => {
+    it('should display member roles', () => {
       renderMembersList({ members })
 
-      expect(screen.getByText("admin")).toBeInTheDocument()
-      expect(screen.getByText("member")).toBeInTheDocument()
+      expect(screen.getByText('admin')).toBeInTheDocument()
+      expect(screen.getByText('member')).toBeInTheDocument()
     })
 
-    it("should show the claimed name icon when the member has claimed a name", () => {
+    it('should show the claimed name icon when the member has claimed a name', () => {
       const claimedMembers = [
         {
-          memberAddress: "0x123",
-          name: "Claimed Member",
+          memberAddress: '0x123',
+          name: 'Claimed Member',
           role: Role.MEMBER,
-          profilePictureUrl: "https://example.com/claimed.jpg",
-          hasClaimedName: true,
-        },
+          profilePictureUrl: 'https://example.com/claimed.jpg',
+          hasClaimedName: true
+        }
       ]
 
       renderMembersList({ members: claimedMembers })
 
-      expect(screen.getByTestId("claimed-name-icon")).toBeInTheDocument()
+      expect(screen.getByTestId('claimed-name-icon')).toBeInTheDocument()
     })
 
-    it("should render member avatars", () => {
+    it('should render member avatars', () => {
       renderMembersList({ members })
 
-      const images = screen.getAllByRole("img")
+      const images = screen.getAllByRole('img')
       expect(images.length).toBeGreaterThan(0)
     })
   })
 
-  describe("and there are more members to load", () => {
+  describe('and there are more members to load', () => {
     let members: Array<{
       memberAddress: string
       name: string
@@ -181,12 +180,12 @@ describe("when rendering the members list", () => {
     beforeEach(() => {
       members = [
         {
-          memberAddress: "0x111",
-          name: "John Doe",
-          role: "admin",
-          profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
-        },
+          memberAddress: '0x111',
+          name: 'John Doe',
+          role: 'admin',
+          profilePictureUrl: 'https://example.com/john.jpg',
+          mutualFriends: 0
+        }
       ]
     })
 
@@ -194,32 +193,32 @@ describe("when rendering the members list", () => {
       jest.resetAllMocks()
     })
 
-    it("should render the load more sentinel", () => {
+    it('should render the load more sentinel', () => {
       const { container } = renderMembersList({ members, hasMore: true })
 
-      const sentinel = container.querySelector("div")
+      const sentinel = container.querySelector('div')
       expect(sentinel).toBeInTheDocument()
     })
 
-    describe("and more members are being fetched", () => {
-      it("should display a loading indicator in the sentinel", () => {
+    describe('and more members are being fetched', () => {
+      it('should display a loading indicator in the sentinel', () => {
         renderMembersList({ members, hasMore: true, isFetchingMore: true })
 
-        expect(screen.getByRole("progressbar")).toBeInTheDocument()
+        expect(screen.getByRole('progressbar')).toBeInTheDocument()
       })
     })
 
-    describe("and more members are not being fetched", () => {
-      it("should not display a loading indicator in the sentinel", () => {
+    describe('and more members are not being fetched', () => {
+      it('should not display a loading indicator in the sentinel', () => {
         renderMembersList({ members, hasMore: true, isFetchingMore: false })
 
-        const progressbars = screen.queryAllByRole("progressbar")
+        const progressbars = screen.queryAllByRole('progressbar')
         expect(progressbars.length).toBe(0)
       })
     })
   })
 
-  describe("and there are no more members to load", () => {
+  describe('and there are no more members to load', () => {
     let members: Array<{
       memberAddress: string
       name: string
@@ -231,12 +230,12 @@ describe("when rendering the members list", () => {
     beforeEach(() => {
       members = [
         {
-          memberAddress: "0x111",
-          name: "John Doe",
-          role: "admin",
-          profilePictureUrl: "https://example.com/john.jpg",
-          mutualFriends: 0,
-        },
+          memberAddress: '0x111',
+          name: 'John Doe',
+          role: 'admin',
+          profilePictureUrl: 'https://example.com/john.jpg',
+          mutualFriends: 0
+        }
       ]
     })
 
@@ -244,10 +243,10 @@ describe("when rendering the members list", () => {
       jest.resetAllMocks()
     })
 
-    it("should not render the load more sentinel", () => {
+    it('should not render the load more sentinel', () => {
       renderMembersList({ members, hasMore: false })
 
-      const progressbars = screen.queryAllByRole("progressbar")
+      const progressbars = screen.queryAllByRole('progressbar')
       expect(progressbars.length).toBe(0)
     })
   })

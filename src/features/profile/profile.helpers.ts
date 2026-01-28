@@ -1,9 +1,9 @@
-import { IFetchComponent } from "@well-known-components/interfaces"
-import { LambdasClient, createLambdasClient } from "dcl-catalyst-client"
-import { Profile } from "dcl-catalyst-client/dist/client/specs/lambdas-client"
-import { config } from "../../config"
+import { IFetchComponent } from '@well-known-components/interfaces'
+import { LambdasClient, createLambdasClient } from 'dcl-catalyst-client'
+import { Profile } from 'dcl-catalyst-client/dist/client/specs/lambdas-client'
+import { config } from '../../config'
 
-const catalystLambdasUrl = config.get("CATALYST_LAMBDAS_URL")
+const catalystLambdasUrl = config.get('CATALYST_LAMBDAS_URL')
 
 // Create a singleton lambdas client
 let lambdasClient: LambdasClient | null = null
@@ -14,8 +14,7 @@ let lambdasClient: LambdasClient | null = null
  */
 function createBrowserFetchComponent(): IFetchComponent {
   return {
-    fetch: ((url: RequestInfo | URL, init?: RequestInit) =>
-      window.fetch(url, init)) as unknown as IFetchComponent["fetch"],
+    fetch: ((url: RequestInfo | URL, init?: RequestInit) => window.fetch(url, init)) as unknown as IFetchComponent['fetch']
   }
 }
 
@@ -24,7 +23,7 @@ function getLambdasClient(): LambdasClient {
     const fetcher = createBrowserFetchComponent()
     lambdasClient = createLambdasClient({
       url: catalystLambdasUrl,
-      fetcher,
+      fetcher
     })
   }
   return lambdasClient
@@ -52,19 +51,17 @@ async function fetchProfile(address: string): Promise<Profile | null> {
 /**
  * Fetch multiple profiles from Catalyst lambdas in a single request
  */
-async function fetchProfilesBatch(
-  addresses: string[]
-): Promise<Record<string, Profile>> {
+async function fetchProfilesBatch(addresses: string[]): Promise<Record<string, Profile>> {
   if (!addresses.length) {
     return {}
   }
 
   try {
     const client = getLambdasClient()
-    const normalizedAddresses = addresses.map((a) => a.toLowerCase())
+    const normalizedAddresses = addresses.map(a => a.toLowerCase())
 
     const profiles = await client.getAvatarsDetailsByPost({
-      ids: normalizedAddresses,
+      ids: normalizedAddresses
     })
 
     // Map profiles by their userId (address)
@@ -80,9 +77,4 @@ async function fetchProfilesBatch(
   }
 }
 
-export {
-  fetchProfile,
-  fetchProfilesBatch,
-  getLambdasClient,
-  getProfileSnapshot,
-}
+export { fetchProfile, fetchProfilesBatch, getLambdasClient, getProfileSnapshot }

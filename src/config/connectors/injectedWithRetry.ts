@@ -1,5 +1,5 @@
-import { CreateConnectorFn, createConnector } from "wagmi"
-import { injected } from "wagmi/connectors"
+import { CreateConnectorFn, createConnector } from 'wagmi'
+import { injected } from 'wagmi/connectors'
 
 /**
  * Creates an injected connector with retry logic for isAuthorized().
@@ -17,12 +17,12 @@ import { injected } from "wagmi/connectors"
  */
 export function injectedWithRetry({
   retryDelay = 500,
-  maxRetries = 2,
+  maxRetries = 2
 }: {
   retryDelay?: number
   maxRetries?: number
 } = {}): CreateConnectorFn {
-  return createConnector((config) => {
+  return createConnector(config => {
     // Create the base injected connector
     const baseConnector = injected()(config)
 
@@ -33,31 +33,26 @@ export function injectedWithRetry({
         // Try immediately
         let authorized = await baseConnector.isAuthorized()
 
-        console.log("[injectedWithRetry] Initial isAuthorized:", authorized)
+        console.log('[injectedWithRetry] Initial isAuthorized:', authorized)
 
         if (authorized) return true
 
         // Retry with delay
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
-          console.log(
-            `[injectedWithRetry] Retry ${attempt}/${maxRetries} after ${retryDelay}ms...`
-          )
+          console.log(`[injectedWithRetry] Retry ${attempt}/${maxRetries} after ${retryDelay}ms...`)
 
-          await new Promise((resolve) => setTimeout(resolve, retryDelay))
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
           authorized = await baseConnector.isAuthorized()
 
-          console.log(
-            `[injectedWithRetry] Retry ${attempt} result:`,
-            authorized
-          )
+          console.log(`[injectedWithRetry] Retry ${attempt} result:`, authorized)
 
           if (authorized) return true
         }
 
-        console.log("[injectedWithRetry] All retries exhausted, not authorized")
+        console.log('[injectedWithRetry] All retries exhausted, not authorized')
 
         return false
-      },
+      }
     }
   })
 }
