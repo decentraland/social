@@ -42,8 +42,12 @@ function t(id: string, values?: Record<string, string | number>): string {
 /**
  * Merge multiple translation objects, with later sources overriding earlier ones.
  */
-function mergeTranslations<T extends Record<string, unknown>>(target: T = {} as T, ...sources: (T | undefined)[]): T {
-  return Object.assign({}, target, ...sources.filter(Boolean))
+function mergeTranslations(
+  target: Record<string, unknown> = {},
+  ...sources: Array<Record<string, unknown> | undefined>
+): Record<string, string> {
+  const merged = Object.assign({}, target, ...sources.filter(Boolean))
+  return Object.fromEntries(Object.entries(merged).map(([key, value]) => [key, typeof value === 'string' ? value : String(value)]))
 }
 
 export { mergeTranslations, setCurrentLocale, getCurrentLocale, t }

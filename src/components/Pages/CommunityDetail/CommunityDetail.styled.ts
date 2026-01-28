@@ -1,13 +1,5 @@
 import { Box, Icon, styled } from 'decentraland-ui2'
 
-const PageContainer = styled(Box)(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  width: '100%',
-  alignItems: 'flex-start',
-  background: 'radial-gradient(103.89% 95.21% at 95.21% 9.85%, #7434B1 0%, #481C6C 37.11%, #2B1040 100%)'
-}))
-
 const ContentContainer = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
@@ -79,4 +71,4 @@ const NotFoundIcon = styled(Icon)(({ theme }) => ({
   fontSize: theme.spacing(9) // 72px
 }))
 
-export { BottomSection, BottomSectionColumn, ContentContainer, EventsColumn, MembersColumn, PageContainer, CenteredContainer, NotFoundIcon }
+export { BottomSection, BottomSectionColumn, ContentContainer, EventsColumn, MembersColumn, CenteredContainer, NotFoundIcon }

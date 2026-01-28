@@ -1,4 +1,4 @@
-import { Theme } from 'decentraland-ui2'
+import type { Theme } from 'decentraland-ui2'
 
 export const getRandomRarityColor = (theme: Theme) => {
   const paletteWithRarities = theme.palette

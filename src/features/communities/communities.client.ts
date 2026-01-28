@@ -89,9 +89,10 @@ const communitiesApi = client.injectEndpoints({
           type: RequestType.REQUEST_TO_JOIN
         }
       }),
-      async onQueryStarted({ communityId, targetedAddress }, { dispatch, queryFulfilled, getState }) {
+      async onQueryStarted({ communityId, targetedAddress }, api) {
+        const { dispatch, queryFulfilled } = api
         // Get community data from cache to create proper optimistic request
-        const state = getState() as {
+        const state = api.getState() as {
           client?: {
             queries?: Record<string, { data?: CommunityResponse }>
           }

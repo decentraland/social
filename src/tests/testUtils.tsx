@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
 import { RenderOptions, render } from '@testing-library/react'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'

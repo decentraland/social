@@ -9,9 +9,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react()],
     define: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       'process.env': {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         VITE_REACT_APP_DCL_DEFAULT_ENV: envVariables.VITE_REACT_APP_DCL_DEFAULT_ENV
       },
       global: 'globalThis'
@@ -33,7 +31,6 @@ export default defineConfig(({ command, mode }) => {
     server: {
       open: true,
       proxy: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         '/auth': {
           target: 'https://decentraland.zone',
           followRedirects: true,

@@ -11,11 +11,11 @@ const getError = (state: RootState) => getState(state).error
 
 const isConnected = (state: RootState): boolean => getData(state) !== null
 
-const isConnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.CONNECT)
+const isConnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.connect)
 
-const isDisconnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.DISCONNECT)
+const isDisconnecting = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.disconnect)
 
-const isSwitchingNetwork = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.SWITCH_NETWORK)
+const isSwitchingNetwork = (state: RootState): boolean => getLoading(state).includes(WALLET_LOADING_STATES.switchNetwork)
 
 const getAddress = (state: RootState): `0x${string}` | undefined => (isConnected(state) ? getData(state)!.address : undefined)
 

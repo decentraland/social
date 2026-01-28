@@ -2,6 +2,22 @@ import { config } from '../../config'
 import { client } from '../../services/client'
 import { EventsResponse } from './types'
 
+type EventsApiEvent = {
+  id: string
+  name: string
+  approved: boolean
+  rejected: boolean
+  [key: string]: unknown
+}
+
+type EventsApiResponse = {
+  ok: boolean
+  data: {
+    events: EventsApiEvent[]
+    total: number
+  }
+}
+
 const eventsApi = client.injectEndpoints({
   endpoints: builder => ({
     getCommunityEvents: builder.query<EventsResponse, { communityId: string; limit?: number; offset?: number }>({
@@ -16,37 +32,27 @@ const eventsApi = client.injectEndpoints({
           baseUrl: config.get('EVENTS_API_URL')
         }
       },
-      transformResponse: (response: {
-        ok: boolean
-        data: {
-          events: Array<{
-            id: string
-            name: string
-            start_at: string
-            finish_at: string
-            scene_name?: string
-            approved: boolean
-            rejected: boolean
-            total_attendees: number
-            latest_attendees: string[]
-            [key: string]: unknown
-          }>
-          total: number
-        }
-      }): EventsResponse => {
+      transformResponse: (response: EventsApiResponse): EventsResponse => {
         return {
           ...response,
           data: {
             ...response.data,
             events: response.data.events.map(event => {
-              const { start_at, finish_at, scene_name, total_attendees, latest_attendees, ...rest } = event
+              const {
+                ['start_at']: startAt,
+                ['finish_at']: finishAt,
+                ['scene_name']: sceneName,
+                ['total_attendees']: totalAttendees,
+                ['latest_attendees']: latestAttendees,
+                ...rest
+              } = event
               return {
                 ...rest,
-                startAt: start_at,
-                finishAt: finish_at,
-                sceneName: scene_name,
-                totalAttendees: total_attendees,
-                latestAttendees: latest_attendees
+                startAt: startAt as string,
+                finishAt: finishAt as string,
+                sceneName: sceneName as string | undefined,
+                totalAttendees: totalAttendees as number,
+                latestAttendees: latestAttendees as string[]
               }
             })
           }

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useAnalytics } from '@dcl/hooks'
-import { Icon, JumpIn, Theme, muiIcons, useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
+import { Icon, JumpIn, muiIcons, useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { Privacy } from '../../../../../features/communities/types'
 import type { Community } from '../../../../../features/communities/types'
 import { useProfilePicture } from '../../../../../hooks/useProfilePicture'
@@ -70,7 +70,7 @@ export const CommunityInfo = ({
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
   const isTablet = useTabletMediaQuery()
   const ownerProfilePicture = useProfilePicture(community.ownerAddress)
-  const theme = useTheme<Theme>()
+  const theme = useTheme()
   const ownerAvatarBackgroundColor = getRandomRarityColor(theme)
   const { track } = useAnalytics()
   const utmParams = useUtmParams()

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Box, CircularProgress, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import {
   useCancelCommunityRequestMutation,
@@ -23,12 +23,12 @@ import { type TabType, Tabs } from './components/Tabs'
 import { isMember } from './utils/communityUtils'
 import { getErrorMessage, isErrorWithMessage, isFetchBaseQueryError } from './utils/errorUtils'
 import { AllowedAction } from './CommunityDetail.types'
-import { BottomSection, ContentContainer, EventsColumn, MembersColumn, PageContainer } from './CommunityDetail.styled'
+import { BottomSection, ContentContainer, EventsColumn, MembersColumn } from './CommunityDetail.styled'
 
 function CommunityDetail() {
   const { id } = useParams<{ id: string }>()
   const { pathname, search } = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { address, isConnecting, hasValidIdentity } = useWallet()
   const [error, setError] = useState<string | null>(null)
   const executedActionRef = useRef<string | null>(null)
@@ -186,7 +186,7 @@ function CommunityDetail() {
       const newSearchParams = new URLSearchParams(search)
       newSearchParams.delete('action')
       const nextSearch = newSearchParams.toString()
-      history.replace({
+      navigate({
         pathname,
         search: nextSearch ? `?${nextSearch}` : ''
       })
@@ -284,88 +284,48 @@ function CommunityDetail() {
 
   return (
     <PageLayout>
-      <PageContainer>
-        <ContentContainer>
-          <CommunityInfo
-            community={community}
-            isLoggedIn={isLoggedIn}
-            address={address ?? undefined}
-            isPerformingCommunityAction={isPerformingCommunityAction}
-            isMember={member}
-            canViewContent={canViewContent}
-            onJoin={handleJoinCommunity}
-            hasPendingRequest={hasPendingRequest}
-            isLoadingMemberRequests={isLoadingMemberRequests}
-            onRequestToJoin={handleRequestToJoin}
-            onCancelRequest={pendingRequestId ? (communityId: string) => handleCancelRequest(communityId, pendingRequestId) : undefined}
-          />
+      <ContentContainer>
+        <CommunityInfo
+          community={community}
+          isLoggedIn={isLoggedIn}
+          address={address ?? undefined}
+          isPerformingCommunityAction={isPerformingCommunityAction}
+          isMember={member}
+          canViewContent={canViewContent}
+          onJoin={handleJoinCommunity}
+          hasPendingRequest={hasPendingRequest}
+          isLoadingMemberRequests={isLoadingMemberRequests}
+          onRequestToJoin={handleRequestToJoin}
+          onCancelRequest={pendingRequestId ? (communityId: string) => handleCancelRequest(communityId, pendingRequestId) : undefined}
+        />
 
-          {!canViewContent && <PrivateMessage />}
+        {!canViewContent && <PrivateMessage />}
 
-          {canViewContent && (
-            <BottomSection>
-              {isTabletOrMobile ? (
-                <>
-                  <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
-                  {activeTab === 'members' ? (
-                    <MembersColumn>
-                      <MembersList
-                        members={members.map(member => ({
-                          memberAddress: member.memberAddress,
-                          name: member.name || member.memberAddress,
-                          role: member.role,
-                          profilePictureUrl: member.profilePictureUrl || '',
-                          hasClaimedName: member.hasClaimedName ?? false
-                        }))}
-                        isLoading={isLoadingMembers}
-                        isFetchingMore={isFetchingMoreMembers}
-                        hasMore={hasMoreMembers}
-                        onLoadMore={loadMoreMembers}
-                        hideTitle={true}
-                        showCount={false}
-                        total={totalMembers}
-                      />
-                    </MembersColumn>
-                  ) : (
-                    <EventsColumn>
-                      <EventsList
-                        events={events.map(event => ({
-                          id: event.id,
-                          name: event.name,
-                          image: event.image || '',
-                          isLive: event.live || false,
-                          startTime: event.startAt,
-                          totalAttendees: event.totalAttendees,
-                          latestAttendees: event.latestAttendees
-                        }))}
-                        isLoading={isLoadingEvents}
-                        isFetchingMore={isFetchingMoreEvents}
-                        hasMore={hasMoreEvents}
-                        onLoadMore={loadMoreEvents}
-                        hideTitle={true}
-                      />
-                    </EventsColumn>
-                  )}
-                </>
-              ) : (
-                <>
+        {canViewContent && (
+          <BottomSection>
+            {isTabletOrMobile ? (
+              <>
+                <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+                {activeTab === 'members' ? (
                   <MembersColumn>
                     <MembersList
                       members={members.map(member => ({
                         memberAddress: member.memberAddress,
-                        profilePictureUrl: member.profilePictureUrl || '',
                         name: member.name || member.memberAddress,
                         role: member.role,
+                        profilePictureUrl: member.profilePictureUrl || '',
                         hasClaimedName: member.hasClaimedName ?? false
                       }))}
                       isLoading={isLoadingMembers}
                       isFetchingMore={isFetchingMoreMembers}
                       hasMore={hasMoreMembers}
                       onLoadMore={loadMoreMembers}
+                      hideTitle={true}
+                      showCount={false}
                       total={totalMembers}
                     />
                   </MembersColumn>
-
+                ) : (
                   <EventsColumn>
                     <EventsList
                       events={events.map(event => ({
@@ -381,14 +341,52 @@ function CommunityDetail() {
                       isFetchingMore={isFetchingMoreEvents}
                       hasMore={hasMoreEvents}
                       onLoadMore={loadMoreEvents}
+                      hideTitle={true}
                     />
                   </EventsColumn>
-                </>
-              )}
-            </BottomSection>
-          )}
-        </ContentContainer>
-      </PageContainer>
+                )}
+              </>
+            ) : (
+              <>
+                <MembersColumn>
+                  <MembersList
+                    members={members.map(member => ({
+                      memberAddress: member.memberAddress,
+                      profilePictureUrl: member.profilePictureUrl || '',
+                      name: member.name || member.memberAddress,
+                      role: member.role,
+                      hasClaimedName: member.hasClaimedName ?? false
+                    }))}
+                    isLoading={isLoadingMembers}
+                    isFetchingMore={isFetchingMoreMembers}
+                    hasMore={hasMoreMembers}
+                    onLoadMore={loadMoreMembers}
+                    total={totalMembers}
+                  />
+                </MembersColumn>
+
+                <EventsColumn>
+                  <EventsList
+                    events={events.map(event => ({
+                      id: event.id,
+                      name: event.name,
+                      image: event.image || '',
+                      isLive: event.live || false,
+                      startTime: event.startAt,
+                      totalAttendees: event.totalAttendees,
+                      latestAttendees: event.latestAttendees
+                    }))}
+                    isLoading={isLoadingEvents}
+                    isFetchingMore={isFetchingMoreEvents}
+                    hasMore={hasMoreEvents}
+                    onLoadMore={loadMoreEvents}
+                  />
+                </EventsColumn>
+              </>
+            )}
+          </BottomSection>
+        )}
+      </ContentContainer>
     </PageLayout>
   )
 }

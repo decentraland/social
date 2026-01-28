@@ -32,8 +32,8 @@ const walletSlice = createSlice({
   initialState,
   reducers: {
     setWalletConnecting: state => {
-      if (!state.loading.includes(WALLET_LOADING_STATES.CONNECT)) {
-        state.loading.push(WALLET_LOADING_STATES.CONNECT)
+      if (!state.loading.includes(WALLET_LOADING_STATES.connect)) {
+        state.loading.push(WALLET_LOADING_STATES.connect)
       }
       state.error = null
     },
@@ -42,7 +42,7 @@ const walletSlice = createSlice({
         address: action.payload.address,
         chainId: action.payload.chainId as ChainId
       }
-      state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.CONNECT)
+      state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.connect)
       state.error = null
     },
     setWalletDisconnected: state => {
@@ -61,20 +61,20 @@ const walletSlice = createSlice({
     },
     setSwitchingNetwork: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes(WALLET_LOADING_STATES.SWITCH_NETWORK)) {
-          state.loading.push(WALLET_LOADING_STATES.SWITCH_NETWORK)
+        if (!state.loading.includes(WALLET_LOADING_STATES.switchNetwork)) {
+          state.loading.push(WALLET_LOADING_STATES.switchNetwork)
         }
       } else {
-        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.SWITCH_NETWORK)
+        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.switchNetwork)
       }
     },
     setDisconnecting: (state, action: PayloadAction<boolean>) => {
       if (action.payload) {
-        if (!state.loading.includes(WALLET_LOADING_STATES.DISCONNECT)) {
-          state.loading.push(WALLET_LOADING_STATES.DISCONNECT)
+        if (!state.loading.includes(WALLET_LOADING_STATES.disconnect)) {
+          state.loading.push(WALLET_LOADING_STATES.disconnect)
         }
       } else {
-        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.DISCONNECT)
+        state.loading = state.loading.filter(l => l !== WALLET_LOADING_STATES.disconnect)
       }
     }
   }

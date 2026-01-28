@@ -57,14 +57,14 @@ export function magic(parameters: MagicParameters = {}) {
 
   async function getMagicInstance(chainId: number): Promise<MagicInstance> {
     // Dynamic import to avoid loading Magic SDK if not needed
-    const { Magic } = await import('magic-sdk')
-    const { OAuthExtension } = await import('@magic-ext/oauth2')
+    const { Magic: magicSdk } = await import('magic-sdk')
+    const { OAuthExtension: oauthExtension } = await import('@magic-ext/oauth2')
 
     const apiKey = isTest ? MAGIC_CONFIG.testApiKey : MAGIC_CONFIG.apiKey
     const rpcUrl = MAGIC_CONFIG.rpcUrls[chainId] || MAGIC_CONFIG.rpcUrls[ChainId.ETHEREUM_MAINNET]
 
-    return new Magic(apiKey, {
-      extensions: [new OAuthExtension()],
+    return new magicSdk(apiKey, {
+      extensions: [new oauthExtension()],
       network: {
         rpcUrl,
         chainId

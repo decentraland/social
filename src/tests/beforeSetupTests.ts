@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
 import { TextDecoder, TextEncoder } from 'util'
 import { flatten } from 'flat'
