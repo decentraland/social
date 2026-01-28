@@ -1,11 +1,11 @@
-import { format, formatDistanceToNow } from 'date-fns'
+import { distanceInWords, format } from 'date-fns'
 
 export const formatEventTime = (dateString: string): string => {
   const eventDate = new Date(dateString)
   const now = new Date()
 
   if (eventDate < now) {
-    const distance = formatDistanceToNow(eventDate, { addSuffix: true })
+    const distance = distanceInWords(eventDate, now, { addSuffix: true })
     return `Started ${distance}`
   }
 

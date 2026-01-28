@@ -1,11 +1,23 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { RenderOptions, render } from '@testing-library/react'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'
 
-export function renderWithProviders(component: React.ReactElement, options?: RenderOptions) {
+type RenderWithProvidersOptions = RenderOptions & {
+  initialEntries?: string[]
+}
+
+export function renderWithProviders(component: React.ReactElement, options?: RenderWithProvidersOptions) {
+  const { initialEntries = ['/'], ...renderOptions } = options || {}
+
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return <DclThemeProvider theme={darkTheme}>{children}</DclThemeProvider>
+    return (
+      <MemoryRouter initialEntries={initialEntries}>
+        <DclThemeProvider theme={darkTheme}>{children}</DclThemeProvider>
+      </MemoryRouter>
+    )
   }
 
-  return render(component, { wrapper: Wrapper, ...options })
+  return render(component, { wrapper: Wrapper, ...renderOptions })
 }

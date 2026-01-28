@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { AnalyticsProvider } from '@dcl/hooks'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ModalProvider from 'decentraland-dapps/dist/providers/ModalProvider'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'
 import { store } from './app/store'

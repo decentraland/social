@@ -3,6 +3,8 @@ import dev from './env/dev.json'
 import prod from './env/prd.json'
 import stg from './env/stg.json'
 
+const reactAppDclDefaultEnvKey = 'REACT_APP_DCL_DEFAULT_ENV'
+
 export const config = createConfig(
   {
     [Env.DEVELOPMENT as string]: {
@@ -20,7 +22,7 @@ export const config = createConfig(
   },
   {
     systemEnvVariables: {
-      REACT_APP_DCL_DEFAULT_ENV: process.env.VITE_REACT_APP_DCL_DEFAULT_ENV ?? 'dev'
+      [reactAppDclDefaultEnvKey]: process.env.VITE_REACT_APP_DCL_DEFAULT_ENV ?? 'dev'
     }
   }
 )

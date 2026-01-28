@@ -1,4 +1,4 @@
-import { Theme } from 'decentraland-ui2'
+import type { Theme } from 'decentraland-ui2'
 import { getRandomRarityColor } from './getRandomRarityColor'
 
 describe('getRandomRarityColor', () => {
@@ -42,7 +42,7 @@ describe('getRandomRarityColor', () => {
       palette: {
         secondary: { main: '#ABCDEF' }
       }
-    } as Theme
+    } as unknown as Theme
 
     expect(getRandomRarityColor(theme)).toBe('#ABCDEF')
   })

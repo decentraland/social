@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
 import { act, render, renderHook } from '@testing-library/react'
 import { useInfiniteScroll } from './useInfiniteScroll'

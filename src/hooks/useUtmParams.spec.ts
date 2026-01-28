@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'

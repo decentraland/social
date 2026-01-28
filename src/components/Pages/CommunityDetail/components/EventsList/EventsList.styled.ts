@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Avatar, Box, Typography, styled } from 'decentraland-ui2'
 
 const EventsSection = styled(Box)(({ theme }) => ({

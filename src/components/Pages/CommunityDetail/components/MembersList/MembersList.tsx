@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Theme, Typography, useTheme } from 'decentraland-ui2'
+import { Box, CircularProgress, Typography, useTheme } from 'decentraland-ui2'
 import { useInfiniteScroll } from '../../../../../hooks/useInfiniteScroll'
 import { t } from '../../../../../modules/translation'
 import { getRandomRarityColor } from '../utils/getRandomRarityColor'
@@ -54,7 +54,7 @@ export const MembersList = ({
     isLoading: isFetchingMore,
     onLoadMore
   })
-  const theme = useTheme<Theme>()
+  const theme = useTheme()
 
   if (isLoading) {
     return (

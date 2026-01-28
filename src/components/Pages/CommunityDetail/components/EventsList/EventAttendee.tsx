@@ -1,4 +1,4 @@
-import { Theme, useTheme } from '@mui/material/styles'
+import { useTheme } from 'decentraland-ui2'
 import { getRandomRarityColor } from '../utils/getRandomRarityColor'
 import { AttendeeAvatar } from './EventsList.styled'
 
@@ -7,7 +7,7 @@ type EventAttendeeProps = {
 }
 
 export const EventAttendee = ({ src }: EventAttendeeProps) => {
-  const theme = useTheme<Theme>()
+  const theme = useTheme()
   const backgroundColor = getRandomRarityColor(theme)
 
   return <AttendeeAvatar src={src} backgroundColor={backgroundColor} />

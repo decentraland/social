@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react'
 import { TextDecoder, TextEncoder } from 'util'
 import { flatten } from 'flat'
@@ -13,12 +14,6 @@ jest.mock('decentraland-dapps/dist/modules/translation/utils', () => ({
   setCurrentLocale: jest.fn(),
   mergeTranslations: <T extends Record<string, unknown>>(target: T = {} as T, ...sources: (T | undefined)[]): T =>
     Object.assign({}, target, ...sources.filter(Boolean))
-}))
-
-// Mock lottie-react to avoid canvas issues
-jest.mock('lottie-react', () => ({
-  __esModule: true,
-  default: jest.fn().mockReturnValue(null)
 }))
 
 jest.mock('decentraland-ui2', () => ({
