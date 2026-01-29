@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { useWalletSync } from '../modules/wallet/hooks'
+import { Web3SyncProvider } from '@dcl/core-web3'
 
 type Props = {
   children: ReactNode
@@ -10,6 +10,5 @@ type Props = {
  * Must be placed inside both Redux Provider and WagmiProvider.
  */
 export function WalletSyncProvider({ children }: Props) {
-  useWalletSync()
-  return <>{children}</>
+  return <Web3SyncProvider>{children}</Web3SyncProvider>
 }

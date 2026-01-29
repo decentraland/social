@@ -1,9 +1,9 @@
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { getAddress } from '@dcl/core-web3'
 import { localStorageGetIdentity } from '@dcl/single-sign-on-client'
 import signedFetch from 'decentraland-crypto-fetch'
 import { config } from '../config'
-import { getAddress } from '../modules/wallet/selectors'
 
 const baseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
   try {

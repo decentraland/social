@@ -1,4 +1,2 @@
-export { default as walletReducer } from './walletSlice'
-export * from './walletSlice'
-export * from './selectors'
+export { walletActions, walletReducer } from '@dcl/core-web3'
 export * from './hooks'

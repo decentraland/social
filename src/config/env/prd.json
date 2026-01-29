@@ -5,6 +5,7 @@
   "EVENTS_API_URL": "https://events.decentraland.org/api",
   "NETWORK": "mainnet",
   "CHAIN_ID": "1",
+  "MAGIC_API_KEY": "pk_live_212568025B158355",
   "CATALYST_LAMBDAS_URL": "https://peer.decentraland.org/lambdas",
   "PEER_URL": "https://peer.decentraland.org",
   "CREDITS_SERVER_URL": "https://credits.decentraland.org"

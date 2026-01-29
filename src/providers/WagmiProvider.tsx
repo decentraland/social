@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider as WagmiProviderBase, useAccount } from 'wagmi'
+import { QueryClient } from '@tanstack/react-query'
+import { useAccount } from 'wagmi'
+import { Web3CoreProvider } from '@dcl/core-web3'
 import { wagmiConfig } from '../config/wagmi'
 
 const queryClient = new QueryClient({
@@ -38,11 +39,9 @@ function WagmiDebugger() {
 
 export function WagmiProvider({ children }: Props) {
   return (
-    <WagmiProviderBase config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <WagmiDebugger />
-        {children}
-      </QueryClientProvider>
-    </WagmiProviderBase>
+    <Web3CoreProvider config={wagmiConfig} queryClient={queryClient}>
+      <WagmiDebugger />
+      {children}
+    </Web3CoreProvider>
   )
 }
