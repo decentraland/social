@@ -6,6 +6,7 @@
   "NETWORK": "sepolia",
   "CHAIN_ID": "11155111",
   "MAGIC_API_KEY": "pk_live_CE856A4938B36648",
+  "THIRDWEB_CLIENT_ID": "e1adce863fe287bb6cf0e3fd90bdb77f",
   "CATALYST_LAMBDAS_URL": "https://peer.decentraland.zone/lambdas",
   "PEER_URL": "https://peer-testing.decentraland.org",
   "CREDITS_SERVER_URL": "https://credits.decentraland.zone"
