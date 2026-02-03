@@ -20,7 +20,7 @@
     "lint:pkg": "npmPkgJsonLint ."
   },
   "dependencies": {
-    "@dcl/core-web3": "^0.2.1",
+    "@dcl/core-web3": "^0.3.0",
     "@dcl/crypto": "^3.4.5",
     "@dcl/hooks": "^1.0.0",
     "@dcl/schemas": "^22.4.0",
@@ -49,6 +49,7 @@
     "react-router-dom": "7.13.0",
     "redux": "5.0.1",
     "redux-saga": "1.4.2",
+    "thirdweb": "5.118.0",
     "viem": "2.41.2",
     "wagmi": "2.19.5"
   },
