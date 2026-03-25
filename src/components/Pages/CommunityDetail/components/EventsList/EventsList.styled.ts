@@ -28,7 +28,7 @@ const EventsGrid = styled(Box)(({ theme }) => ({
   gridTemplateColumns: 'repeat(auto-fill, minmax(289px, 1fr))',
   gap: theme.spacing(1.5),
   width: '100%',
-  maxHeight: '350px',
+  maxHeight: '680px',
   overflowY: 'auto',
   overflowX: 'hidden',
   scrollBehavior: 'smooth',
@@ -64,7 +64,6 @@ const EventCard = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   position: 'relative',
   boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.35)',
-  padding: theme.spacing(1.5, 2, 3), // 12px 16px 24px
   [theme.breakpoints.down('xs')]: {
     width: '100%'
   }
@@ -80,7 +79,6 @@ const EventImageContainer = styled(Box)(() => ({
   position: 'relative',
   width: '100%',
   height: '195px',
-  borderRadius: '16px 16px 0 0',
   overflow: 'hidden',
   flexShrink: 0
 }))
